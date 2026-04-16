@@ -1,0 +1,9 @@
+{
+  "name": "pokedex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PokeDex com interface customizada e integracao com a PokeAPI.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

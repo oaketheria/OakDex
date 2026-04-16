@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PokeDex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="scene-shell">
+      <aside class="decor-panel decor-panel-left" aria-hidden="true">
+        <div class="decor-mural decor-anime decor-anime-left"></div>
+      </aside>
+
+      <main class="app-shell">
+        <section class="pokedex-frame">
+          <section class="pokedex-side pokedex-left">
+            <header class="left-topbar">
+              <div class="brand-group">
+                <div class="main-lens" aria-hidden="true"></div>
+                <div class="brand-copy">
+                  <span class="micro-label">Trainer Interface</span>
+                  <h1>PokeDex</h1>
+                </div>
+              </div>
+
+              <div class="top-controls">
+                <div class="top-search-row">
+                  <label class="top-search" for="top-search-input">
+                    <span class="sr-only">Buscar Pokemon</span>
+                    <input
+                      id="top-search-input"
+                      type="search"
+                      placeholder="Buscar Pokemon por nome ou numero"
+                      autocomplete="off"
+                    />
+                  </label>
+
+                  <button id="voice-search-button" class="voice-button" type="button" aria-label="Buscar por voz">
+                    Voz
+                  </button>
+                </div>
+
+                <div class="top-actions">
+                  <label class="top-type-filter" for="type-select">
+                    <span class="sr-only">Filtrar por tipo</span>
+                    <select id="type-select">
+                      <option value="">Todos os tipos</option>
+                    </select>
+                  </label>
+
+                  <button id="shuffle-button" class="action-button" type="button">
+                    Aleatorio
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <nav class="hud-tabs" aria-label="Modos da PokeDex">
+              <button class="hud-tab is-active" type="button" data-tab="dados">Dados</button>
+              <button class="hud-tab" type="button" data-tab="stats">Stats</button>
+              <button class="hud-tab" type="button" data-tab="moves">Moves</button>
+              <button class="hud-tab" type="button" data-tab="forms">Forms</button>
+              <button class="hud-tab" type="button" data-tab="lore">Lore</button>
+            </nav>
+
+            <div class="art-screen">
+              <div id="pokemon-spotlight" class="pokemon-spotlight" aria-live="polite"></div>
+            </div>
+          </section>
+
+          <div class="center-hinge" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <section class="pokedex-side pokedex-right">
+            <header class="right-topbar">
+              <div>
+                <span class="micro-label">Battle HUD</span>
+                <h2>Analise detalhada</h2>
+              </div>
+              <div class="right-topbar-actions">
+                <button id="cry-button" class="sound-button" type="button">Som</button>
+                <p id="results-summary" class="result-summary">Carregando PokeDex...</p>
+              </div>
+            </header>
+
+            <div class="right-screen-spacer" aria-hidden="true"></div>
+
+            <div class="detail-shell">
+              <div class="detail-bezel">
+                <div id="detail-card" class="detail-card loading">
+                  <p>Digite ou selecione um Pokemon para ver todos os dados.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="decor-panel decor-panel-right" aria-hidden="true">
+        <div class="decor-mural decor-anime decor-anime-right"></div>
+      </aside>
+    </div>
+
+    <template id="pokemon-spotlight-template">
+      <article class="spotlight-card">
+        <div class="spotlight-art"></div>
+      </article>
+    </template>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
