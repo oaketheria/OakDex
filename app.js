@@ -11,6 +11,7 @@ const elements = {
   spotlight: document.querySelector("#pokemon-spotlight"),
   detailCard: document.querySelector("#detail-card"),
   summary: document.querySelector("#results-summary"),
+  mainLens: document.querySelector(".main-lens"),
   topSearchInput: document.querySelector("#top-search-input"),
   voiceSearchButton: document.querySelector("#voice-search-button"),
   typeSelect: document.querySelector("#type-select"),
@@ -392,6 +393,7 @@ async function translateTextToPortuguese(text) {
 
 function setNarrationButtonState(status, label = "") {
   const narrationButton = elements.detailCard.querySelector("[data-narrate-button]");
+  elements.mainLens?.classList.remove("is-narrating", "is-speaking");
 
   if (!narrationButton) {
     return;
@@ -405,10 +407,12 @@ function setNarrationButtonState(status, label = "") {
     narrationButton.classList.add("is-loading");
     narrationButton.setAttribute("aria-busy", "true");
     narrationButton.disabled = true;
+    elements.mainLens?.classList.add("is-narrating");
   }
 
   if (status === "playing") {
     narrationButton.classList.add("is-playing");
+    elements.mainLens?.classList.add("is-speaking");
   }
 
   narrationButton.querySelector(".narration-button-text").textContent = label || "Narrar lore";
