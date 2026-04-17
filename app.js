@@ -67,6 +67,151 @@ const typeColors = {
   fairy: "#e69eac",
 };
 
+const FORM_SUFFIXES = new Set([
+  "altered",
+  "attack",
+  "average",
+  "blade",
+  "complete",
+  "defense",
+  "dusk",
+  "hero",
+  "incarnate",
+  "land",
+  "midday",
+  "midnight",
+  "normal",
+  "origin",
+  "ordinary",
+  "pirouette",
+  "plant",
+  "rainy",
+  "shield",
+  "skyl",
+  "small",
+  "solo",
+  "speed",
+  "standard",
+  "sunny",
+  "therian",
+  "trash",
+]);
+
+function normalizeSearchText(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getPokemonSearchAliases(name) {
+  const normalizedName = normalizeSearchText(name);
+  const aliases = new Set([
+    normalizedName,
+    normalizedName.replace(/\s+/g, ""),
+  ]);
+
+  const parts = normalizedName.split(" ").filter(Boolean);
+
+  if (parts.length > 1 && FORM_SUFFIXES.has(parts.at(-1))) {
+    const baseName = parts.slice(0, -1).join(" ");
+    aliases.add(baseName);
+    aliases.add(baseName.replace(/\s+/g, ""));
+  }
+
+  return [...aliases].filter(Boolean);
+}
+
+function matchesPokemonSearch(pokemon, rawSearchTerm) {
+  const searchTerm = normalizeSearchText(rawSearchTerm);
+
+  if (!searchTerm) {
+    return true;
+  }
+
+  const compactSearchTerm = searchTerm.replace(/\s+/g, "");
+  const aliases = pokemon.searchAliases ?? getPokemonSearchAliases(pokemon.name);
+
+  return aliases.some((alias) => {
+    const compactAlias = alias.replace(/\s+/g, "");
+    return (
+      alias.includes(searchTerm) ||
+      compactAlias.includes(compactSearchTerm) ||
+      String(pokemon.id).includes(compactSearchTerm)
+    );
+  });
+}
+
+async function resolvePokemonFromSearch(searchTerm) {
+  const normalizedTerm = normalizeSearchText(searchTerm);
+
+  if (!normalizedTerm) {
+    return null;
+  }
+
+  const compactTerm = normalizedTerm.replace(/\s+/g, "");
+  const exactLocalMatch = state.allPokemon.find(
+    (pokemon) =>
+      pokemon.searchAliases?.includes(normalizedTerm) ||
+      String(pokemon.id) === compactTerm,
+  );
+
+  if (exactLocalMatch) {
+    return exactLocalMatch;
+  }
+
+  const apiCandidates = [
+    normalizedTerm.replace(/\s+/g, "-"),
+    compactTerm,
+  ];
+
+  for (const candidate of apiCandidates) {
+    try {
+      const details = await fetchPokemonDetails(candidate);
+      return {
+        id: details.id,
+        name: details.name,
+        url: `${API_BASE}/pokemon/${details.id}`,
+        types: details.types.map(({ type }) => type.name),
+        searchAliases: getPokemonSearchAliases(details.name),
+      };
+    } catch (error) {
+      try {
+        const speciesDetails = await fetchJson(`${API_BASE}/pokemon-species/${candidate}`);
+        const preferredVariety =
+          speciesDetails.varieties?.find((entry) => entry.is_default)?.pokemon ||
+          speciesDetails.varieties?.[0]?.pokemon;
+
+        if (!preferredVariety) {
+          continue;
+        }
+
+        const preferredDetails = await fetchPokemonDetails(preferredVariety.name);
+        return {
+          id: preferredDetails.id,
+          name: preferredDetails.name,
+          url: `${API_BASE}/pokemon/${preferredDetails.id}`,
+          types: preferredDetails.types.map(({ type }) => type.name),
+          searchAliases: [
+            ...new Set([
+              ...getPokemonSearchAliases(preferredDetails.name),
+              normalizedTerm,
+              compactTerm,
+            ]),
+          ],
+        };
+      } catch (speciesError) {
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
 async function fetchJson(url) {
   let response;
 
@@ -1067,9 +1212,13 @@ async function syncSelectionFromSearch(searchTerm) {
     return;
   }
 
-  const exactMatch = state.filteredPokemon.find(
-    (pokemon) => pokemon.name === searchTerm || String(pokemon.id) === searchTerm,
-  );
+  const exactMatch =
+    state.filteredPokemon.find(
+      (pokemon) =>
+        pokemon.searchAliases?.includes(normalizeSearchText(searchTerm)) ||
+        String(pokemon.id) === normalizeSearchText(searchTerm).replace(/\s+/g, ""),
+    ) ||
+    (await resolvePokemonFromSearch(searchTerm));
 
   const firstMatch = exactMatch ?? state.filteredPokemon[0];
 
@@ -1082,15 +1231,12 @@ async function syncSelectionFromSearch(searchTerm) {
 }
 
 async function applyFilters() {
-  const searchTerm = elements.topSearchInput.value.trim().toLowerCase();
+  const searchTerm = elements.topSearchInput.value.trim();
   const selectedType = elements.typeSelect.value;
   const allowedTypeIds = selectedType ? await fetchTypePokemonIds(selectedType) : null;
 
   state.filteredPokemon = state.allPokemon.filter((pokemon) => {
-    const matchesSearch =
-      !searchTerm ||
-      pokemon.name.includes(searchTerm) ||
-      String(pokemon.id).includes(searchTerm);
+    const matchesSearch = matchesPokemonSearch(pokemon, searchTerm);
     const matchesType = !allowedTypeIds || allowedTypeIds.has(pokemon.id);
 
     return matchesSearch && matchesType;
@@ -1240,6 +1386,7 @@ async function loadPokemon() {
       name: pokemon.name,
       url: pokemon.url,
       types: [],
+      searchAliases: getPokemonSearchAliases(pokemon.name),
     }))
     .filter((pokemon) => pokemon.id !== null);
 
