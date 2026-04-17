@@ -38,7 +38,10 @@ const typeDetailsCache = new Map();
 const typePokemonIdsCache = new Map();
 const speciesDetailsCache = new Map();
 const evolutionChainCache = new Map();
+const translationCache = new Map();
+const audioNarrationCache = new Map();
 let currentCryAudio = null;
+let currentNarrationAudio = null;
 
 const typeColors = {
   normal: "#9e9e7a",
@@ -256,6 +259,173 @@ function getEnglishFlavorText(speciesDetails) {
     speciesDetails.flavor_text_entries.find((entry) => entry.language.name === "en")
       ?.flavor_text.replace(/\f|\n|\r/g, " ") ?? "Sem registro adicional para este Pokemon."
   );
+}
+
+function sanitizeFlavorText(text) {
+  return String(text ?? "")
+    .replace(/[\f\n\r]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getNarrationCacheKey(pokemonName, englishText) {
+  return `${String(pokemonName ?? "").toLowerCase()}::${sanitizeFlavorText(englishText)}`;
+}
+
+async function translateTextToPortuguese(text) {
+  const cleanedText = sanitizeFlavorText(text);
+
+  if (!cleanedText) {
+    return "";
+  }
+
+  if (!translationCache.has(cleanedText)) {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanedText)}&langpair=en|pt-BR`;
+    translationCache.set(
+      cleanedText,
+      fetchJson(url)
+        .then((payload) => {
+          const translated =
+            payload.responseData?.translatedText ||
+            payload.matches?.find((entry) => entry.translation)?.translation ||
+            cleanedText;
+
+          return sanitizeFlavorText(translated);
+        })
+        .catch(() => cleanedText),
+    );
+  }
+
+  return translationCache.get(cleanedText);
+}
+
+function setNarrationButtonState(status, label = "") {
+  const narrationButton = elements.detailCard.querySelector("[data-narrate-button]");
+
+  if (!narrationButton) {
+    return;
+  }
+
+  narrationButton.classList.remove("is-loading", "is-playing");
+  narrationButton.removeAttribute("aria-busy");
+  narrationButton.disabled = false;
+
+  if (status === "loading") {
+    narrationButton.classList.add("is-loading");
+    narrationButton.setAttribute("aria-busy", "true");
+    narrationButton.disabled = true;
+  }
+
+  if (status === "playing") {
+    narrationButton.classList.add("is-playing");
+  }
+
+  narrationButton.querySelector(".narration-button-text").textContent = label || "Narrar lore";
+}
+
+function stopCurrentNarration() {
+  if (!currentNarrationAudio) {
+    return;
+  }
+
+  currentNarrationAudio.pause();
+  currentNarrationAudio.currentTime = 0;
+  currentNarrationAudio = null;
+  setNarrationButtonState("idle");
+}
+
+async function requestNarrationAudio(text) {
+  const response = await fetch("/api/narrate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      text,
+    }),
+  });
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    throw new Error(payload.error || payload.details || "Falha ao gerar a narracao.");
+  }
+
+  return response.blob();
+}
+
+async function handleLoreNarration(pokemonName, englishFlavorText) {
+  const cacheKey = getNarrationCacheKey(pokemonName, englishFlavorText);
+  const narrationButton = elements.detailCard.querySelector("[data-narrate-button]");
+
+  if (!narrationButton) {
+    return;
+  }
+
+  if (currentNarrationAudio && currentNarrationAudio.dataset.cacheKey === cacheKey) {
+    if (currentNarrationAudio.paused) {
+      currentNarrationAudio.play().catch(() => {});
+      setNarrationButtonState("playing", "Tocando");
+    } else {
+      stopCurrentNarration();
+    }
+    return;
+  }
+
+  stopCurrentNarration();
+  setNarrationButtonState("loading", "Gerando audio...");
+
+  try {
+    const translatedText = await translateTextToPortuguese(englishFlavorText);
+    let audioUrl = audioNarrationCache.get(cacheKey);
+
+    if (!audioUrl) {
+      const audioBlob = await requestNarrationAudio(translatedText);
+      audioUrl = URL.createObjectURL(audioBlob);
+      audioNarrationCache.set(cacheKey, audioUrl);
+    }
+
+    const audio = new Audio(audioUrl);
+    audio.dataset.cacheKey = cacheKey;
+    currentNarrationAudio = audio;
+
+    audio.addEventListener("play", () => {
+      setNarrationButtonState("playing", "Tocando");
+    });
+
+    audio.addEventListener("ended", () => {
+      if (currentNarrationAudio === audio) {
+        currentNarrationAudio = null;
+      }
+      setNarrationButtonState("idle");
+    });
+
+    audio.addEventListener("pause", () => {
+      if (!audio.ended) {
+        setNarrationButtonState("idle");
+      }
+    });
+
+    await audio.play();
+  } catch (error) {
+    setNarrationButtonState("idle");
+    const message = String(error.message || "");
+    const servedOutsideLocalServer =
+      window.location.port && window.location.port !== "5500";
+
+    if (servedOutsideLocalServer) {
+      window.alert(
+        "Nao foi possivel gerar a narracao agora. Abra a PokeDex por http://127.0.0.1:5500 usando npm start.",
+      );
+      return;
+    }
+
+    if (message.includes("creditos") || message.includes("plano ativo")) {
+      window.alert(`${message} Verifique sua conta ElevenLabs.`);
+      return;
+    }
+
+    window.alert(`Nao foi possivel gerar a narracao agora. ${message || "Verifique o servidor local."}`);
+  }
 }
 
 function getGenus(speciesDetails) {
@@ -601,11 +771,23 @@ function renderLoreTab(speciesDetails) {
   const generation = speciesDetails.generation?.name?.replace(/-/g, " ") ?? "desconhecida";
   const habitat = speciesDetails.habitat?.name?.replace(/-/g, " ") ?? "sem habitat";
   const genus = getGenus(speciesDetails);
-  const flavorText = getEnglishFlavorText(speciesDetails);
+  const flavorText = sanitizeFlavorText(getEnglishFlavorText(speciesDetails));
 
   return `
     <section class="detail-section lore-box">
-      <h4>Registro PokeDex</h4>
+      <div class="lore-header">
+        <h4>Registro PokeDex</h4>
+        <button
+          class="narration-button"
+          type="button"
+          data-narrate-button
+          data-flavor-text="${escapeHtml(flavorText)}"
+          aria-label="Narrar lore do Pokemon em portugues"
+        >
+          <span class="narration-button-icon" aria-hidden="true">🔊</span>
+          <span class="narration-button-text">Narrar lore</span>
+        </button>
+      </div>
       <p class="detail-copy">${escapeHtml(flavorText)}</p>
     </section>
 
@@ -713,6 +895,7 @@ function renderConnectionError(message) {
 }
 
 async function selectPokemon(pokemonId, options = {}) {
+  stopCurrentNarration();
   const details = await fetchPokemonDetails(pokemonId);
   state.selectedPokemonId = details.id;
   state.selectedPokemonDetails = details;
@@ -838,6 +1021,7 @@ function bindEvents() {
   elements.hudTabs.forEach((button) => {
     button.addEventListener("click", async () => {
       state.activeTab = button.dataset.tab;
+      stopCurrentNarration();
       renderHudTabs();
 
       if (state.selectedPokemonDetails) {
@@ -866,6 +1050,15 @@ function bindEvents() {
 
   elements.detailCard.addEventListener("click", async (event) => {
     const formCard = event.target.closest(".form-card");
+    const narrationButton = event.target.closest("[data-narrate-button]");
+
+    if (narrationButton && state.selectedPokemonDetails) {
+      await handleLoreNarration(
+        state.selectedPokemonDetails.name,
+        narrationButton.dataset.flavorText ?? "",
+      );
+      return;
+    }
 
     if (!formCard?.dataset.formId) {
       return;

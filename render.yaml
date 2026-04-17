@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: oakdex
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ELEVENLABS_VOICE_ID
+        value: onwK4e9ZLuTAKqWW03F9
+      - key: ELEVENLABS_MODEL_ID
+        value: eleven_multilingual_v2
