@@ -1234,6 +1234,15 @@ async function applyFilters() {
   const searchTerm = elements.topSearchInput.value.trim();
   const selectedType = elements.typeSelect.value;
   const allowedTypeIds = selectedType ? await fetchTypePokemonIds(selectedType) : null;
+  const resolvedPokemon = await resolvePokemonFromSearch(searchTerm);
+
+  if (resolvedPokemon) {
+    const matchesType = !allowedTypeIds || allowedTypeIds.has(resolvedPokemon.id);
+
+    state.filteredPokemon = matchesType ? [resolvedPokemon] : [];
+    await syncSelectionFromSearch(searchTerm);
+    return;
+  }
 
   state.filteredPokemon = state.allPokemon.filter((pokemon) => {
     const matchesSearch = matchesPokemonSearch(pokemon, searchTerm);
