@@ -424,7 +424,7 @@ async function handleLoreNarration(pokemonName, englishFlavorText) {
       return;
     }
 
-    window.alert(`Nao foi possivel gerar a narracao agora. ${message || "Verifique o servidor local."}`);
+    window.alert(`Nao foi possivel gerar a narracao agora. ${message || "Verifique os logs do servidor."}`);
   }
 }
 

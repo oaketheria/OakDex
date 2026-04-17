@@ -162,9 +162,11 @@ function requestNarrationFromElevenLabs(text) {
 
 const server = http.createServer((request, response) => {
   if (request.method === "POST" && request.url === "/api/narrate") {
+    console.log("[narrate] Requisicao recebida");
     readJsonBody(request)
       .then(async (payload) => {
         if (!ELEVENLABS_API_KEY) {
+          console.error("[narrate] ELEVENLABS_API_KEY ausente no ambiente");
           sendJson(response, 500, {
             error: "Configure ELEVENLABS_API_KEY no ambiente do servidor antes de usar a narracao.",
           });
@@ -174,11 +176,13 @@ const server = http.createServer((request, response) => {
         const text = String(payload.text || "").trim();
 
         if (!text) {
+          console.error("[narrate] Texto vazio recebido");
           sendJson(response, 400, { error: "Texto vazio para narracao." });
           return;
         }
 
         const audioBuffer = await requestNarrationFromElevenLabs(text);
+        console.log(`[narrate] Audio gerado com sucesso (${audioBuffer.length} bytes)`);
         response.writeHead(200, {
           "Content-Type": "audio/mpeg",
           "Content-Length": audioBuffer.length,
@@ -193,6 +197,8 @@ const server = http.createServer((request, response) => {
           normalizedMessage.includes("quota_exceeded") ||
           normalizedMessage.includes("credit") ||
           normalizedMessage.includes("subscription");
+
+        console.error("[narrate] Falha ao gerar audio:", normalizedMessage);
 
         sendJson(response, 500, {
           error: quotaError
