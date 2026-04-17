@@ -42,6 +42,8 @@ const translationCache = new Map();
 const audioNarrationCache = new Map();
 let currentCryAudio = null;
 let currentNarrationAudio = null;
+let currentNarrationUtterance = null;
+let browserVoiceList = [];
 
 const typeColors = {
   normal: "#9e9e7a",
@@ -272,6 +274,95 @@ function getNarrationCacheKey(pokemonName, englishText) {
   return `${String(pokemonName ?? "").toLowerCase()}::${sanitizeFlavorText(englishText)}`;
 }
 
+function isLocalNarrationMode() {
+  const { hostname, port, protocol } = window.location;
+  return (
+    hostname === "127.0.0.1" &&
+    port === "5500" &&
+    (protocol === "http:" || protocol === "https:")
+  );
+}
+
+function normalizeNarrationText(text) {
+  return sanitizeFlavorText(text)
+    .replace(/\s*;\s*/g, ". ")
+    .replace(/\s*:\s*/g, ". ")
+    .replace(/\s*,\s*/g, ", ")
+    .replace(/\s*\.\s*/g, ". ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getSpeechVoices() {
+  if (!("speechSynthesis" in window)) {
+    return [];
+  }
+
+  const voices = window.speechSynthesis.getVoices();
+
+  if (voices.length) {
+    browserVoiceList = voices;
+  }
+
+  return browserVoiceList;
+}
+
+function scorePortugueseMaleVoice(voice) {
+  const haystack = `${voice.name} ${voice.lang} ${voice.voiceURI}`.toLowerCase();
+  let score = 0;
+
+  if (voice.lang?.toLowerCase() === "pt-br") {
+    score += 12;
+  } else if (voice.lang?.toLowerCase().startsWith("pt")) {
+    score += 8;
+  }
+
+  if (haystack.includes("brazil") || haystack.includes("brasil")) {
+    score += 4;
+  }
+
+  if (
+    haystack.includes("antonio") ||
+    haystack.includes("daniel") ||
+    haystack.includes("ricardo") ||
+    haystack.includes("felipe") ||
+    haystack.includes("google português do brasil") ||
+    haystack.includes("google portuguese brazil")
+  ) {
+    score += 6;
+  }
+
+  if (
+    haystack.includes("male") ||
+    haystack.includes("mascul") ||
+    haystack.includes("homem")
+  ) {
+    score += 5;
+  }
+
+  if (haystack.includes("microsoft") || haystack.includes("google")) {
+    score += 3;
+  }
+
+  if (voice.default) {
+    score += 1;
+  }
+
+  return score;
+}
+
+function pickBestPortugueseMaleVoice() {
+  const voices = getSpeechVoices();
+
+  if (!voices.length) {
+    return null;
+  }
+
+  return [...voices]
+    .filter((voice) => voice.lang?.toLowerCase().startsWith("pt"))
+    .sort((first, second) => scorePortugueseMaleVoice(second) - scorePortugueseMaleVoice(first))[0] ?? null;
+}
+
 async function translateTextToPortuguese(text) {
   const cleanedText = sanitizeFlavorText(text);
 
@@ -324,7 +415,13 @@ function setNarrationButtonState(status, label = "") {
 }
 
 function stopCurrentNarration() {
+  if (currentNarrationUtterance && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    currentNarrationUtterance = null;
+  }
+
   if (!currentNarrationAudio) {
+    setNarrationButtonState("idle");
     return;
   }
 
@@ -332,6 +429,44 @@ function stopCurrentNarration() {
   currentNarrationAudio.currentTime = 0;
   currentNarrationAudio = null;
   setNarrationButtonState("idle");
+}
+
+function speakWithBrowserVoice(text, cacheKey) {
+  return new Promise((resolve, reject) => {
+    if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+      reject(new Error("Narracao por voz do navegador nao esta disponivel."));
+      return;
+    }
+
+    const chosenVoice = pickBestPortugueseMaleVoice();
+    const utterance = new SpeechSynthesisUtterance(normalizeNarrationText(text));
+    currentNarrationUtterance = utterance;
+    utterance.lang = chosenVoice?.lang || "pt-BR";
+    utterance.voice = chosenVoice;
+    utterance.rate = 0.93;
+    utterance.pitch = 0.92;
+    utterance.volume = 1;
+    utterance.dataset = { cacheKey };
+
+    utterance.addEventListener("start", () => {
+      setNarrationButtonState("playing", "Narrando");
+    });
+
+    utterance.addEventListener("end", () => {
+      currentNarrationUtterance = null;
+      setNarrationButtonState("idle");
+      resolve();
+    });
+
+    utterance.addEventListener("error", () => {
+      currentNarrationUtterance = null;
+      setNarrationButtonState("idle");
+      reject(new Error("A voz do navegador nao conseguiu narrar o texto."));
+    });
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  });
 }
 
 async function requestNarrationAudio(text) {
@@ -361,6 +496,11 @@ async function handleLoreNarration(pokemonName, englishFlavorText) {
     return;
   }
 
+  if (currentNarrationUtterance) {
+    stopCurrentNarration();
+    return;
+  }
+
   if (currentNarrationAudio && currentNarrationAudio.dataset.cacheKey === cacheKey) {
     if (currentNarrationAudio.paused) {
       currentNarrationAudio.play().catch(() => {});
@@ -376,6 +516,12 @@ async function handleLoreNarration(pokemonName, englishFlavorText) {
 
   try {
     const translatedText = await translateTextToPortuguese(englishFlavorText);
+
+    if (!isLocalNarrationMode()) {
+      await speakWithBrowserVoice(translatedText, cacheKey);
+      return;
+    }
+
     let audioUrl = audioNarrationCache.get(cacheKey);
 
     if (!audioUrl) {
@@ -409,17 +555,8 @@ async function handleLoreNarration(pokemonName, englishFlavorText) {
   } catch (error) {
     setNarrationButtonState("idle");
     const message = String(error.message || "");
-    const servedOutsideLocalServer =
-      window.location.port && window.location.port !== "5500";
 
-    if (servedOutsideLocalServer) {
-      window.alert(
-        "Nao foi possivel gerar a narracao agora. Abra a PokeDex por http://127.0.0.1:5500 usando npm start.",
-      );
-      return;
-    }
-
-    if (message.includes("creditos") || message.includes("plano ativo")) {
+    if (isLocalNarrationMode() && (message.includes("creditos") || message.includes("plano ativo"))) {
       window.alert(`${message} Verifique sua conta ElevenLabs.`);
       return;
     }
@@ -973,6 +1110,13 @@ async function populateTypeFilter() {
 }
 
 function bindEvents() {
+  if ("speechSynthesis" in window) {
+    getSpeechVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", () => {
+      getSpeechVoices();
+    });
+  }
+
   elements.topSearchInput.addEventListener("input", applyFilters);
   elements.typeSelect.addEventListener("change", applyFilters);
 
