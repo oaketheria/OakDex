@@ -57,7 +57,8 @@ const contentTypes = {
 };
 
 function resolvePath(urlPath) {
-  const sanitizedPath = urlPath === "/" ? "/index.html" : urlPath;
+  const pathname = String(urlPath || "").split("?")[0].split("#")[0] || "/";
+  const sanitizedPath = pathname === "/" ? "/index.html" : pathname;
   const normalized = path.normalize(sanitizedPath).replace(/^(\.\.[/\\])+/, "");
   return path.join(ROOT, normalized);
 }

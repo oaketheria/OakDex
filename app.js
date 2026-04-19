@@ -1426,6 +1426,13 @@ async function init() {
 
   try {
     await loadPokemon();
+
+    const params = new URLSearchParams(window.location.search);
+    const initialPokemon = params.get("pokemon");
+
+    if (initialPokemon) {
+      await selectPokemon(initialPokemon, { playCry: false });
+    }
   } catch (error) {
     const openedFromFile = window.location.protocol === "file:";
 

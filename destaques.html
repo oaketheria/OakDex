@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokemon em Destaque</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./highlights.css" />
+  </head>
+  <body class="highlights-page">
+    <div class="highlights-shell">
+      <main class="highlights-main">
+        <section class="highlights-commandbar">
+          <div class="highlights-copy">
+            <span class="highlights-kicker">Pokemon em destaque</span>
+            <h1>Catalogo visual</h1>
+            <p>Busca, filtro e acesso rapido para a Pokedex de cada Pokemon.</p>
+          </div>
+
+          <div class="highlights-controls">
+            <label class="highlights-search" for="highlights-search">
+              <span class="highlights-label">Busca</span>
+              <input id="highlights-search" type="search" placeholder="Nome ou numero" />
+            </label>
+
+            <label class="highlights-filter" for="highlights-type-filter">
+              <span class="highlights-label">Tipo</span>
+              <select id="highlights-type-filter">
+                <option value="">Todos os tipos</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="highlights-statusbar">
+          <div class="highlights-status-copy">
+            <p id="highlights-summary">Carregando destaques...</p>
+            <span class="highlights-status-note">Clique em um card para abrir na Pokedex</span>
+          </div>
+          <div class="highlights-pagination">
+            <button id="highlights-prev" type="button">Pagina anterior</button>
+            <span id="highlights-page-indicator">Pagina 1</span>
+            <button id="highlights-next" type="button">Proxima pagina</button>
+          </div>
+        </section>
+
+        <section id="highlights-grid" class="highlights-grid" aria-live="polite"></section>
+      </main>
+    </div>
+
+    <script src="./destaques.js" type="module"></script>
+  </body>
+</html>

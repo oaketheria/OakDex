@@ -1,0 +1,388 @@
+body.highlights-page {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(9, 19, 57, 0.18), rgba(11, 13, 34, 0.4)),
+    url("./assets/cosmic-hero-bg.png");
+  background-size: cover;
+  background-position: center;
+  color: var(--text);
+}
+
+.highlights-shell {
+  min-height: 100vh;
+}
+
+.highlights-main {
+  width: min(1320px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 26px 0 24px;
+}
+
+.highlights-commandbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.highlights-copy,
+.highlights-controls,
+.highlights-statusbar,
+.highlights-card,
+.highlights-empty {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 19, 38, 0.7);
+  box-shadow:
+    0 16px 36px rgba(4, 11, 28, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.highlights-copy,
+.highlights-controls,
+.highlights-statusbar {
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.highlights-kicker {
+  display: inline-flex;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: rgba(255, 211, 64, 0.14);
+  color: #ffe873;
+  border: 1px solid rgba(255, 211, 64, 0.26);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.highlights-copy h1 {
+  margin: 10px 0 6px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.highlights-copy p,
+.highlights-statusbar p,
+.highlights-page-indicator,
+.highlights-card strong {
+  margin: 0;
+}
+
+.highlights-copy p {
+  color: #d2deef;
+  line-height: 1.45;
+  max-width: 36ch;
+  font-size: 0.92rem;
+}
+
+.highlights-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.8fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.highlights-search,
+.highlights-filter {
+  display: grid;
+  gap: 6px;
+}
+
+.highlights-filter {
+  position: relative;
+}
+
+.highlights-label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9bb6d4;
+}
+
+.highlights-search input,
+.highlights-filter select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f8ff;
+  font: inherit;
+}
+
+.highlights-search input {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.highlights-search input:focus {
+  outline: none;
+  border-color: rgba(113, 207, 255, 0.5);
+  background: rgba(11, 27, 55, 0.72);
+  box-shadow:
+    0 0 0 3px rgba(76, 196, 255, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.highlights-filter::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  bottom: 15px;
+  width: 11px;
+  height: 11px;
+  border-right: 2px solid #8fdbff;
+  border-bottom: 2px solid #8fdbff;
+  transform: rotate(45deg);
+  pointer-events: none;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 8px rgba(76, 196, 255, 0.24));
+}
+
+.highlights-filter select {
+  appearance: none;
+  padding-right: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(104, 206, 255, 0.24);
+  background:
+    linear-gradient(180deg, rgba(20, 39, 71, 0.94), rgba(11, 24, 46, 0.96)),
+    radial-gradient(circle at right, rgba(90, 206, 255, 0.12), transparent 42%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 18px rgba(3, 9, 24, 0.18);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
+  cursor: pointer;
+}
+
+.highlights-filter select:hover {
+  border-color: rgba(126, 220, 255, 0.4);
+  background:
+    linear-gradient(180deg, rgba(24, 46, 82, 0.96), rgba(13, 28, 53, 0.98)),
+    radial-gradient(circle at right, rgba(90, 206, 255, 0.16), transparent 42%);
+}
+
+.highlights-filter select:focus {
+  outline: none;
+  border-color: rgba(126, 220, 255, 0.52);
+  box-shadow:
+    0 0 0 3px rgba(76, 196, 255, 0.14),
+    0 14px 22px rgba(3, 9, 24, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.highlights-filter select option {
+  background: #12233f;
+  color: #edf7ff;
+}
+
+.highlights-statusbar {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.highlights-status-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.highlights-status-note {
+  color: #8ea9c9;
+  font-size: 0.82rem;
+}
+
+.highlights-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.highlights-pagination button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, #2483ef 0%, #1458b8 100%);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.highlights-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.highlights-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.highlights-card {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  transform: translateY(0);
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  min-height: 238px;
+}
+
+.highlights-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(120, 216, 255, 0.34);
+  box-shadow:
+    0 24px 34px rgba(4, 11, 28, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.highlights-card-glow {
+  position: absolute;
+  inset: auto -20% -35% auto;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(120, 216, 255, 0.2), transparent 72%);
+}
+
+.highlights-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 72px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+  pointer-events: none;
+}
+
+.highlights-number {
+  font-family: "Rajdhani", sans-serif;
+  color: #9bb6d4;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+}
+
+.highlights-artwrap {
+  min-height: 108px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 56%),
+    rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.highlights-artwrap img {
+  width: 100%;
+  max-width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 16px rgba(8, 13, 36, 0.24));
+  animation: highlights-float 4.2s ease-in-out infinite;
+}
+
+.highlights-card strong {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.08rem;
+  line-height: 0.95;
+  text-transform: capitalize;
+}
+
+.highlights-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.highlights-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--type-color);
+  color: #fff;
+  font-size: 0.69rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.highlights-empty {
+  border-radius: 22px;
+  padding: 28px;
+  text-align: center;
+  color: #d2deef;
+}
+
+@keyframes highlights-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (max-width: 900px) {
+  .highlights-commandbar {
+    grid-template-columns: 1fr;
+  }
+
+  .highlights-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .highlights-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .highlights-statusbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .highlights-main {
+    width: min(100% - 20px, 1260px);
+  }
+
+  .highlights-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .highlights-copy,
+  .highlights-controls,
+  .highlights-statusbar {
+    padding: 14px;
+  }
+
+  .highlights-pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
