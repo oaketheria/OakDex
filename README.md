@@ -1,6 +1,13 @@
-# PokeDex
+# PokeDex + Emulator
 
-Site responsivo que consome a [PokeAPI](https://pokeapi.co/) para listar Pokemon, buscar por nome ou numero, filtrar por tipo e visualizar detalhes como habilidades, status, peso e altura.
+Projeto web com frontend estatico que combina:
+
+- PokeDex principal consumindo a [PokeAPI](https://pokeapi.co/)
+- pagina de destaques
+- pagina de emulador GBA com HUD proprio
+- Quick Dex lateral dentro da pagina do emulador
+
+O projeto permite buscar Pokemon por nome ou numero, filtrar por tipo, visualizar detalhes como habilidades, status, peso e altura e, na pagina do emulador, carregar ROMs locais de GBA no navegador.
 
 ## Como executar
 
@@ -12,6 +19,13 @@ npm start
 ```
 
 Depois, abra `http://127.0.0.1:5500`.
+
+Paginas principais:
+
+- `http://127.0.0.1:5500/`
+- `http://127.0.0.1:5500/pokedex.html`
+- `http://127.0.0.1:5500/destaques.html`
+- `http://127.0.0.1:5500/emulator.html`
 
 ### Narracao
 
@@ -54,3 +68,51 @@ Este projeto ja esta pronto para deploy no Render com frontend e backend juntos.
 - Paginacao do catalogo
 - Card de detalhes com status e habilidades
 - Destaque aleatorio no topo da pagina
+- Pagina de emulador com visual proprio
+- Upload local de ROM `.gba`
+- Quick Dex embutida no emulador
+- Biblioteca local de ROMs via `IndexedDB`
+- Restauracao automatica da ultima ROM usada no navegador
+
+## Pagina do emulador
+
+A tela `emulator.html` usa `EmulatorJS` no frontend para rodar ROMs de GBA localmente no navegador.
+
+Arquivos principais:
+
+- `emulator.html`
+- `emulator.js`
+- `emulator.css`
+
+Funcionalidades atuais:
+
+- carregar ROM `.gba` manualmente
+- tentar iniciar o emulador sem depender da biblioteca local
+- salvar ROMs no navegador via `IndexedDB`
+- listar ROMs salvas em uma biblioteca particular local
+- reabrir a ultima ROM usada ao voltar ao site
+- Quick Dex lateral com busca via PokeAPI
+- fullscreen proprio da UI do projeto
+
+Observacoes:
+
+- a biblioteca local fica disponivel apenas no navegador/dispositivo do usuario
+- nao ha backend para armazenar ROMs
+- se o navegador bloquear `IndexedDB`, o upload ainda deve tentar iniciar o emulador
+- o EmulatorJS depende de acesso a CDN para baixar o core
+
+## Estrutura principal
+
+- `index.html`: home
+- `pokedex.html`: PokeDex principal
+- `destaques.html`: pagina de destaques
+- `emulator.html`: pagina do emulador
+- `app.js`: logica da PokeDex principal
+- `destaques.js`: logica da pagina de destaques
+- `emulator.js`: logica do emulador, Quick Dex e biblioteca local
+- `styles.css`: estilos base compartilhados
+- `home.css`: estilos da home
+- `highlights.css`: estilos da pagina de destaques
+- `pokedex.css`: estilos da PokeDex
+- `emulator.css`: estilos da pagina do emulador
+- `server.js`: servidor local

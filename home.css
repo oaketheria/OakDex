@@ -140,6 +140,10 @@ body.home-page {
   background: linear-gradient(180deg, #ff5a2b 0%, #e82c17 100%);
 }
 
+.pokemon-cta-emerald {
+  background: linear-gradient(180deg, #3be7b4 0%, #119d88 100%);
+}
+
 .pokemon-cta-secondary {
   background: linear-gradient(180deg, #2483ef 0%, #1458b8 100%);
 }
