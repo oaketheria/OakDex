@@ -47,7 +47,7 @@ Servidor padrao:
 - `emulator.html`: tela principal do emulador com HUD e Quick Dex
 - `app.js`: busca, filtros, tabs, detalhes, audio e integracao com PokeAPI
 - `destaques.js`: busca, filtro, paginacao e cards da pagina de destaques
-- `emulator.js`: boot do EmulatorJS, HUD, fullscreen, Quick Dex e biblioteca local de ROMs
+- `emulator.js`: boot do EmulatorJS, HUD, fullscreen, Quick Dex, capas e biblioteca local de ROMs
 - `styles.css`: base compartilhado
 - `home.css`: estilos da home
 - `highlights.css`: estilos da pagina de destaques
@@ -161,11 +161,13 @@ Funcionalidades relevantes:
 - upload local de ROM `.gba`
 - boot do EmulatorJS via CDN
 - HUD visual inspirado em GBA
-- botoes externos para `Play`, `Save`, `Load` e `Fullscreen`
+- botao externo de fullscreen da UI
 - Quick Dex lateral dentro da pagina do emulador
 - busca de Pokemon via PokeAPI sem alterar `pokedex.html`
 - fullscreen proprio da pagina, separado do fullscreen interno do EmulatorJS
 - biblioteca local de ROMs via `IndexedDB`
+- historico local de ROMs recentes
+- capas locais para ROMs conhecidas e fallback automatico para outras ROMs
 - restauracao automatica da ultima ROM usada neste navegador
 
 Observacoes tecnicas importantes:
@@ -173,7 +175,10 @@ Observacoes tecnicas importantes:
 - a biblioteca de ROMs e privada por navegador/dispositivo, sem backend
 - o upload deve continuar funcionando mesmo se o `IndexedDB` falhar
 - o fullscreen correto para manter a Quick Dex e o da nossa UI, nao o interno do EmulatorJS
+- no mobile, o fullscreen tenta orientar em paisagem quando o navegador permitir
 - a Quick Dex do emulador vive em `emulator.js` e `emulator.css`, nao em `app.js`
+- capas locais conhecidas ficam em `assets/rom-covers/`
+- capas automaticas dependem de `RAWG_API_KEY` via backend em `server.js`
 
 ## Backend
 
@@ -250,10 +255,11 @@ Observacoes:
 
 - confirmar se a mudanca e estrutural (`emulator.html`) ou logica (`emulator.js`)
 - checar impacto em `emulator.css`
-- preservar boot do EmulatorJS, upload local e Quick Dex
+- preservar boot do EmulatorJS, upload local, Quick Dex, capas e biblioteca local
 - lembrar que a biblioteca de ROMs usa `IndexedDB`
 - nao mover a logica da Quick Dex do emulador para `app.js`
 - ao mexer em fullscreen, verificar o comportamento da Quick Dex e do botao `Pokedex`
+- ao mexer em capas, conferir `assets/rom-covers/` e o mapeamento local em `emulator.js`
 
 ### Se for mexer em assets
 
@@ -309,6 +315,7 @@ Abrir primeiro:
 - Mudancas em `app.js` podem afetar varias partes da PokeDex porque a logica esta concentrada em um unico arquivo
 - Mudancas em `destaques.js` podem quebrar busca, filtro, paginacao e links para a PokeDex
 - Mudancas em `emulator.js` podem afetar ao mesmo tempo boot da ROM, Quick Dex, fullscreen e biblioteca local
+- Mudancas em `emulator.js` tambem podem afetar capas locais, historico recente e restauracao da ROM ativa
 - O EmulatorJS depende de CDN; falhas de rede podem parecer bug local mesmo quando o frontend esta correto
 - O `IndexedDB` pode falhar ou estar bloqueado no navegador; o upload nao deve depender exclusivamente dele
 - O fullscreen interno do EmulatorJS nao deve ser tratado como fullscreen principal da experiencia

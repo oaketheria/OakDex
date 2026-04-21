@@ -7,7 +7,7 @@ Projeto web com frontend estatico que combina:
 - pagina de emulador GBA com HUD proprio
 - Quick Dex lateral dentro da pagina do emulador
 
-O projeto permite buscar Pokemon por nome ou numero, filtrar por tipo, visualizar detalhes como habilidades, status, peso e altura e, na pagina do emulador, carregar ROMs locais de GBA no navegador.
+O projeto permite buscar Pokemon por nome ou numero, filtrar por tipo, visualizar detalhes como habilidades, status, peso e altura e, na pagina do emulador, carregar ROMs locais de GBA no navegador com biblioteca local, cards de capas e Quick Dex embutida.
 
 ## Como executar
 
@@ -73,6 +73,9 @@ Este projeto ja esta pronto para deploy no Render com frontend e backend juntos.
 - Quick Dex embutida no emulador
 - Biblioteca local de ROMs via `IndexedDB`
 - Restauracao automatica da ultima ROM usada no navegador
+- Historico local de ROMs recentes
+- Capas locais para ROMs conhecidas com fallback para busca automatica
+- Ajustes de layout para mobile/tablet
 
 ## Pagina do emulador
 
@@ -90,9 +93,13 @@ Funcionalidades atuais:
 - tentar iniciar o emulador sem depender da biblioteca local
 - salvar ROMs no navegador via `IndexedDB`
 - listar ROMs salvas em uma biblioteca particular local
+- mostrar ROMs recentes no mesmo navegador
 - reabrir a ultima ROM usada ao voltar ao site
+- usar capas locais para ROMs conhecidas como Emerald, Fire Red, Leaf Green, Ruby e Sapphire
+- tentar buscar capa automatica para outras ROMs via backend
 - Quick Dex lateral com busca via PokeAPI
 - fullscreen proprio da UI do projeto
+- fullscreen com tentativa de orientacao horizontal no mobile
 
 Observacoes:
 
@@ -100,6 +107,8 @@ Observacoes:
 - nao ha backend para armazenar ROMs
 - se o navegador bloquear `IndexedDB`, o upload ainda deve tentar iniciar o emulador
 - o EmulatorJS depende de acesso a CDN para baixar o core
+- a busca automatica de capas depende de `RAWG_API_KEY` no ambiente para ROMs sem capa local
+- as capas locais atuais ficam em `assets/rom-covers/`
 
 ## Estrutura principal
 
@@ -116,3 +125,4 @@ Observacoes:
 - `pokedex.css`: estilos da PokeDex
 - `emulator.css`: estilos da pagina do emulador
 - `server.js`: servidor local
+- `assets/rom-covers/`: capas locais das ROMs conhecidas
