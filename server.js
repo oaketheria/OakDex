@@ -43,6 +43,7 @@ loadDotEnv();
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || "";
 const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "EbuvaInXUGWtpYRUnKLQ";
 const ELEVENLABS_MODEL_ID = process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2";
+const RAWG_API_KEY = process.env.RAWG_API_KEY || "";
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -52,6 +53,8 @@ const contentTypes = {
   ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".jfif": "image/jpeg",
+  ".webp": "image/webp",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
 };
@@ -66,6 +69,130 @@ function resolvePath(urlPath) {
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
   response.end(JSON.stringify(payload));
+}
+
+function requestJson(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, (upstreamResponse) => {
+        const chunks = [];
+
+        upstreamResponse.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+
+        upstreamResponse.on("end", () => {
+          const buffer = Buffer.concat(chunks);
+
+          if (upstreamResponse.statusCode && upstreamResponse.statusCode >= 200 && upstreamResponse.statusCode < 300) {
+            try {
+              resolve(JSON.parse(buffer.toString("utf8")));
+            } catch (error) {
+              reject(new Error("Resposta JSON invalida."));
+            }
+            return;
+          }
+
+          reject(new Error(buffer.toString("utf8") || "Falha na requisicao upstream."));
+        });
+      })
+      .on("error", reject);
+  });
+}
+
+function normalizeCoverSearchValue(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\.(gba|zip|7z)$/gi, " ")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/\bwww\.[^\s]+/g, " ")
+    .replace(/\bromsportugues(?:\.com)?\b/g, " ")
+    .replace(/[_-]+/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\b(v|ver|version|rev|beta|usa|eur|europe|european|japan|jpn|proto|hack|patched|ptbr|pt-br|br|portugues|portuguese|translated|translation)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getCoverSearchTokens(value) {
+  return normalizeCoverSearchValue(value)
+    .split(" ")
+    .filter((token) => token.length >= 2);
+}
+
+function scoreRomCoverMatch(searchTerm, entry) {
+  const query = normalizeCoverSearchValue(searchTerm);
+  const name = normalizeCoverSearchValue(entry?.name || "");
+  const slug = normalizeCoverSearchValue(entry?.slug || "");
+  const queryTokens = getCoverSearchTokens(query);
+  const candidateTokens = new Set([...getCoverSearchTokens(name), ...getCoverSearchTokens(slug)]);
+
+  if (!query || !candidateTokens.size) {
+    return -1;
+  }
+
+  let score = 0;
+  let matchedTokens = 0;
+
+  queryTokens.forEach((token) => {
+    if (candidateTokens.has(token)) {
+      matchedTokens += 1;
+      score += token.length >= 5 ? 3 : 2;
+    } else if (name.includes(token) || slug.includes(token)) {
+      matchedTokens += 1;
+      score += 1;
+    }
+  });
+
+  if (name === query || slug === query) {
+    score += 20;
+  } else {
+    if (name.includes(query) || slug.includes(query)) {
+      score += 8;
+    }
+
+    if (query.includes(name) || query.includes(slug)) {
+      score += 5;
+    }
+  }
+
+  const coverage = queryTokens.length ? matchedTokens / queryTokens.length : 0;
+
+  if (coverage < 0.6) {
+    return -1;
+  }
+
+  return score + Math.round(coverage * 10);
+}
+
+function pickBestRomCoverMatch(searchTerm, results) {
+  const rankedResults = results
+    .filter((entry) => entry && entry.background_image)
+    .map((entry) => ({
+      entry,
+      score: scoreRomCoverMatch(searchTerm, entry),
+    }))
+    .filter((entry) => entry.score >= 0)
+    .sort((first, second) => second.score - first.score);
+
+  if (!rankedResults.length) {
+    return null;
+  }
+
+  const [bestMatch, secondMatch] = rankedResults;
+
+  if (bestMatch.score < 12) {
+    return null;
+  }
+
+  if (secondMatch && bestMatch.score - secondMatch.score <= 1) {
+    return null;
+  }
+
+  return bestMatch.entry;
 }
 
 function readJsonBody(request) {
@@ -162,6 +289,47 @@ function requestNarrationFromElevenLabs(text) {
 }
 
 const server = http.createServer((request, response) => {
+  if (request.method === "GET" && String(request.url || "").startsWith("/api/rom-cover")) {
+    const requestUrl = new URL(request.url, `http://${request.headers.host || "127.0.0.1"}`);
+    const searchTerm = String(requestUrl.searchParams.get("q") || "").trim();
+
+    if (!RAWG_API_KEY) {
+      sendJson(response, 200, { coverUrl: "", source: "fallback", reason: "rawg_key_missing" });
+      return;
+    }
+
+    if (!searchTerm) {
+      sendJson(response, 400, { error: "Consulta vazia para busca de capa." });
+      return;
+    }
+
+    const rawgUrl =
+      `https://api.rawg.io/api/games?key=${encodeURIComponent(RAWG_API_KEY)}` +
+      `&search=${encodeURIComponent(searchTerm)}` +
+      "&search_precise=true&page_size=5";
+
+    requestJson(rawgUrl)
+      .then((payload) => {
+        const results = Array.isArray(payload.results) ? payload.results : [];
+        const match = pickBestRomCoverMatch(searchTerm, results);
+
+        sendJson(response, 200, {
+          coverUrl: match?.background_image || "",
+          matchedName: match?.name || "",
+          source: match ? "rawg" : "fallback",
+        });
+      })
+      .catch((error) => {
+        sendJson(response, 200, {
+          coverUrl: "",
+          source: "fallback",
+          reason: "rawg_error",
+          details: String(error.message || ""),
+        });
+      });
+    return;
+  }
+
   if (request.method === "POST" && request.url === "/api/narrate") {
     console.log("[narrate] Requisicao recebida");
     readJsonBody(request)

@@ -1,21 +1,30 @@
 const romInput = document.querySelector("#rom-input");
-const romStatus = document.querySelector("#rom-status");
-const romFileName = document.querySelector("#rom-file-name");
+const romStatus =
+  document.querySelector("#rom-status") || document.querySelector("#session-inline-status");
+const romFileName =
+  document.querySelector("#rom-file-name") || document.querySelector("#session-inline-rom");
+const sessionTitle = document.querySelector("#session-title");
+const sessionInlineStatus = document.querySelector("#session-inline-status");
+const sessionInlineRom = document.querySelector("#session-inline-rom");
+const launcherSessionStatus = document.querySelector("#launcher-session-status");
+const launcherRomName = document.querySelector("#launcher-rom-name");
 const romLibraryList = document.querySelector("#rom-library-list");
 const romLibraryCount = document.querySelector("#rom-library-count");
+const romLibrarySearch = document.querySelector("#rom-library-search");
+const romLibrarySort = document.querySelector("#rom-library-sort");
+const romLibraryResults = document.querySelector("#rom-library-results");
+const romLibraryFooter = document.querySelector("#rom-library-footer");
+const romLibraryMore = document.querySelector("#rom-library-more");
+const recentRomList = document.querySelector("#recent-rom-list");
 const clearLastRomButton = document.querySelector("#clear-last-rom");
 const demoToggle = document.querySelector("#demo-toggle");
 const hudMode = document.querySelector("#hud-mode");
 const screenBadge = document.querySelector(".screen-badge");
-const playerTitle = document.querySelector(".player-header h2");
-const emulatorHost = document.querySelector("#emulatorjs-player");
+const screenBadgeInline = document.querySelector("#screen-badge-inline");
 const emulatorRuntime = document.querySelector("#emulator-runtime");
 const emulatorLoading = document.querySelector("#emulator-loading");
 const emulatorError = document.querySelector("#emulator-error");
 const emulatorErrorMessage = document.querySelector("#emulator-error-message");
-const dockPlay = document.querySelector("#dock-play");
-const dockSave = document.querySelector("#dock-save");
-const dockLoad = document.querySelector("#dock-load");
 const dockFullscreen = document.querySelector("#dock-fullscreen");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
@@ -25,6 +34,8 @@ const pokedexSummary = document.querySelector("#emulator-pokedex-summary");
 const pokedexList = document.querySelector("#emulator-pokedex-list");
 const pokedexDetail = document.querySelector("#emulator-pokedex-detail");
 const pokedexTabs = [...document.querySelectorAll(".pokedex-tab")];
+const launcherTabs = [...document.querySelectorAll(".launcher-tab")];
+const launcherPanels = [...document.querySelectorAll(".launcher-panel")];
 
 let activeRomUrl = "";
 let activeLoaderScript = null;
@@ -36,11 +47,21 @@ let fullDexList = [];
 let quickDexHistory = [];
 let activeDexTab = "dados";
 let currentQuickDexPokemon = null;
+let activeLauncherTab = "recentes";
 let romLibrary = [];
+let activeRomId = "";
+let activeBootToken = 0;
+let romLibraryQuery = "";
+let romLibrarySortMode = "recent";
+let romLibraryExpanded = false;
 
 const ROM_DB_NAME = "pokemon-emerald-gx";
 const ROM_STORE_NAME = "rom-library";
 const LAST_ROM_STORAGE_KEY = "emulatorLastRomId";
+const RECENT_ROMS_STORAGE_KEY = "emulatorRecentRoms";
+const PENDING_ROM_BOOT_KEY = "emulatorPendingRomBoot";
+const RECENT_ROMS_LIMIT = 3;
+const ROM_LIBRARY_PAGE_SIZE = 6;
 
 const dexTypeGlow = {
   normal: "190 188 138",
@@ -65,6 +86,73 @@ const dexTypeGlow = {
 
 const POKEAPI_BASE = "https://pokeapi.co/api/v2";
 const quickDexCache = new Map();
+const LOCAL_ROM_COVER_MAP = {
+  emerald: "assets/rom-covers/emerald.png.jfif",
+  "fire red": "assets/rom-covers/fire-red.png.jfif",
+  "leaf green": "assets/rom-covers/leaf-green.png.jfif",
+  ruby: "assets/rom-covers/ruby.png.jfif",
+  sapphire: "assets/rom-covers/sapphire.png.jfif",
+};
+const LOCAL_ROM_COVER_ALIASES = {
+  emerald: ["emerald", "pokemon emerald"],
+  "fire red": ["fire red", "firered", "pokemon fire red", "pokemon firered"],
+  "leaf green": ["leaf green", "leafgreen", "pokemon leaf green", "pokemon leafgreen"],
+  ruby: ["ruby", "pokemon ruby"],
+  sapphire: ["sapphire", "pokemon sapphire"],
+};
+
+function setSessionBadgeText(value) {
+  if (screenBadge) {
+    screenBadge.textContent = value;
+  }
+
+  if (screenBadgeInline) {
+    screenBadgeInline.textContent = value;
+  }
+}
+
+function getEmulatorHost() {
+  return document.querySelector("#emulatorjs-player");
+}
+
+function syncSessionSummary() {
+  const statusText = romStatus?.textContent || "Sem ROM carregada";
+  const romText = romFileName?.textContent || "Nenhum arquivo selecionado";
+
+  if (launcherSessionStatus) {
+    launcherSessionStatus.textContent = statusText;
+  }
+
+  if (launcherRomName) {
+    launcherRomName.textContent = romText;
+  }
+
+  if (sessionInlineStatus) {
+    sessionInlineStatus.textContent = statusText;
+  }
+
+  if (sessionInlineRom) {
+    sessionInlineRom.textContent = romText;
+  }
+}
+
+function setSessionTitleText(value) {
+  if (sessionTitle) {
+    sessionTitle.textContent = value;
+  }
+}
+
+function syncLauncherTabs() {
+  launcherTabs.forEach((button) => {
+    const isActive = button.dataset.launcherTab === activeLauncherTab;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  launcherPanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.launcherPanel === activeLauncherTab);
+  });
+}
 
 function openRomLibraryDb() {
   return new Promise((resolve, reject) => {
@@ -153,6 +241,347 @@ function getLastRomSelection() {
   }
 }
 
+function scheduleColdRomBoot(romId) {
+  try {
+    window.sessionStorage.setItem(PENDING_ROM_BOOT_KEY, romId);
+  } catch (error) {
+    // Ignore storage failures.
+  }
+
+  window.location.reload();
+}
+
+function getPendingColdRomBoot() {
+  try {
+    return window.sessionStorage.getItem(PENDING_ROM_BOOT_KEY) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
+function clearPendingColdRomBoot() {
+  try {
+    window.sessionStorage.removeItem(PENDING_ROM_BOOT_KEY);
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function shouldColdBootRom(nextRomId) {
+  return Boolean(activeRomId && nextRomId && activeRomId !== nextRomId);
+}
+
+function loadRecentRoms() {
+  try {
+    const saved = window.localStorage.getItem(RECENT_ROMS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveRecentRoms(entries) {
+  try {
+    window.localStorage.setItem(RECENT_ROMS_STORAGE_KEY, JSON.stringify(entries.slice(0, 8)));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function pushRecentRom(entry) {
+  const nextEntries = [entry, ...loadRecentRoms().filter((item) => item.id !== entry.id)].slice(0, 6);
+  saveRecentRoms(nextEntries);
+}
+
+function getSortedRomLibrary(entries) {
+  const nextEntries = [...entries];
+
+  if (romLibrarySortMode === "az") {
+    nextEntries.sort((first, second) => formatRomTitle(first.name).localeCompare(formatRomTitle(second.name), "pt-BR"));
+    return nextEntries;
+  }
+
+  if (romLibrarySortMode === "size") {
+    nextEntries.sort((first, second) => (second.size || 0) - (first.size || 0));
+    return nextEntries;
+  }
+
+  nextEntries.sort((first, second) => (second.updatedAt || 0) - (first.updatedAt || 0));
+  return nextEntries;
+}
+
+function getVisibleRomLibraryEntries() {
+  const normalizedQuery = normalizeQuickDexSearch(romLibraryQuery);
+  const filteredEntries = getSortedRomLibrary(romLibrary).filter((entry) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    return normalizeQuickDexSearch(formatRomTitle(entry.name)).includes(normalizedQuery);
+  });
+
+  const visibleEntries = romLibraryExpanded ? filteredEntries : filteredEntries.slice(0, ROM_LIBRARY_PAGE_SIZE);
+
+  return {
+    filteredEntries,
+    visibleEntries,
+  };
+}
+
+function hydrateRecentRomEntries(entries) {
+  return entries.map((entry) => {
+    const libraryMatch = romLibrary.find((item) => item.id === entry.id);
+
+    if (!libraryMatch) {
+      return entry;
+    }
+
+    return {
+      ...entry,
+      name: libraryMatch.name,
+      coverUrl: libraryMatch.coverUrl || entry.coverUrl || "",
+    };
+  });
+}
+
+function getRomCoverMeta(fileName) {
+  const normalized = String(fileName || "").toLowerCase();
+
+  if (normalized.includes("emerald")) {
+    return {
+      accent: "emerald",
+      label: "Hoenn",
+      edition: "Emerald",
+      mascot: "Rayquaza",
+      gradient: "linear-gradient(135deg, #1fbf79 0%, #0c6f69 100%)",
+    };
+  }
+
+  if (normalized.includes("fire") || normalized.includes("red")) {
+    return {
+      accent: "firered",
+      label: "Kanto",
+      edition: "Fire Red",
+      mascot: "Charizard",
+      gradient: "linear-gradient(135deg, #ff7a30 0%, #b33221 100%)",
+    };
+  }
+
+  if (normalized.includes("leaf") || normalized.includes("green")) {
+    return {
+      accent: "leafgreen",
+      label: "Kanto",
+      edition: "Leaf Green",
+      mascot: "Venusaur",
+      gradient: "linear-gradient(135deg, #5ddb63 0%, #1f8f5b 100%)",
+    };
+  }
+
+  if (normalized.includes("ruby")) {
+    return {
+      accent: "ruby",
+      label: "Hoenn",
+      edition: "Ruby",
+      mascot: "Groudon",
+      gradient: "linear-gradient(135deg, #ef476f 0%, #9d174d 100%)",
+    };
+  }
+
+  if (normalized.includes("sapphire")) {
+    return {
+      accent: "sapphire",
+      label: "Hoenn",
+      edition: "Sapphire",
+      mascot: "Kyogre",
+      gradient: "linear-gradient(135deg, #58a6ff 0%, #2249a2 100%)",
+    };
+  }
+
+  return {
+    accent: "generic",
+    label: "GBA",
+    edition: "ROM local",
+    mascot: "Adventure",
+    gradient: "linear-gradient(135deg, #4dc3ff 0%, #2a4ea8 100%)",
+  };
+}
+
+function isKnownPokemonRom(fileName) {
+  const normalized = String(fileName || "").toLowerCase();
+
+  return ["emerald", "fire", "red", "leaf", "green", "ruby", "sapphire"].some((term) =>
+    normalized.includes(term),
+  );
+}
+
+function normalizeRomSearchQuery(fileName) {
+  return String(fileName || "")
+    .replace(/\.gba$/i, "")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/[_-]+/g, " ")
+    .replace(/\bwww\.[^\s]+/gi, " ")
+    .replace(/\bromsportugues(?:\.com)?\b/gi, " ")
+    .replace(/\b(portugues|portuguese|traduzido|translated|translation|br|ptbr|pt-br|rom|gba)\b/gi, " ")
+    .replace(/pokemon/gi, "Pokemon ")
+    .replace(/fire\s*red/gi, "Fire Red")
+    .replace(/leaf\s*green/gi, "Leaf Green")
+    .replace(/\b(version|edition)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeRomCoverIdentity(fileName) {
+  return normalizeRomSearchQuery(fileName)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getLocalRomCover(fileName) {
+  const normalized = normalizeRomCoverIdentity(fileName);
+
+  if (!normalized) {
+    return "";
+  }
+
+  if (LOCAL_ROM_COVER_MAP[normalized]) {
+    return LOCAL_ROM_COVER_MAP[normalized];
+  }
+
+  for (const [key, aliases] of Object.entries(LOCAL_ROM_COVER_ALIASES)) {
+    if (aliases.some((alias) => normalized === alias || normalized.includes(alias))) {
+      return LOCAL_ROM_COVER_MAP[key] || "";
+    }
+  }
+
+  for (const [key, value] of Object.entries(LOCAL_ROM_COVER_MAP)) {
+    if (normalized.includes(key)) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function getResolvedRomCoverUrl(entry) {
+  const fileName = typeof entry === "string" ? entry : entry?.name || "";
+  const currentCoverUrl = typeof entry === "string" ? "" : String(entry?.coverUrl || "");
+  const localCover = getLocalRomCover(fileName);
+
+  if (localCover) {
+    const localBaseName = localCover.replace(/\.[^.]+$/, "");
+    const hasMatchingLocalAsset = currentCoverUrl.startsWith(localBaseName);
+
+    if (hasMatchingLocalAsset) {
+      return currentCoverUrl;
+    }
+
+    return localCover;
+  }
+
+  return currentCoverUrl;
+}
+
+async function findAvailableLocalRomCover(fileName) {
+  return getLocalRomCover(fileName);
+}
+
+async function fetchAutomaticRomCover(fileName) {
+  const localCover = await findAvailableLocalRomCover(fileName);
+
+  if (localCover) {
+    return localCover;
+  }
+
+  try {
+    const query = normalizeRomSearchQuery(fileName);
+
+    if (!query) {
+      return "";
+    }
+
+    const response = await fetch(`/api/rom-cover?q=${encodeURIComponent(query)}`);
+
+    if (!response.ok) {
+      return "";
+    }
+
+    const payload = await response.json();
+    return String(payload.coverUrl || "");
+  } catch (error) {
+    return "";
+  }
+}
+
+function getRomCoverMarkup(entry) {
+  const coverMeta = getRomCoverMeta(entry.name);
+  const resolvedCoverUrl = getResolvedRomCoverUrl(entry);
+  const coverStyle = resolvedCoverUrl ? "" : `background:${coverMeta.gradient}`;
+  const mediaMarkup = resolvedCoverUrl
+    ? `
+      <div class="rom-cover-art">
+        <img class="rom-cover-image" src="${resolvedCoverUrl}" alt="Capa da ROM ${formatRomTitle(entry.name)}" loading="lazy" />
+      </div>
+    `
+    : "";
+  const contentMarkup = resolvedCoverUrl
+    ? ""
+    : `
+      <div class="rom-cover-content">
+        <span class="rom-cover-region">${coverMeta.label}</span>
+        <div class="rom-cover-copy">
+          <strong>${coverMeta.edition}</strong>
+          <span>${coverMeta.mascot}</span>
+        </div>
+        <span class="rom-cover-system">Game Boy Advance</span>
+      </div>
+    `;
+
+  return `
+    <div class="rom-cover rom-cover-${coverMeta.accent}${resolvedCoverUrl ? " has-image" : ""}" style="${coverStyle}">
+      ${contentMarkup}
+      ${mediaMarkup}
+    </div>
+  `;
+}
+
+function renderRecentRoms() {
+  if (!recentRomList) {
+    return;
+  }
+
+  const recentEntries = hydrateRecentRomEntries(loadRecentRoms()).slice(0, RECENT_ROMS_LIMIT);
+
+  if (!recentEntries.length) {
+    recentRomList.innerHTML = '<p class="rom-library-empty">Seu historico de jogos vai aparecer aqui.</p>';
+    return;
+  }
+
+  recentRomList.innerHTML = recentEntries
+    .map(
+      (entry) => `
+        <button
+          type="button"
+          class="recent-rom-card${entry.id === activeRomId ? " is-active" : ""}"
+          data-rom-launch="${entry.id}"
+        >
+          ${getRomCoverMarkup(entry)}
+          <span class="recent-rom-copy">
+            <strong>${formatRomTitle(entry.name)}</strong>
+            <span>${entry.lastPlayedLabel || "Ultima sessao"}</span>
+          </span>
+          <span class="rom-card-badge-row">
+            ${entry.id === activeRomId ? '<span class="rom-card-badge rom-card-badge-live">Em execucao</span>' : ""}
+            <span class="rom-card-badge">Retomar</span>
+          </span>
+        </button>
+      `,
+    )
+    .join("");
+}
+
 function renderRomLibrary() {
   if (!romLibraryList || !romLibraryCount) {
     return;
@@ -165,16 +594,52 @@ function renderRomLibrary() {
   if (!romLibrary.length) {
     romLibraryList.innerHTML =
       '<p class="rom-library-empty">Envie uma ROM para criar sua biblioteca particular neste navegador.</p>';
+    if (romLibraryResults) {
+      romLibraryResults.textContent = "0 exibidos";
+    }
+    if (romLibraryFooter) {
+      romLibraryFooter.hidden = true;
+    }
+    renderRecentRoms();
     return;
   }
 
-  romLibraryList.innerHTML = romLibrary
+  const { filteredEntries, visibleEntries } = getVisibleRomLibraryEntries();
+
+  if (romLibraryResults) {
+    const visibleLabel = `${visibleEntries.length} exibidos`;
+    const totalLabel = filteredEntries.length === romLibrary.length ? "" : ` de ${filteredEntries.length}`;
+    romLibraryResults.textContent = `${visibleLabel}${totalLabel}`;
+  }
+
+  if (!filteredEntries.length) {
+    romLibraryList.innerHTML =
+      '<p class="rom-library-empty">Nenhuma ROM encontrada nessa busca. Tente outro nome ou limpe o filtro.</p>';
+    if (romLibraryFooter) {
+      romLibraryFooter.hidden = true;
+    }
+    renderRecentRoms();
+    return;
+  }
+
+  if (romLibraryFooter && romLibraryMore) {
+    const isPaginated = filteredEntries.length > ROM_LIBRARY_PAGE_SIZE;
+    romLibraryFooter.hidden = !isPaginated;
+    romLibraryMore.textContent = romLibraryExpanded ? "Ver menos" : `Ver mais ${filteredEntries.length - visibleEntries.length}`;
+  }
+
+  romLibraryList.innerHTML = visibleEntries
     .map(
       (entry) => `
-        <article class="rom-library-card${entry.id === lastRomId ? " is-last-used" : ""}">
+        <article class="rom-library-card${entry.id === lastRomId ? " is-last-used" : ""}${entry.id === activeRomId ? " is-active" : ""}">
+          ${getRomCoverMarkup(entry)}
           <div class="rom-library-card-copy">
             <strong>${formatRomTitle(entry.name)}</strong>
             <span>${formatBytes(entry.size)}</span>
+          </div>
+          <div class="rom-card-badge-row">
+            ${entry.id === activeRomId ? '<span class="rom-card-badge rom-card-badge-live">Em execucao</span>' : ""}
+            ${entry.id === lastRomId ? '<span class="rom-card-badge">Ultima jogada</span>' : ""}
           </div>
           <div class="rom-library-card-actions">
             <button type="button" class="library-card-button" data-rom-launch="${entry.id}">Jogar</button>
@@ -184,6 +649,8 @@ function renderRomLibrary() {
       `,
     )
     .join("");
+
+  renderRecentRoms();
 }
 
 function updateLibraryUnavailableState() {
@@ -195,6 +662,18 @@ function updateLibraryUnavailableState() {
 
   if (romLibraryCount) {
     romLibraryCount.textContent = "Biblioteca indisponivel";
+  }
+
+  if (romLibraryResults) {
+    romLibraryResults.textContent = "Indisponivel";
+  }
+
+  if (romLibraryFooter) {
+    romLibraryFooter.hidden = true;
+  }
+
+  if (recentRomList) {
+    recentRomList.innerHTML = '<p class="rom-library-empty">Historico indisponivel neste navegador.</p>';
   }
 }
 
@@ -214,6 +693,125 @@ async function loadRomLibrary() {
       });
     });
 
+    const mismatchedKnownPokemonCovers = romLibrary.filter(
+      (entry) => entry.coverUrl && isKnownPokemonRom(entry.name),
+    );
+
+    if (mismatchedKnownPokemonCovers.length) {
+      for (const entry of mismatchedKnownPokemonCovers) {
+        entry.coverUrl = "";
+
+        await withRomStore("readwrite", (store, resolve, reject, database) => {
+          const request = store.put(entry);
+
+          request.addEventListener("success", () => {
+            database.close();
+            resolve();
+          });
+
+          request.addEventListener("error", () => {
+            database.close();
+            reject(request.error || new Error("Falha ao corrigir capa da ROM."));
+          });
+        });
+      }
+    }
+
+    for (const entry of romLibrary) {
+      const localCover = await findAvailableLocalRomCover(entry.name);
+
+      if (!localCover || entry.coverUrl === localCover) {
+        continue;
+      }
+
+      entry.coverUrl = localCover;
+
+      await withRomStore("readwrite", (store, resolve, reject, database) => {
+        const request = store.put(entry);
+
+        request.addEventListener("success", () => {
+          database.close();
+          resolve();
+        });
+
+        request.addEventListener("error", () => {
+          database.close();
+          reject(request.error || new Error("Falha ao aplicar capa local da ROM."));
+        });
+      });
+    }
+
+    const coverUsage = new Map();
+
+    romLibrary.forEach((entry) => {
+      if (!entry.coverUrl) {
+        return;
+      }
+
+      const entries = coverUsage.get(entry.coverUrl) || [];
+      entries.push(entry);
+      coverUsage.set(entry.coverUrl, entries);
+    });
+
+    const duplicatedCoverEntries = [...coverUsage.values()]
+      .filter((entries) => {
+        if (entries.length < 2) {
+          return false;
+        }
+
+        const identities = new Set(entries.map((entry) => normalizeRomCoverIdentity(entry.name)));
+        return identities.size > 1;
+      })
+      .flat();
+
+    if (duplicatedCoverEntries.length) {
+      for (const entry of duplicatedCoverEntries) {
+        entry.coverUrl = "";
+
+        await withRomStore("readwrite", (store, resolve, reject, database) => {
+          const request = store.put(entry);
+
+          request.addEventListener("success", () => {
+            database.close();
+            resolve();
+          });
+
+          request.addEventListener("error", () => {
+            database.close();
+            reject(request.error || new Error("Falha ao limpar capas duplicadas."));
+          });
+        });
+      }
+    }
+
+    const entriesNeedingCover = romLibrary.filter((entry) => !entry.coverUrl);
+
+    if (entriesNeedingCover.length) {
+      for (const entry of entriesNeedingCover) {
+        const coverUrl = await fetchAutomaticRomCover(entry.name);
+
+        if (!coverUrl) {
+          continue;
+        }
+
+        entry.coverUrl = coverUrl;
+
+        await withRomStore("readwrite", (store, resolve, reject, database) => {
+          const request = store.put(entry);
+
+          request.addEventListener("success", () => {
+            database.close();
+            resolve();
+          });
+
+          request.addEventListener("error", () => {
+            database.close();
+            reject(request.error || new Error("Falha ao atualizar capa da ROM."));
+          });
+        });
+      }
+    }
+
     romLibrary.sort((first, second) => (second.updatedAt || 0) - (first.updatedAt || 0));
     renderRomLibrary();
   } catch (error) {
@@ -222,11 +820,13 @@ async function loadRomLibrary() {
 }
 
 async function saveRomToLibrary(file) {
+  const coverUrl = await fetchAutomaticRomCover(file.name);
   const record = {
     id: createRomId(file),
     name: file.name,
     size: file.size,
     updatedAt: Date.now(),
+    coverUrl,
     file,
   };
 
@@ -293,12 +893,24 @@ async function launchLibraryRom(romId) {
     throw new Error("Nao encontrei essa ROM na biblioteca local.");
   }
 
+  const shouldColdBoot = shouldColdBootRom(entry.id);
+
+  activeRomId = entry.id;
   saveLastRomSelection(entry.id);
+  pushRecentRom({
+    id: entry.id,
+    name: entry.name,
+    lastPlayedLabel: "Ultima jogada",
+  });
   romFileName.textContent = `${entry.name} - Biblioteca local`;
-  if (playerTitle) {
-    playerTitle.textContent = formatRomTitle(entry.name);
+  setSessionTitleText(formatRomTitle(entry.name));
+
+  if (shouldColdBoot) {
+    scheduleColdRomBoot(entry.id);
+    return;
   }
-  bootEmulator(entry.file);
+
+  await bootEmulator(entry.file);
   renderRomLibrary();
 }
 
@@ -1109,15 +1721,7 @@ function setDockEnabled(button, enabled) {
 }
 
 function syncDockState() {
-  setDockEnabled(dockPlay, emulationReady);
-  setDockEnabled(dockSave, emulationReady);
-  setDockEnabled(dockLoad, emulationReady);
   setDockEnabled(dockFullscreen, true);
-
-  if (dockPlay) {
-    dockPlay.textContent = emulationPaused ? "Resume" : "Pause";
-    dockPlay.classList.toggle("is-active", emulationReady && !emulationPaused);
-  }
 }
 
 function setEmulationReady(ready) {
@@ -1135,7 +1739,7 @@ function updateHudForPauseState() {
     return;
   }
 
-  hudMode.textContent = emulationPaused ? "ROM paused" : "ROM running";
+  hudMode.textContent = emulationPaused ? "ROM pausada" : "ROM em execucao";
 }
 
 function queryEmulatorAction(actionNames) {
@@ -1186,25 +1790,40 @@ function showRuntimeError(message) {
   emulatorError.hidden = false;
   emulatorErrorMessage.textContent = message;
   romStatus.textContent = "Falha ao iniciar";
-  hudMode.textContent = "Boot error";
+  hudMode.textContent = "Falha no boot";
   setEmulationReady(false);
+  syncSessionSummary();
 }
 
 function clearActiveRomUrl() {
   if (activeRomUrl) {
-    URL.revokeObjectURL(activeRomUrl);
+    if (activeRomUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(activeRomUrl);
+    }
     activeRomUrl = "";
   }
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener("load", () => resolve(String(reader.result || "")));
+    reader.addEventListener("error", () => reject(reader.error || new Error("Falha ao ler a ROM.")));
+    reader.readAsDataURL(file);
+  });
+}
+
 function clearExistingRuntime() {
+  activeBootToken += 1;
+
   if (activeLoaderScript) {
     activeLoaderScript.remove();
     activeLoaderScript = null;
   }
 
-  if (emulatorHost) {
-    emulatorHost.innerHTML = "";
+  if (emulatorRuntime) {
+    emulatorRuntime.innerHTML = '<div id="emulatorjs-player" class="emulator-runtime-player"></div>';
   }
 
   const staleScript = document.querySelector('script[data-emulatorjs-loader="true"]');
@@ -1218,15 +1837,21 @@ function clearExistingRuntime() {
   delete window.EJS_gameUrl;
   delete window.EJS_biosUrl;
   delete window.EJS_startOnLoaded;
+  delete window.EJS_Buttons;
+  if (emulatorRuntime) {
+    emulatorRuntime.classList.remove("is-visible");
+  }
   setEmulationReady(false);
 }
 
 function forceRuntimeSizing() {
-  if (!emulatorHost) {
+  const runtimeHost = getEmulatorHost();
+
+  if (!runtimeHost) {
     return;
   }
 
-  const nestedNodes = emulatorHost.querySelectorAll("iframe, canvas, .ejs_player, .game");
+  const nestedNodes = runtimeHost.querySelectorAll("iframe, canvas, .ejs_player, .game");
 
   nestedNodes.forEach((node) => {
     node.style.width = "100%";
@@ -1236,51 +1861,70 @@ function forceRuntimeSizing() {
   });
 }
 
-function bootEmulator(file) {
-  if (!emulatorHost || !emulatorRuntime || !emulatorLoading || !emulatorError) {
+async function bootEmulator(file) {
+  if (!emulatorRuntime || !emulatorLoading || !emulatorError) {
     return;
   }
 
   clearExistingRuntime();
   clearActiveRomUrl();
-
-  activeRomUrl = URL.createObjectURL(file);
+  const bootToken = activeBootToken;
+  const runtimeHost = getEmulatorHost();
 
   document.body.classList.add("has-rom", "is-loading-rom");
   emulatorRuntime.classList.remove("is-visible");
   emulatorLoading.hidden = false;
   emulatorError.hidden = true;
   romStatus.textContent = "Inicializando core";
-  hudMode.textContent = "Loading core";
+  hudMode.textContent = "Carregando core";
   setEmulationReady(false);
+  syncSessionSummary();
+
+  try {
+    activeRomUrl = await readFileAsDataUrl(file);
+  } catch (error) {
+    showRuntimeError("Nao consegui ler essa ROM local para iniciar o emulador.");
+    return;
+  }
+
+  if (!runtimeHost || bootToken !== activeBootToken) {
+    return;
+  }
 
   window.EJS_player = "#emulatorjs-player";
   window.EJS_core = "gba";
-  window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+  window.EJS_pathtodata = "https://cdn.emulatorjs.org/4.2.0/data/";
   window.EJS_gameUrl = activeRomUrl;
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.65;
 
   activeLoaderScript = document.createElement("script");
-  activeLoaderScript.src = `https://cdn.emulatorjs.org/stable/data/loader.js?v=${Date.now()}`;
+  activeLoaderScript.src = `https://cdn.emulatorjs.org/4.2.0/data/loader.js?v=${Date.now()}`;
   activeLoaderScript.dataset.emulatorjsLoader = "true";
   activeLoaderScript.async = true;
 
   activeLoaderScript.addEventListener("load", () => {
+    if (bootToken !== activeBootToken) {
+      return;
+    }
     document.body.classList.remove("is-loading-rom");
     emulatorLoading.hidden = true;
     emulatorRuntime.classList.add("is-visible");
     window.setTimeout(forceRuntimeSizing, 250);
     window.setTimeout(forceRuntimeSizing, 1200);
     romStatus.textContent = "Emulador em execucao";
-    hudMode.textContent = "ROM running";
+    hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
     if (screenBadge) {
-      screenBadge.textContent = "Live emulator session";
+      setSessionBadgeText("Sessao ativa");
     }
+    syncSessionSummary();
   });
 
   activeLoaderScript.addEventListener("error", () => {
+    if (bootToken !== activeBootToken) {
+      return;
+    }
     showRuntimeError("O core do emulador nao carregou. A pagina precisa acessar a CDN do EmulatorJS.");
   });
 
@@ -1292,17 +1936,21 @@ function bootEmulator(file) {
       emulatorLoading.hidden = true;
       emulatorRuntime.classList.add("is-visible");
       romStatus.textContent = "Core carregado";
-      hudMode.textContent = "ROM booting";
+      hudMode.textContent = "Iniciando ROM";
       setEmulationReady(true);
       if (screenBadge) {
-        screenBadge.textContent = "Boot sequence started";
+        setSessionBadgeText("Inicializacao iniciada");
       }
+      syncSessionSummary();
     }
   }, 2200);
 }
 
 if (romInput && romStatus && romFileName) {
   romInput.addEventListener("change", async () => {
+    romStatus.textContent = "Arquivo selecionado";
+    syncSessionSummary();
+
     const [file] = romInput.files || [];
 
     if (!file) {
@@ -1316,49 +1964,60 @@ if (romInput && romStatus && romFileName) {
       }
       romStatus.textContent = "Sem ROM carregada";
       romFileName.textContent = "Nenhum arquivo selecionado";
-      hudMode.textContent = "Awaiting ROM";
+      hudMode.textContent = "Aguardando ROM";
       if (screenBadge) {
-        screenBadge.textContent = "Ready for emulator core";
+        setSessionBadgeText("Pronto para iniciar");
       }
-      if (playerTitle) {
-        playerTitle.textContent = "Pokemon Emerald";
-      }
+      setSessionTitleText("Oak Emulador");
       setEmulationReady(false);
+      syncSessionSummary();
       return;
     }
 
     romStatus.textContent = "ROM pronta para integrar";
     romFileName.textContent = file.name;
-    hudMode.textContent = "ROM loaded locally";
+    hudMode.textContent = "ROM carregada localmente";
     if (screenBadge) {
-      screenBadge.textContent = "ROM staged locally";
+      setSessionBadgeText("ROM carregada");
     }
-    if (playerTitle) {
-      playerTitle.textContent = file.name.replace(/\.(gba|zip|7z)$/i, "");
-    }
+    setSessionTitleText(file.name.replace(/\.(gba|zip|7z)$/i, ""));
 
     if (!/\.gba$/i.test(file.name)) {
-      showRuntimeError("Use uma ROM de Game Boy Advance no formato .gba para iniciar o player.");
+      showRuntimeError("Use uma ROM de Game Boy Advance no formato .gba para iniciar o emulador.");
       return;
     }
 
     try {
       const savedRecord = await saveRomToLibrary(file);
+      activeRomId = savedRecord.id;
       saveLastRomSelection(savedRecord.id);
+      pushRecentRom({
+        id: savedRecord.id,
+        name: savedRecord.name,
+        lastPlayedLabel: "Adicionada agora",
+      });
     } catch (error) {
       romStatus.textContent = "ROM carregada sem biblioteca";
+      activeRomId = "";
     }
 
-    bootEmulator(file);
+    if (activeRomId) {
+      scheduleColdRomBoot(activeRomId);
+      return;
+    }
+
+    await bootEmulator(file);
+    renderRecentRoms();
+    syncSessionSummary();
   });
 }
 
 if (demoToggle && hudMode) {
   demoToggle.addEventListener("click", () => {
     const demoEnabled = document.body.classList.toggle("is-demo-on");
-    hudMode.textContent = demoEnabled ? "Demo HUD active" : "Awaiting ROM";
+    hudMode.textContent = demoEnabled ? "HUD demo ativo" : "Aguardando ROM";
     if (screenBadge) {
-      screenBadge.textContent = demoEnabled ? "Visual stack energized" : "Ready for emulator core";
+      setSessionBadgeText(demoEnabled ? "HUD energizado" : "Pronto para iniciar");
     }
   });
 }
@@ -1374,69 +2033,24 @@ if (dockFullscreen && emulatorRuntime) {
     try {
       if (document.fullscreenElement) {
         await document.exitFullscreen();
+
+        if (window.screen?.orientation?.unlock) {
+          window.screen.orientation.unlock();
+        }
       } else {
         await target.requestFullscreen();
+
+        if (window.screen?.orientation?.lock) {
+          try {
+            await window.screen.orientation.lock("landscape");
+          } catch (error) {
+            // Ignore orientation lock failures on unsupported browsers.
+          }
+        }
       }
     } catch (error) {
       showRuntimeError("O navegador bloqueou o fullscreen dessa sessao.");
     }
-  });
-}
-
-if (dockPlay) {
-  dockPlay.addEventListener("click", () => {
-    if (!emulationReady) {
-      return;
-    }
-
-    const actionSucceeded = emulationPaused
-      ? triggerEmulatorAction(["play", "resume", "unpause"])
-      : triggerEmulatorAction(["pause", "play"]);
-
-    if (!actionSucceeded) {
-      showRuntimeError("Nao encontrei o controle interno de play/pause do emulador.");
-      return;
-    }
-
-    emulationPaused = !emulationPaused;
-    syncDockState();
-    updateHudForPauseState();
-  });
-}
-
-if (dockSave) {
-  dockSave.addEventListener("click", () => {
-    if (!emulationReady) {
-      return;
-    }
-
-    const actionSucceeded = triggerEmulatorAction(["save", "save state", "savestate"]);
-
-    if (!actionSucceeded) {
-      showRuntimeError("Nao encontrei o controle interno de save state do emulador.");
-      return;
-    }
-
-    romStatus.textContent = "Save solicitado";
-    hudMode.textContent = "Saving state";
-  });
-}
-
-if (dockLoad) {
-  dockLoad.addEventListener("click", () => {
-    if (!emulationReady) {
-      return;
-    }
-
-    const actionSucceeded = triggerEmulatorAction(["load", "load state", "loadstate"]);
-
-    if (!actionSucceeded) {
-      showRuntimeError("Nao encontrei o controle interno de load state do emulador.");
-      return;
-    }
-
-    romStatus.textContent = "Load solicitado";
-    hudMode.textContent = "Loading state";
   });
 }
 
@@ -1558,11 +2172,63 @@ if (romLibraryList) {
   });
 }
 
+if (recentRomList) {
+  recentRomList.addEventListener("click", async (event) => {
+    const launchButton = event.target.closest("[data-rom-launch]");
+
+    if (!launchButton?.dataset.romLaunch) {
+      return;
+    }
+
+    try {
+      await launchLibraryRom(launchButton.dataset.romLaunch);
+    } catch (error) {
+      showRuntimeError("Nao consegui retomar essa ROM do historico local.");
+    }
+  });
+}
+
 if (clearLastRomButton) {
   clearLastRomButton.addEventListener("click", () => {
     saveLastRomSelection("");
+    saveRecentRoms([]);
+    activeRomId = "";
     renderRomLibrary();
-    romStatus.textContent = "Ultima ROM limpa";
+    renderRecentRoms();
+    romStatus.textContent = "Historico limpo";
+    syncSessionSummary();
+  });
+}
+
+if (launcherTabs.length) {
+  launcherTabs.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeLauncherTab = button.dataset.launcherTab || "recentes";
+      syncLauncherTabs();
+    });
+  });
+}
+
+if (romLibrarySearch) {
+  romLibrarySearch.addEventListener("input", () => {
+    romLibraryQuery = romLibrarySearch.value;
+    romLibraryExpanded = false;
+    renderRomLibrary();
+  });
+}
+
+if (romLibrarySort) {
+  romLibrarySort.addEventListener("change", () => {
+    romLibrarySortMode = romLibrarySort.value || "recent";
+    romLibraryExpanded = false;
+    renderRomLibrary();
+  });
+}
+
+if (romLibraryMore) {
+  romLibraryMore.addEventListener("click", () => {
+    romLibraryExpanded = !romLibraryExpanded;
+    renderRomLibrary();
   });
 }
 
@@ -1595,15 +2261,31 @@ window.addEventListener("keydown", (event) => {
 
 loadQuickDexHistory();
 syncPokedexTabs();
+syncLauncherTabs();
 syncDockState();
 await loadRomLibrary();
+renderRecentRoms();
+syncSessionSummary();
 
-const lastRomId = getLastRomSelection();
-if (lastRomId) {
+const pendingRomId = getPendingColdRomBoot();
+
+if (pendingRomId) {
   try {
-    await launchLibraryRom(lastRomId);
+    clearPendingColdRomBoot();
+    await launchLibraryRom(pendingRomId);
   } catch (error) {
+    clearPendingColdRomBoot();
     saveLastRomSelection("");
     renderRomLibrary();
+  }
+} else {
+  const lastRomId = getLastRomSelection();
+  if (lastRomId) {
+    try {
+      await launchLibraryRom(lastRomId);
+    } catch (error) {
+      saveLastRomSelection("");
+      renderRomLibrary();
+    }
   }
 }
