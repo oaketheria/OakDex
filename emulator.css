@@ -1481,6 +1481,80 @@ body.emulator-page {
   gap: 8px;
 }
 
+.mobile-action-fab {
+  display: none;
+  position: relative;
+  width: 54px;
+  height: 54px;
+  overflow: visible;
+  touch-action: none;
+}
+
+.mobile-action-fab-toggle {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(161, 216, 255, 0.22);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(78, 242, 194, 0.22), rgba(38, 140, 255, 0.24)),
+    rgba(16, 24, 44, 0.92);
+  color: #eef8ff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 28px rgba(2, 8, 22, 0.34);
+  appearance: none;
+  -webkit-appearance: none;
+  touch-action: none;
+}
+
+.mobile-action-fab-icon {
+  display: inline-block;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.4rem;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.mobile-action-fab.is-open .mobile-action-fab-icon {
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.mobile-emulator-actions {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  width: min(260px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(161, 216, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    rgba(10, 16, 31, 0.94);
+  box-shadow: 0 18px 34px rgba(2, 8, 22, 0.32);
+}
+
+.mobile-emulator-actions[hidden] {
+  display: none !important;
+}
+
+.mobile-action-hint {
+  display: none;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 118, 118, 0.28);
+  background: rgba(78, 12, 18, 0.42);
+  color: #ffd7d7;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
 .gba-shell {
   display: grid;
   gap: 0;
@@ -1654,19 +1728,37 @@ body.emulator-page {
 }
 
 .emulator-runtime-player {
+  position: relative;
   width: 100%;
   height: 100%;
   min-height: 320px;
   background: #040812;
+  overflow: hidden;
+  isolation: isolate;
+  contain: layout paint size;
 }
 
 .emulator-runtime-player > div,
 .emulator-runtime-player iframe,
 .emulator-runtime-player canvas {
+  position: absolute;
+  inset: 0;
   width: 100% !important;
   height: 100% !important;
-  max-width: 100%;
+  max-width: none;
   display: block;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.emulator-runtime-player canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #000;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  outline: 1px solid transparent;
 }
 
 .emulator-loading,
@@ -1683,6 +1775,139 @@ body.emulator-page {
   display: block;
   font-family: "Orbitron", sans-serif;
   font-size: 1rem;
+}
+
+.mobile-touch-controls {
+  display: none;
+  gap: 14px;
+  position: relative;
+  z-index: 3;
+}
+
+.touch-controls-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 18px;
+}
+
+.touch-dpad {
+  position: relative;
+  width: 148px;
+  height: 148px;
+}
+
+.touch-actions {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 10px;
+}
+
+.touch-controls-meta {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.touch-dpad,
+.touch-actions,
+.touch-controls-meta {
+  position: relative;
+}
+
+body.is-touch-layout-editing .touch-dpad,
+body.is-touch-layout-editing .touch-actions,
+body.is-touch-layout-editing .touch-controls-meta {
+  outline: 2px dashed rgba(142, 248, 214, 0.7);
+  outline-offset: 6px;
+  border-radius: 18px;
+  cursor: grab;
+}
+
+body.is-touch-layout-editing .touch-dpad::after,
+body.is-touch-layout-editing .touch-actions::after,
+body.is-touch-layout-editing .touch-controls-meta::after {
+  content: "Arraste";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(7, 13, 28, 0.82);
+  color: rgba(232, 244, 255, 0.94);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.touch-key {
+  border: 1px solid rgba(212, 236, 255, 0.32);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(246, 251, 255, 0.94);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 8px 22px rgba(2, 8, 22, 0.28);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.touch-key.is-pressed {
+  transform: scale(0.96);
+  background: rgba(120, 214, 255, 0.26);
+  border-color: rgba(197, 240, 255, 0.64);
+}
+
+.touch-key-action {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.touch-key-meta {
+  min-width: 82px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 0.96rem;
+}
+
+.touch-key-up,
+.touch-key-left,
+.touch-key-right,
+.touch-key-down {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+}
+
+.touch-key-up {
+  top: 0;
+  left: 46px;
+}
+
+.touch-key-left {
+  top: 46px;
+  left: 0;
+}
+
+.touch-key-right {
+  top: 46px;
+  right: 0;
+}
+
+.touch-key-down {
+  bottom: 0;
+  left: 46px;
 }
 
 .emulator-loading p,
@@ -2620,13 +2845,18 @@ body.emulator-page {
 .play-space:fullscreen .emulator-runtime-player {
   min-height: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 .play-space:fullscreen .emulator-runtime-player > div,
 .play-space:fullscreen .emulator-runtime-player iframe,
 .play-space:fullscreen .emulator-runtime-player canvas {
+  position: absolute;
+  inset: 0;
   width: 100% !important;
   height: 100% !important;
+  margin: 0;
+  border: 0;
 }
 
 .play-space:fullscreen .screen-frame-trim {
@@ -2744,6 +2974,54 @@ body.emulator-page {
 }
 
 @media (max-width: 820px) {
+  #dock-fullscreen,
+  #pokedex-toggle {
+    display: none;
+  }
+
+  .mobile-touch-controls {
+    display: grid;
+  }
+
+  .mobile-action-fab {
+    position: fixed;
+    left: 16px;
+    top: 16px;
+    z-index: 45;
+    display: block;
+  }
+
+  .mobile-action-hint:not([hidden]) {
+    display: block;
+  }
+
+  .emulator-page.has-rom .mobile-touch-controls {
+    margin-top: -108px;
+    padding: 0 14px 10px;
+    pointer-events: none;
+  }
+
+  .emulator-runtime [class*="gamepad" i],
+  .emulator-runtime [id*="gamepad" i],
+  .emulator-runtime [class*="joystick" i],
+  .emulator-runtime [id*="joystick" i],
+  .emulator-runtime [title*="Start" i],
+  .emulator-runtime [aria-label*="Start" i],
+  .emulator-runtime [title*="Select" i],
+  .emulator-runtime [aria-label*="Select" i] {
+    display: none !important;
+  }
+
+  .emulator-runtime [title*="Context Menu" i],
+  .emulator-runtime [aria-label*="Context Menu" i],
+  .emulator-runtime [title*="Settings" i],
+  .emulator-runtime [aria-label*="Settings" i],
+  .emulator-runtime [title*="Menu" i],
+  .emulator-runtime [aria-label*="Menu" i],
+  .emulator-runtime [data-ejs-toolbar-hidden="true"] {
+    display: none !important;
+  }
+
   .emulator-shell {
     width: min(100% - 24px, 1320px);
     padding-top: 20px;
@@ -2799,6 +3077,38 @@ body.emulator-page {
   .emulator-runtime-player {
     min-height: 360px;
     border-radius: 18px;
+  }
+
+  .touch-controls-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+  }
+
+  .touch-dpad {
+    width: 136px;
+    height: 136px;
+  }
+
+  .touch-key-up,
+  .touch-key-left,
+  .touch-key-right,
+  .touch-key-down {
+    width: 52px;
+    height: 52px;
+  }
+
+  .touch-key-up,
+  .touch-key-down {
+    left: 42px;
+  }
+
+  .touch-key-left,
+  .touch-key-right {
+    top: 42px;
+  }
+
+  .emulator-page.has-rom .touch-controls-meta {
+    justify-content: center;
   }
 
   .emulator-nav {
@@ -2857,6 +3167,10 @@ body.emulator-page {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
+  }
+
+  .mobile-emulator-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .player-pill,
@@ -2932,7 +3246,98 @@ body.emulator-page {
   }
 }
 
+@media (max-width: 820px) and (orientation: landscape) {
+  .emulator-page.has-rom .player-screen {
+    padding-bottom: 12px;
+  }
+
+  .emulator-page.has-rom .screen-overlay {
+    padding-bottom: 12px;
+    min-height: 100%;
+  }
+
+  .emulator-page.has-rom .mobile-touch-controls {
+    position: absolute;
+    inset: 0;
+    margin-top: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  .emulator-page.has-rom .touch-controls-row {
+    display: contents;
+  }
+
+  .emulator-page.has-rom .touch-dpad {
+    position: absolute;
+    width: 124px;
+    height: 124px;
+  }
+
+  .emulator-page.has-rom .touch-key-up,
+  .emulator-page.has-rom .touch-key-left,
+  .emulator-page.has-rom .touch-key-right,
+  .emulator-page.has-rom .touch-key-down {
+    width: 48px;
+    height: 48px;
+  }
+
+  .emulator-page.has-rom .touch-key-up,
+  .emulator-page.has-rom .touch-key-down {
+    left: 38px;
+  }
+
+  .emulator-page.has-rom .touch-key-left,
+  .emulator-page.has-rom .touch-key-right {
+    top: 38px;
+  }
+
+  .emulator-page.has-rom .touch-actions {
+    position: absolute;
+    gap: 12px;
+    padding-bottom: 0;
+  }
+
+  .emulator-page.has-rom .touch-key-action {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+  }
+
+  .emulator-page.has-rom .touch-controls-meta {
+    position: absolute;
+    gap: 10px;
+  }
+
+  .emulator-page.has-rom .touch-key-meta {
+    min-width: 68px;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.82rem;
+    background: rgba(12, 20, 38, 0.58);
+  }
+}
+
 @media (max-width: 560px) {
+  .touch-controls-row {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .touch-actions {
+    width: 100%;
+    justify-content: center;
+    padding-bottom: 0;
+  }
+
+  .touch-controls-meta {
+    width: 100%;
+  }
+
+  .touch-key-meta {
+    flex: 1 1 0;
+  }
+
   .emulator-copy,
   .gba-stage,
   .gba-lid,
@@ -3030,6 +3435,11 @@ body.emulator-page {
   }
 
   .player-header-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-emulator-actions {
+    width: min(220px, calc(100vw - 24px));
     grid-template-columns: 1fr;
   }
 

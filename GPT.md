@@ -159,7 +159,7 @@ Ela depende de:
 Funcionalidades relevantes:
 
 - upload local de ROM `.gba`
-- boot do EmulatorJS via CDN
+- boot do EmulatorJS via CDN `4.2.3`
 - HUD visual inspirado em GBA
 - botao externo de fullscreen da UI
 - Quick Dex lateral dentro da pagina do emulador
@@ -169,6 +169,11 @@ Funcionalidades relevantes:
 - historico local de ROMs recentes
 - capas locais para ROMs conhecidas e fallback automatico para outras ROMs
 - restauracao automatica da ultima ROM usada neste navegador
+- gamepad touch proprio da pagina no mobile
+- reposicionamento dos grupos do gamepad touch no mobile, com persistencia em `localStorage`
+- FAB de acoes no mobile com `Tela cheia`, `Pokedex`, `Config`, `Salvar`, `Importar`, `Controles` e `Mover`
+- importacao de save por fluxo proprio da pagina via seletor de arquivo
+- exportacao de save pela acao integrada ao EmulatorJS
 
 Observacoes tecnicas importantes:
 
@@ -176,6 +181,7 @@ Observacoes tecnicas importantes:
 - o upload deve continuar funcionando mesmo se o `IndexedDB` falhar
 - o fullscreen correto para manter a Quick Dex e o da nossa UI, nao o interno do EmulatorJS
 - no mobile, o fullscreen tenta orientar em paisagem quando o navegador permitir
+- no mobile, a toolbar e o gamepad visual nativos do EmulatorJS ficam ocultos para nao conflitar com a UI touch propria da pagina
 - a Quick Dex do emulador vive em `emulator.js` e `emulator.css`, nao em `app.js`
 - capas locais conhecidas ficam em `assets/rom-covers/`
 - capas automaticas dependem de `RAWG_API_KEY` via backend em `server.js`
@@ -256,9 +262,11 @@ Observacoes:
 - confirmar se a mudanca e estrutural (`emulator.html`) ou logica (`emulator.js`)
 - checar impacto em `emulator.css`
 - preservar boot do EmulatorJS, upload local, Quick Dex, capas e biblioteca local
+- preservar o gamepad touch proprio, o FAB de acoes mobile e a importacao de save da pagina
 - lembrar que a biblioteca de ROMs usa `IndexedDB`
 - nao mover a logica da Quick Dex do emulador para `app.js`
 - ao mexer em fullscreen, verificar o comportamento da Quick Dex e do botao `Pokedex`
+- ao mexer no mobile, verificar FAB, gamepad touch, orientacao em paisagem e importacao/exportacao de save
 - ao mexer em capas, conferir `assets/rom-covers/` e o mapeamento local em `emulator.js`
 
 ### Se for mexer em assets
@@ -315,7 +323,7 @@ Abrir primeiro:
 - Mudancas em `app.js` podem afetar varias partes da PokeDex porque a logica esta concentrada em um unico arquivo
 - Mudancas em `destaques.js` podem quebrar busca, filtro, paginacao e links para a PokeDex
 - Mudancas em `emulator.js` podem afetar ao mesmo tempo boot da ROM, Quick Dex, fullscreen e biblioteca local
-- Mudancas em `emulator.js` tambem podem afetar capas locais, historico recente e restauracao da ROM ativa
+- Mudancas em `emulator.js` tambem podem afetar capas locais, historico recente, restauracao da ROM ativa, gamepad touch e FAB mobile
 - O EmulatorJS depende de CDN; falhas de rede podem parecer bug local mesmo quando o frontend esta correto
 - O `IndexedDB` pode falhar ou estar bloqueado no navegador; o upload nao deve depender exclusivamente dele
 - O fullscreen interno do EmulatorJS nao deve ser tratado como fullscreen principal da experiencia

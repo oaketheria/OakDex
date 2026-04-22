@@ -90,6 +90,7 @@ Arquivos principais:
 Funcionalidades atuais:
 
 - carregar ROM `.gba` manualmente
+- boot do EmulatorJS via CDN `4.2.3`
 - tentar iniciar o emulador sem depender da biblioteca local
 - salvar ROMs no navegador via `IndexedDB`
 - listar ROMs salvas em uma biblioteca particular local
@@ -100,6 +101,11 @@ Funcionalidades atuais:
 - Quick Dex lateral com busca via PokeAPI
 - fullscreen proprio da UI do projeto
 - fullscreen com tentativa de orientacao horizontal no mobile
+- controles touch proprios no mobile, sem depender do gamepad visual nativo do EmulatorJS
+- modo de reposicionamento dos blocos do gamepad touch no mobile, com persistencia em `localStorage`
+- botao flutuante de acoes no mobile para `Tela cheia`, `Pokedex`, `Config`, `Salvar`, `Importar`, `Controles` e `Mover`
+- importacao de save por fluxo proprio da pagina, com seletor de arquivo
+- exportacao de save pela integracao com as acoes internas do EmulatorJS
 
 Observacoes:
 
@@ -107,6 +113,7 @@ Observacoes:
 - nao ha backend para armazenar ROMs
 - se o navegador bloquear `IndexedDB`, o upload ainda deve tentar iniciar o emulador
 - o EmulatorJS depende de acesso a CDN para baixar o core
+- no mobile, a toolbar visual nativa do EmulatorJS fica escondida para nao conflitar com os controles touch da pagina
 - a busca automatica de capas depende de `RAWG_API_KEY` no ambiente para ROMs sem capa local
 - as capas locais atuais ficam em `assets/rom-covers/`
 

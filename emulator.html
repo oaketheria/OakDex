@@ -98,6 +98,37 @@
               </div>
             </header>
 
+            <div class="mobile-action-fab" id="mobile-action-fab" aria-label="Acoes do emulador no mobile">
+              <button
+                type="button"
+                class="mobile-action-fab-toggle"
+                id="mobile-action-fab-toggle"
+                aria-expanded="false"
+                aria-controls="mobile-action-fab-panel"
+                aria-label="Abrir acoes do emulador"
+              >
+                <span class="mobile-action-fab-icon" aria-hidden="true">+</span>
+              </button>
+
+              <div class="mobile-emulator-actions" id="mobile-action-fab-panel" hidden>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-fullscreen">Tela cheia</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-pokedex-toggle">Pokedex</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-emulator-settings">Config</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-save-file">Salvar</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-load-file">Importar</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-control-settings">Controles</button>
+                <button type="button" class="dock-button dock-button-compact" id="mobile-touch-layout-toggle">Mover</button>
+              </div>
+            </div>
+            <p class="mobile-action-hint" id="mobile-action-hint" hidden></p>
+            <input
+              id="save-import-input"
+              class="save-import-input"
+              type="file"
+              accept=".sav,.srm,.state,.slot"
+              hidden
+            />
+
             <div class="gba-shell">
               <div class="gba-lid">
                 <div class="player-screen-crown">
@@ -124,6 +155,27 @@
 
                     <div id="emulator-runtime" class="emulator-runtime" aria-live="polite">
                       <div id="emulatorjs-player" class="emulator-runtime-player"></div>
+                    </div>
+
+                    <div class="mobile-touch-controls" id="mobile-touch-controls" aria-label="Controles touch do jogo">
+                      <div class="touch-controls-row">
+                        <div class="touch-dpad" data-touch-group="dpad" aria-label="Direcional">
+                          <button type="button" class="touch-key touch-key-up" data-touch-key="ArrowUp" aria-label="Cima">▲</button>
+                          <button type="button" class="touch-key touch-key-left" data-touch-key="ArrowLeft" aria-label="Esquerda">◀</button>
+                          <button type="button" class="touch-key touch-key-right" data-touch-key="ArrowRight" aria-label="Direita">▶</button>
+                          <button type="button" class="touch-key touch-key-down" data-touch-key="ArrowDown" aria-label="Baixo">▼</button>
+                        </div>
+
+                        <div class="touch-actions" data-touch-group="actions" aria-label="Acoes">
+                          <button type="button" class="touch-key touch-key-action touch-key-b" data-touch-key="x" aria-label="Botao B">B</button>
+                          <button type="button" class="touch-key touch-key-action touch-key-a" data-touch-key="z" aria-label="Botao A">A</button>
+                        </div>
+                      </div>
+
+                      <div class="touch-controls-meta" data-touch-group="meta">
+                        <button type="button" class="touch-key touch-key-meta" data-touch-key="Shift" aria-label="Select">Select</button>
+                        <button type="button" class="touch-key touch-key-meta" data-touch-key="Enter" aria-label="Start">Start</button>
+                      </div>
                     </div>
 
                     <div id="emulator-loading" class="emulator-loading" hidden>

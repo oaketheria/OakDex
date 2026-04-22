@@ -26,6 +26,19 @@ const emulatorLoading = document.querySelector("#emulator-loading");
 const emulatorError = document.querySelector("#emulator-error");
 const emulatorErrorMessage = document.querySelector("#emulator-error-message");
 const dockFullscreen = document.querySelector("#dock-fullscreen");
+const mobileActionFab = document.querySelector("#mobile-action-fab");
+const mobileActionFabToggle = document.querySelector("#mobile-action-fab-toggle");
+const mobileActionFabPanel = document.querySelector("#mobile-action-fab-panel");
+const mobileFullscreen = document.querySelector("#mobile-fullscreen");
+const mobilePokedexToggle = document.querySelector("#mobile-pokedex-toggle");
+const mobileEmulatorSettings = document.querySelector("#mobile-emulator-settings");
+const mobileSaveFile = document.querySelector("#mobile-save-file");
+const mobileLoadFile = document.querySelector("#mobile-load-file");
+const mobileControlSettings = document.querySelector("#mobile-control-settings");
+const mobileTouchLayoutToggle = document.querySelector("#mobile-touch-layout-toggle");
+const mobileActionHint = document.querySelector("#mobile-action-hint");
+const saveImportInput = document.querySelector("#save-import-input");
+const mobileTouchControls = document.querySelector("#mobile-touch-controls");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
 const pokedexPanel = document.querySelector("#emulator-pokedex-panel");
@@ -54,7 +67,16 @@ let activeBootToken = 0;
 let romLibraryQuery = "";
 let romLibrarySortMode = "recent";
 let romLibraryExpanded = false;
+let mobileToolbarObserver = null;
+let touchLayoutEditMode = false;
+let activeTouchLayoutDrag = null;
+let mobileActionFabOpen = false;
+let mobileActionFabDrag = null;
+let mobileActionFabPositionPx = null;
+const activeTouchKeys = new Map();
 
+const EMULATORJS_CDN_VERSION = "4.2.3";
+const EMULATORJS_DATA_PATH = `https://cdn.emulatorjs.org/${EMULATORJS_CDN_VERSION}/data/`;
 const ROM_DB_NAME = "pokemon-emerald-gx";
 const ROM_STORE_NAME = "rom-library";
 const LAST_ROM_STORAGE_KEY = "emulatorLastRomId";
@@ -62,6 +84,25 @@ const RECENT_ROMS_STORAGE_KEY = "emulatorRecentRoms";
 const PENDING_ROM_BOOT_KEY = "emulatorPendingRomBoot";
 const RECENT_ROMS_LIMIT = 3;
 const ROM_LIBRARY_PAGE_SIZE = 6;
+const MOBILE_TOOLBAR_LABELS = ["context menu", "settings", "menu", "fullscreen", "save"];
+const TOUCH_LAYOUT_STORAGE_KEY = "emulatorTouchLayout";
+const MOBILE_ACTION_FAB_STORAGE_KEY = "emulatorMobileActionFab";
+const DEFAULT_TOUCH_LAYOUT = {
+  dpad: { x: 4, y: 52 },
+  actions: { x: 76, y: 54 },
+  meta: { x: 36, y: 82 },
+};
+const DEFAULT_MOBILE_ACTION_FAB_POSITION = { x: 82, y: 74 };
+const TOUCH_KEY_MAP = {
+  ArrowUp: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  ArrowDown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  ArrowLeft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  z: { key: "z", code: "KeyZ", keyCode: 90 },
+  x: { key: "x", code: "KeyX", keyCode: 88 },
+  Enter: { key: "Enter", code: "Enter", keyCode: 13 },
+  Shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
+};
 
 const dexTypeGlow = {
   normal: "190 188 138",
@@ -286,6 +327,259 @@ function saveRecentRoms(entries) {
   } catch (error) {
     // Ignore storage failures.
   }
+}
+
+function loadTouchLayout() {
+  try {
+    const saved = window.localStorage.getItem(TOUCH_LAYOUT_STORAGE_KEY);
+    if (!saved) {
+      return { ...DEFAULT_TOUCH_LAYOUT };
+    }
+
+    const parsed = JSON.parse(saved);
+    return {
+      dpad: {
+        x: Number(parsed?.dpad?.x ?? DEFAULT_TOUCH_LAYOUT.dpad.x),
+        y: Number(parsed?.dpad?.y ?? DEFAULT_TOUCH_LAYOUT.dpad.y),
+      },
+      actions: {
+        x: Number(parsed?.actions?.x ?? DEFAULT_TOUCH_LAYOUT.actions.x),
+        y: Number(parsed?.actions?.y ?? DEFAULT_TOUCH_LAYOUT.actions.y),
+      },
+      meta: {
+        x: Number(parsed?.meta?.x ?? DEFAULT_TOUCH_LAYOUT.meta.x),
+        y: Number(parsed?.meta?.y ?? DEFAULT_TOUCH_LAYOUT.meta.y),
+      },
+    };
+  } catch (error) {
+    return { ...DEFAULT_TOUCH_LAYOUT };
+  }
+}
+
+function saveTouchLayout(layout) {
+  try {
+    window.localStorage.setItem(TOUCH_LAYOUT_STORAGE_KEY, JSON.stringify(layout));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function loadMobileActionFabPosition() {
+  try {
+    const saved = window.localStorage.getItem(MOBILE_ACTION_FAB_STORAGE_KEY);
+    if (!saved) {
+      return { ...DEFAULT_MOBILE_ACTION_FAB_POSITION };
+    }
+
+    const parsed = JSON.parse(saved);
+    return {
+      x: Number(parsed?.x ?? DEFAULT_MOBILE_ACTION_FAB_POSITION.x),
+      y: Number(parsed?.y ?? DEFAULT_MOBILE_ACTION_FAB_POSITION.y),
+    };
+  } catch (error) {
+    return { ...DEFAULT_MOBILE_ACTION_FAB_POSITION };
+  }
+}
+
+function saveMobileActionFabPosition(position) {
+  try {
+    window.localStorage.setItem(MOBILE_ACTION_FAB_STORAGE_KEY, JSON.stringify(position));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function isTouchLayoutOverlayMode() {
+  return (
+    isCompactTouchUi() &&
+    window.matchMedia("(orientation: landscape)").matches &&
+    document.body.classList.contains("has-rom")
+  );
+}
+
+function clampTouchLayoutValue(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function applyTouchLayout() {
+  if (!mobileTouchControls) {
+    return;
+  }
+
+  const groups = mobileTouchControls.querySelectorAll("[data-touch-group]");
+  if (!groups.length) {
+    return;
+  }
+
+  if (!isTouchLayoutOverlayMode()) {
+    if (touchLayoutEditMode) {
+      touchLayoutEditMode = false;
+      document.body.classList.remove("is-touch-layout-editing");
+      if (mobileTouchLayoutToggle) {
+        mobileTouchLayoutToggle.textContent = "Mover";
+      }
+    }
+
+    groups.forEach((group) => {
+      group.style.left = "";
+      group.style.top = "";
+    });
+    return;
+  }
+
+  const layout = loadTouchLayout();
+
+  groups.forEach((group) => {
+    const key = group.dataset.touchGroup;
+    const position = layout[key];
+    if (!position) {
+      return;
+    }
+
+    group.style.left = `${position.x}%`;
+    group.style.top = `${position.y}%`;
+  });
+}
+
+function setMobileActionFabOpen(nextOpen) {
+  if (!mobileActionFab || !mobileActionFabToggle || !mobileActionFabPanel) {
+    return;
+  }
+
+  mobileActionFabOpen = nextOpen;
+  mobileActionFab.classList.toggle("is-open", nextOpen);
+  mobileActionFabToggle.setAttribute("aria-expanded", String(nextOpen));
+  mobileActionFabPanel.hidden = !nextOpen;
+}
+
+function applyMobileActionFabPosition() {
+  if (!mobileActionFab || !isCompactTouchUi()) {
+    return;
+  }
+
+  const fabWidth = 54;
+  const fabHeight = 54;
+  const position = mobileActionFabPositionPx || loadMobileActionFabPosition();
+  const maxLeft = Math.max(window.innerWidth - fabWidth - 8, 8);
+  const maxTop = Math.max(window.innerHeight - fabHeight - 8, 8);
+  const rawLeft = position.unit === "px" ? position.x : (position.x / 100) * window.innerWidth;
+  const rawTop = position.unit === "px" ? position.y : (position.y / 100) * window.innerHeight;
+  const left = clampTouchLayoutValue(rawLeft, 8, maxLeft);
+  const top = clampTouchLayoutValue(rawTop, 8, maxTop);
+
+  mobileActionFab.style.left = `${left}px`;
+  mobileActionFab.style.top = `${top}px`;
+  mobileActionFab.style.right = "auto";
+  mobileActionFab.style.bottom = "auto";
+}
+
+function setupMobileActionFab() {
+  if (!mobileActionFab || !mobileActionFabToggle || !mobileActionFabPanel) {
+    return;
+  }
+
+  applyMobileActionFabPosition();
+  setMobileActionFabOpen(false);
+
+  mobileActionFabToggle.addEventListener("click", (event) => {
+    if (mobileActionFabDrag?.moved) {
+      mobileActionFabDrag.moved = false;
+      return;
+    }
+
+    event.preventDefault();
+    setMobileActionFabOpen(!mobileActionFabOpen);
+  });
+
+  mobileActionFabToggle.addEventListener("pointerdown", (event) => {
+    if (!isCompactTouchUi()) {
+      return;
+    }
+
+    event.preventDefault();
+    const rect = mobileActionFabToggle.getBoundingClientRect();
+    mobileActionFabDrag = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
+    };
+    mobileActionFabToggle.setPointerCapture?.(event.pointerId);
+  });
+
+  const stopFabDrag = (event) => {
+    if (!mobileActionFabDrag || mobileActionFabDrag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (mobileActionFabPositionPx) {
+      const position = {
+        x: Number(((mobileActionFabPositionPx.x / Math.max(window.innerWidth, 1)) * 100).toFixed(2)),
+        y: Number(((mobileActionFabPositionPx.y / Math.max(window.innerHeight, 1)) * 100).toFixed(2)),
+      };
+      saveMobileActionFabPosition(position);
+      mobileActionFabPositionPx = null;
+      applyMobileActionFabPosition();
+    }
+
+    mobileActionFabDrag = null;
+  };
+
+  mobileActionFabToggle.addEventListener("pointermove", (event) => {
+    if (!mobileActionFabDrag || mobileActionFabDrag.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - mobileActionFabDrag.startX;
+    const deltaY = event.clientY - mobileActionFabDrag.startY;
+    const distance = Math.hypot(deltaX, deltaY);
+
+    if (!mobileActionFabDrag.moved && distance < 8) {
+      return;
+    }
+
+    const width = 54;
+    const height = 54;
+    const maxLeft = Math.max(window.innerWidth - width, 0);
+    const maxTop = Math.max(window.innerHeight - height, 0);
+    const left = clampTouchLayoutValue(event.clientX - mobileActionFabDrag.offsetX, 8, maxLeft - 8);
+    const top = clampTouchLayoutValue(event.clientY - mobileActionFabDrag.offsetY, 8, maxTop - 8);
+
+    mobileActionFabDrag.moved = true;
+    mobileActionFabPositionPx = {
+      unit: "px",
+      x: left,
+      y: top,
+    };
+    applyMobileActionFabPosition();
+    event.preventDefault();
+  });
+
+  mobileActionFabToggle.addEventListener("pointerup", stopFabDrag);
+  mobileActionFabToggle.addEventListener("pointercancel", stopFabDrag);
+  mobileActionFabToggle.addEventListener("lostpointercapture", stopFabDrag);
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!mobileActionFabOpen || mobileActionFab.contains(event.target)) {
+      return;
+    }
+
+    setMobileActionFabOpen(false);
+  });
+
+  mobileActionFabPanel.addEventListener("click", (event) => {
+    if (!(event.target instanceof HTMLElement) || !event.target.closest("button")) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      setMobileActionFabOpen(false);
+    }, 0);
+  });
+
+  window.addEventListener("resize", applyMobileActionFabPosition);
 }
 
 function pushRecentRom(entry) {
@@ -1743,6 +2037,8 @@ function updateHudForPauseState() {
 }
 
 function queryEmulatorAction(actionNames) {
+  const emulatorHost = getEmulatorHost();
+
   if (!emulatorHost) {
     return null;
   }
@@ -1764,6 +2060,24 @@ function queryEmulatorAction(actionNames) {
     }
   }
 
+  const normalizedNames = actionNames.map((name) => name.trim().toLowerCase());
+  const clickableNodes = emulatorHost.querySelectorAll(
+    'button, [role="button"], [data-btn], [data-action], label, .ejs--button, .ejs_button',
+  );
+
+  for (const node of clickableNodes) {
+    const text = (node.textContent || "").trim().toLowerCase();
+    const title = (node.getAttribute("title") || "").trim().toLowerCase();
+    const ariaLabel = (node.getAttribute("aria-label") || "").trim().toLowerCase();
+    const matches = normalizedNames.some(
+      (name) => text.includes(name) || title.includes(name) || ariaLabel.includes(name),
+    );
+
+    if (matches) {
+      return node;
+    }
+  }
+
   return null;
 }
 
@@ -1776,6 +2090,104 @@ function triggerEmulatorAction(actionNames) {
   }
 
   return false;
+}
+
+function openEmulatorHiddenFileInput(kind) {
+  const emulatorHost = getEmulatorHost();
+  if (!emulatorHost) {
+    return false;
+  }
+
+  const normalizedKind = String(kind || "").toLowerCase();
+  const fileInputs = emulatorHost.querySelectorAll('input[type="file"]');
+
+  for (const input of fileInputs) {
+    const accept = (input.getAttribute("accept") || "").toLowerCase();
+    const name = (input.getAttribute("name") || "").toLowerCase();
+    const id = (input.getAttribute("id") || "").toLowerCase();
+    const ariaLabel = (input.getAttribute("aria-label") || "").toLowerCase();
+    const descriptor = `${accept} ${name} ${id} ${ariaLabel}`;
+
+    const isSaveImportInput =
+      descriptor.includes(".sav") ||
+      descriptor.includes(".srm") ||
+      descriptor.includes("save") ||
+      descriptor.includes("import") ||
+      descriptor.includes("upload");
+
+    if (normalizedKind === "import-save" && isSaveImportInput) {
+      input.click();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function importSaveFileIntoEmulator(file) {
+  const runtimeHost = getEmulatorHost();
+  const dropTarget = runtimeHost?.querySelector("canvas, .game, .ejs_player") || runtimeHost;
+
+  if (!(file instanceof File) || !dropTarget) {
+    return false;
+  }
+
+  const fileName = file.name.toLowerCase();
+  const isSupportedSave =
+    fileName.endsWith(".sav") ||
+    fileName.endsWith(".srm") ||
+    fileName.endsWith(".state") ||
+    fileName.endsWith(".slot");
+
+  if (!isSupportedSave) {
+    showRuntimeHint("Escolha um arquivo de save valido (.sav, .srm, .state ou .slot).");
+    return false;
+  }
+
+  try {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    ["dragenter", "dragover", "drop"].forEach((eventName) => {
+      const dragEvent = new DragEvent(eventName, {
+        bubbles: true,
+        cancelable: true,
+        dataTransfer,
+      });
+      dropTarget.dispatchEvent(dragEvent);
+    });
+
+    showRuntimeHint("Save enviado para o emulador.");
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+function triggerEmulatorActionOrToast(actionNames, message) {
+  const actionSucceeded = triggerEmulatorAction(actionNames);
+
+  if (!actionSucceeded && message) {
+    showRuntimeHint(message);
+  }
+}
+
+function showRuntimeHint(message) {
+  if (mobileActionHint) {
+    mobileActionHint.textContent = message;
+    mobileActionHint.hidden = false;
+  } else if (romStatus) {
+    romStatus.textContent = message;
+  }
+
+  window.setTimeout(() => {
+    if (mobileActionHint) {
+      mobileActionHint.hidden = true;
+      mobileActionHint.textContent = "";
+    } else if (romStatus && document.body.classList.contains("has-rom")) {
+      romStatus.textContent = "Emulador em execucao";
+    }
+  }, 2200);
 }
 
 function resetRuntimeState() {
@@ -1804,18 +2216,32 @@ function clearActiveRomUrl() {
   }
 }
 
-function readFileAsDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+function getRomDisplayName(file) {
+  const fallbackName = "pokemon-emerald";
+  const rawName = typeof file?.name === "string" ? file.name : fallbackName;
+  const normalizedName = rawName.replace(/\.[^.]+$/, "").trim().toLowerCase();
 
-    reader.addEventListener("load", () => resolve(String(reader.result || "")));
-    reader.addEventListener("error", () => reject(reader.error || new Error("Falha ao ler a ROM.")));
-    reader.readAsDataURL(file);
-  });
+  return normalizedName
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || fallbackName;
+}
+
+function readFileAsObjectUrl(file) {
+  if (!(file instanceof File)) {
+    return Promise.reject(new Error("Falha ao ler a ROM."));
+  }
+
+  return Promise.resolve(URL.createObjectURL(file));
 }
 
 function clearExistingRuntime() {
   activeBootToken += 1;
+
+  if (mobileToolbarObserver) {
+    mobileToolbarObserver.disconnect();
+    mobileToolbarObserver = null;
+  }
 
   if (activeLoaderScript) {
     activeLoaderScript.remove();
@@ -1834,6 +2260,7 @@ function clearExistingRuntime() {
   delete window.EJS_player;
   delete window.EJS_core;
   delete window.EJS_pathtodata;
+  delete window.EJS_gameName;
   delete window.EJS_gameUrl;
   delete window.EJS_biosUrl;
   delete window.EJS_startOnLoaded;
@@ -1858,7 +2285,303 @@ function forceRuntimeSizing() {
     node.style.height = "100%";
     node.style.maxWidth = "100%";
     node.style.display = "block";
+
+    if (node instanceof HTMLCanvasElement) {
+      node.style.imageRendering = "pixelated";
+      node.style.backgroundColor = "#000";
+      node.style.transform = "translateZ(0)";
+      node.style.backfaceVisibility = "hidden";
+    }
   });
+}
+
+function dispatchVirtualKey(type, touchKey) {
+  const keyConfig = TOUCH_KEY_MAP[touchKey];
+  if (!keyConfig) {
+    return;
+  }
+
+  const runtimeHost = getEmulatorHost();
+  const canvas = runtimeHost?.querySelector("canvas");
+  const targets = [window, document, runtimeHost, canvas].filter(Boolean);
+
+  if (runtimeHost instanceof HTMLElement) {
+    runtimeHost.tabIndex = 0;
+    runtimeHost.focus({ preventScroll: true });
+  }
+
+  if (canvas instanceof HTMLElement) {
+    canvas.tabIndex = 0;
+    canvas.focus({ preventScroll: true });
+  }
+
+  targets.forEach((target) => {
+    const keyboardEvent = new KeyboardEvent(type, {
+      key: keyConfig.key,
+      code: keyConfig.code,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    Object.defineProperty(keyboardEvent, "keyCode", { get: () => keyConfig.keyCode });
+    Object.defineProperty(keyboardEvent, "which", { get: () => keyConfig.keyCode });
+
+    target.dispatchEvent(keyboardEvent);
+  });
+}
+
+function releaseAllTouchKeys() {
+  activeTouchKeys.forEach((touchKey, pointerId) => {
+    dispatchVirtualKey("keyup", touchKey);
+    activeTouchKeys.delete(pointerId);
+  });
+
+  if (!mobileTouchControls) {
+    return;
+  }
+
+  mobileTouchControls.querySelectorAll(".touch-key.is-pressed").forEach((button) => {
+    button.classList.remove("is-pressed");
+  });
+}
+
+function setupMobileTouchControls() {
+  if (!mobileTouchControls) {
+    return;
+  }
+
+  applyTouchLayout();
+
+  const touchButtons = mobileTouchControls.querySelectorAll("[data-touch-key]");
+
+  touchButtons.forEach((button) => {
+    button.addEventListener("pointerdown", (event) => {
+      if (touchLayoutEditMode) {
+        return;
+      }
+
+      const touchKey = button.dataset.touchKey;
+      if (!touchKey) {
+        return;
+      }
+
+      event.preventDefault();
+      button.classList.add("is-pressed");
+      activeTouchKeys.set(event.pointerId, touchKey);
+      dispatchVirtualKey("keydown", touchKey);
+      button.setPointerCapture?.(event.pointerId);
+    });
+
+    const releasePointer = (event) => {
+      const touchKey = activeTouchKeys.get(event.pointerId);
+      if (!touchKey) {
+        return;
+      }
+
+      event.preventDefault();
+      activeTouchKeys.delete(event.pointerId);
+      button.classList.remove("is-pressed");
+      dispatchVirtualKey("keyup", touchKey);
+    };
+
+    button.addEventListener("pointerup", releasePointer);
+    button.addEventListener("pointercancel", releasePointer);
+    button.addEventListener("lostpointercapture", releasePointer);
+  });
+
+  window.addEventListener("blur", releaseAllTouchKeys);
+  window.addEventListener("resize", applyTouchLayout);
+
+  mobileTouchControls.querySelectorAll("[data-touch-group]").forEach((group) => {
+    group.addEventListener("pointerdown", (event) => {
+      if (!touchLayoutEditMode || !isTouchLayoutOverlayMode()) {
+        return;
+      }
+
+      const hostRect = mobileTouchControls.getBoundingClientRect();
+      const groupRect = group.getBoundingClientRect();
+
+      activeTouchLayoutDrag = {
+        groupKey: group.dataset.touchGroup || "",
+        pointerId: event.pointerId,
+        offsetX: event.clientX - groupRect.left,
+        offsetY: event.clientY - groupRect.top,
+        hostRect,
+        width: groupRect.width,
+        height: groupRect.height,
+      };
+
+      group.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    group.addEventListener("pointermove", (event) => {
+      if (
+        !activeTouchLayoutDrag ||
+        activeTouchLayoutDrag.pointerId !== event.pointerId ||
+        activeTouchLayoutDrag.groupKey !== group.dataset.touchGroup
+      ) {
+        return;
+      }
+
+      const maxLeft = Math.max(activeTouchLayoutDrag.hostRect.width - activeTouchLayoutDrag.width, 0);
+      const maxTop = Math.max(activeTouchLayoutDrag.hostRect.height - activeTouchLayoutDrag.height, 0);
+      const left = clampTouchLayoutValue(
+        event.clientX - activeTouchLayoutDrag.hostRect.left - activeTouchLayoutDrag.offsetX,
+        0,
+        maxLeft,
+      );
+      const top = clampTouchLayoutValue(
+        event.clientY - activeTouchLayoutDrag.hostRect.top - activeTouchLayoutDrag.offsetY,
+        0,
+        maxTop,
+      );
+
+      const layout = loadTouchLayout();
+      layout[activeTouchLayoutDrag.groupKey] = {
+        x: Number(((left / activeTouchLayoutDrag.hostRect.width) * 100).toFixed(2)),
+        y: Number(((top / activeTouchLayoutDrag.hostRect.height) * 100).toFixed(2)),
+      };
+      saveTouchLayout(layout);
+      applyTouchLayout();
+      event.preventDefault();
+    });
+
+    const stopDrag = (event) => {
+      if (!activeTouchLayoutDrag || activeTouchLayoutDrag.pointerId !== event.pointerId) {
+        return;
+      }
+
+      activeTouchLayoutDrag = null;
+      event.preventDefault();
+    };
+
+    group.addEventListener("pointerup", stopDrag);
+    group.addEventListener("pointercancel", stopDrag);
+    group.addEventListener("lostpointercapture", stopDrag);
+  });
+}
+
+function disableMobileRuntimeContextMenu() {
+  if (!emulatorRuntime || !window.matchMedia("(max-width: 820px)").matches) {
+    return;
+  }
+
+  emulatorRuntime.addEventListener("contextmenu", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+}
+
+function isCompactTouchUi() {
+  return window.matchMedia("(max-width: 820px)").matches;
+}
+
+function getMobileToolbarContainer(node, runtimeHost) {
+  let current = node instanceof Element ? node : null;
+
+  while (current && current !== runtimeHost) {
+    const interactiveCount = current.querySelectorAll('button, [role="button"], input[type="range"]').length;
+    const hasVolumeSlider = Boolean(current.querySelector('input[type="range"]'));
+
+    if (hasVolumeSlider || interactiveCount >= 2) {
+      return current;
+    }
+
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
+function hideMobileEmulatorToolbar() {
+  if (!isCompactTouchUi()) {
+    return;
+  }
+
+  const runtimeHost = getEmulatorHost();
+  if (!runtimeHost) {
+    return;
+  }
+
+  const nodes = runtimeHost.querySelectorAll("*");
+
+  nodes.forEach((node) => {
+    const text = (node.textContent || "").trim().toLowerCase();
+    const title = (node.getAttribute("title") || "").trim().toLowerCase();
+    const ariaLabel = (node.getAttribute("aria-label") || "").trim().toLowerCase();
+    const matchesToolbarLabel = MOBILE_TOOLBAR_LABELS.some((label) =>
+      text.includes(label) || title.includes(label) || ariaLabel.includes(label),
+    );
+
+    if (!matchesToolbarLabel && !node.matches('input[type="range"]')) {
+      return;
+    }
+
+    const toolbarContainer = getMobileToolbarContainer(node, runtimeHost);
+    if (!toolbarContainer || toolbarContainer.dataset.ejsToolbarHidden === "true") {
+      return;
+    }
+
+    toolbarContainer.dataset.ejsToolbarHidden = "true";
+    toolbarContainer.style.display = "none";
+    toolbarContainer.style.pointerEvents = "none";
+  });
+}
+
+function ensureMobileToolbarObserver() {
+  if (!isCompactTouchUi() || !window.MutationObserver) {
+    return;
+  }
+
+  const runtimeHost = getEmulatorHost();
+  if (!runtimeHost) {
+    return;
+  }
+
+  if (mobileToolbarObserver) {
+    mobileToolbarObserver.disconnect();
+  }
+
+  mobileToolbarObserver = new MutationObserver(() => {
+    hideMobileEmulatorToolbar();
+  });
+
+  mobileToolbarObserver.observe(runtimeHost, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ["title", "aria-label", "style", "class"],
+  });
+
+  hideMobileEmulatorToolbar();
+}
+
+function getEmulatorToolbarConfig() {
+  if (!isCompactTouchUi()) {
+    return {};
+  }
+
+  return {
+    playPause: false,
+    restart: false,
+    mute: false,
+    settings: false,
+    fullscreen: false,
+    saveState: false,
+    loadState: false,
+    screenRecord: false,
+    gamepad: false,
+    cheat: false,
+    volume: false,
+    saveSavFiles: false,
+    loadSavFiles: false,
+    quickSave: false,
+    quickLoad: false,
+    screenshot: false,
+    cacheManager: false,
+    exitEmulation: false,
+  };
 }
 
 async function bootEmulator(file) {
@@ -1881,7 +2604,7 @@ async function bootEmulator(file) {
   syncSessionSummary();
 
   try {
-    activeRomUrl = await readFileAsDataUrl(file);
+    activeRomUrl = await readFileAsObjectUrl(file);
   } catch (error) {
     showRuntimeError("Nao consegui ler essa ROM local para iniciar o emulador.");
     return;
@@ -1893,13 +2616,15 @@ async function bootEmulator(file) {
 
   window.EJS_player = "#emulatorjs-player";
   window.EJS_core = "gba";
-  window.EJS_pathtodata = "https://cdn.emulatorjs.org/4.2.0/data/";
+  window.EJS_pathtodata = EMULATORJS_DATA_PATH;
+  window.EJS_gameName = getRomDisplayName(file);
   window.EJS_gameUrl = activeRomUrl;
   window.EJS_startOnLoaded = true;
   window.EJS_volume = 0.65;
+  window.EJS_Buttons = getEmulatorToolbarConfig();
 
   activeLoaderScript = document.createElement("script");
-  activeLoaderScript.src = `https://cdn.emulatorjs.org/4.2.0/data/loader.js?v=${Date.now()}`;
+  activeLoaderScript.src = `${EMULATORJS_DATA_PATH}loader.js?v=${Date.now()}`;
   activeLoaderScript.dataset.emulatorjsLoader = "true";
   activeLoaderScript.async = true;
 
@@ -1912,6 +2637,9 @@ async function bootEmulator(file) {
     emulatorRuntime.classList.add("is-visible");
     window.setTimeout(forceRuntimeSizing, 250);
     window.setTimeout(forceRuntimeSizing, 1200);
+    window.setTimeout(hideMobileEmulatorToolbar, 150);
+    window.setTimeout(hideMobileEmulatorToolbar, 800);
+    window.setTimeout(ensureMobileToolbarObserver, 150);
     romStatus.textContent = "Emulador em execucao";
     hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
@@ -2049,8 +2777,96 @@ if (dockFullscreen && emulatorRuntime) {
         }
       }
     } catch (error) {
-      showRuntimeError("O navegador bloqueou o fullscreen dessa sessao.");
+      showRuntimeHint("O navegador bloqueou o fullscreen dessa sessao.");
     }
+  });
+}
+
+if (mobileFullscreen && dockFullscreen) {
+  mobileFullscreen.addEventListener("click", () => {
+    dockFullscreen.click();
+  });
+}
+
+if (mobileEmulatorSettings) {
+  mobileEmulatorSettings.addEventListener("click", () => {
+    triggerEmulatorActionOrToast(
+      ["settings", "menu", "control settings"],
+      "Nao consegui abrir as configuracoes do emulador agora.",
+    );
+  });
+}
+
+if (mobilePokedexToggle && pokedexToggle) {
+  mobilePokedexToggle.addEventListener("click", () => {
+    pokedexToggle.click();
+  });
+}
+
+if (mobileSaveFile) {
+  mobileSaveFile.addEventListener("click", () => {
+    triggerEmulatorActionOrToast(
+      ["saveSavFiles", "save files", "export save file", "save file", "save"],
+      "Nao consegui abrir a exportacao de save agora.",
+    );
+  });
+}
+
+if (mobileLoadFile) {
+  mobileLoadFile.addEventListener("click", () => {
+    if (!document.body.classList.contains("has-rom")) {
+      showRuntimeHint("Carregue uma ROM antes de importar um save.");
+      return;
+    }
+
+    saveImportInput?.click();
+  });
+}
+
+if (mobileControlSettings) {
+  mobileControlSettings.addEventListener("click", () => {
+    triggerEmulatorActionOrToast(
+      ["gamepad", "control settings", "keyboard"],
+      "Nao consegui abrir os controles do emulador agora.",
+    );
+  });
+}
+
+if (mobileTouchLayoutToggle) {
+  mobileTouchLayoutToggle.addEventListener("click", () => {
+    touchLayoutEditMode = !touchLayoutEditMode;
+    document.body.classList.toggle("is-touch-layout-editing", touchLayoutEditMode);
+    mobileTouchLayoutToggle.textContent = touchLayoutEditMode ? "Fixar" : "Mover";
+    releaseAllTouchKeys();
+    applyTouchLayout();
+  });
+}
+
+if (saveImportInput) {
+  saveImportInput.addEventListener("change", () => {
+    const [file] = saveImportInput.files || [];
+
+    if (!file) {
+      return;
+    }
+
+    const imported = importSaveFileIntoEmulator(file);
+    if (!imported) {
+      const actionSucceeded = triggerEmulatorAction([
+        "loadSavFiles",
+        "load save files",
+        "load save file",
+        "import save file",
+        "upload save file",
+        "import",
+      ]);
+
+      if (!actionSucceeded && !openEmulatorHiddenFileInput("import-save")) {
+        showRuntimeHint("Nao consegui importar esse save agora.");
+      }
+    }
+
+    saveImportInput.value = "";
   });
 }
 
@@ -2263,6 +3079,9 @@ loadQuickDexHistory();
 syncPokedexTabs();
 syncLauncherTabs();
 syncDockState();
+disableMobileRuntimeContextMenu();
+setupMobileTouchControls();
+setupMobileActionFab();
 await loadRomLibrary();
 renderRecentRoms();
 syncSessionSummary();
