@@ -3697,7 +3697,6 @@ body.emulator-page {
 }
 
 @media (max-width: 820px) {
-  #dock-fullscreen,
   #pokedex-toggle {
     display: none;
   }
