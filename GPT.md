@@ -160,20 +160,22 @@ Funcionalidades relevantes:
 
 - upload local de ROM `.gba`
 - boot do EmulatorJS via CDN `4.2.3`
-- HUD visual inspirado em GBA
+- visual proprio da pagina em volta do player
 - botao externo de fullscreen da UI
 - Quick Dex lateral dentro da pagina do emulador
 - busca de Pokemon via PokeAPI sem alterar `pokedex.html`
 - fullscreen proprio da pagina, separado do fullscreen interno do EmulatorJS
 - biblioteca local de ROMs via `IndexedDB`
-- historico local de ROMs recentes
+- abrir ROM da biblioteca com um clique
+- card superior de `Retomar agora` com a ROM recente principal
 - capas locais para ROMs conhecidas e fallback automatico para outras ROMs
-- restauracao automatica da ultima ROM usada neste navegador
-- gamepad touch proprio da pagina no mobile
-- reposicionamento dos grupos do gamepad touch no mobile, com persistencia em `localStorage`
-- FAB de acoes no mobile com `Tela cheia`, `Pokedex`, `Config`, `Salvar`, `Importar`, `Controles` e `Mover`
+- gamepad visual nativo do EmulatorJS no mobile
 - importacao de save por fluxo proprio da pagina via seletor de arquivo
 - exportacao de save pela acao integrada ao EmulatorJS
+- saves importados persistidos localmente e vinculados a ROM
+- lista de saves recentes na aba `Sessao`, com reaplicar e excluir
+- launcher interno reorganizado em `Biblioteca`, `Sessao` e `Controles`
+- favoritos, filtros por versao e ordenacao mais rica na biblioteca
 
 Observacoes tecnicas importantes:
 
@@ -181,7 +183,7 @@ Observacoes tecnicas importantes:
 - o upload deve continuar funcionando mesmo se o `IndexedDB` falhar
 - o fullscreen correto para manter a Quick Dex e o da nossa UI, nao o interno do EmulatorJS
 - no mobile, o fullscreen tenta orientar em paisagem quando o navegador permitir
-- no mobile, a toolbar e o gamepad visual nativos do EmulatorJS ficam ocultos para nao conflitar com a UI touch propria da pagina
+- no mobile, o projeto usa o gamepad visual nativo do EmulatorJS
 - a Quick Dex do emulador vive em `emulator.js` e `emulator.css`, nao em `app.js`
 - capas locais conhecidas ficam em `assets/rom-covers/`
 - capas automaticas dependem de `RAWG_API_KEY` via backend em `server.js`

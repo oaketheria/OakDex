@@ -4,10 +4,24 @@ const romStatus =
 const romFileName =
   document.querySelector("#rom-file-name") || document.querySelector("#session-inline-rom");
 const sessionTitle = document.querySelector("#session-title");
+const sessionResumeHero = document.querySelector("#session-resume-hero");
+const sessionResumeCover = document.querySelector("#session-resume-cover");
+const sessionResumeKicker = document.querySelector("#session-resume-kicker");
+const sessionResumeDetail = document.querySelector("#session-resume-detail");
+const sessionResumeTags = document.querySelector("#session-resume-tags");
 const sessionInlineStatus = document.querySelector("#session-inline-status");
 const sessionInlineRom = document.querySelector("#session-inline-rom");
 const launcherSessionStatus = document.querySelector("#launcher-session-status");
 const launcherRomName = document.querySelector("#launcher-rom-name");
+const launcherSaveStatus = document.querySelector("#launcher-save-status");
+const launcherSaveDetail = document.querySelector("#launcher-save-detail");
+const sessionSaveList = document.querySelector("#session-save-list");
+const launcherRuntimeFlags = document.querySelector("#launcher-runtime-flags");
+const launcherRuntimeDetail = document.querySelector("#launcher-runtime-detail");
+const launcherPlaySummary = document.querySelector("#launcher-play-summary");
+const launcherPlayDetail = document.querySelector("#launcher-play-detail");
+const sessionExportSaveButton = document.querySelector("#session-export-save");
+const sessionImportSaveButton = document.querySelector("#session-import-save");
 const romLibraryList = document.querySelector("#rom-library-list");
 const romLibraryCount = document.querySelector("#rom-library-count");
 const romLibrarySearch = document.querySelector("#rom-library-search");
@@ -15,9 +29,9 @@ const romLibrarySort = document.querySelector("#rom-library-sort");
 const romLibraryResults = document.querySelector("#rom-library-results");
 const romLibraryFooter = document.querySelector("#rom-library-footer");
 const romLibraryMore = document.querySelector("#rom-library-more");
+const romLibraryFilters = [...document.querySelectorAll("[data-library-filter]")];
 const recentRomList = document.querySelector("#recent-rom-list");
 const clearLastRomButton = document.querySelector("#clear-last-rom");
-const demoToggle = document.querySelector("#demo-toggle");
 const hudMode = document.querySelector("#hud-mode");
 const screenBadge = document.querySelector(".screen-badge");
 const screenBadgeInline = document.querySelector("#screen-badge-inline");
@@ -26,19 +40,8 @@ const emulatorLoading = document.querySelector("#emulator-loading");
 const emulatorError = document.querySelector("#emulator-error");
 const emulatorErrorMessage = document.querySelector("#emulator-error-message");
 const dockFullscreen = document.querySelector("#dock-fullscreen");
-const mobileActionFab = document.querySelector("#mobile-action-fab");
-const mobileActionFabToggle = document.querySelector("#mobile-action-fab-toggle");
-const mobileActionFabPanel = document.querySelector("#mobile-action-fab-panel");
-const mobileFullscreen = document.querySelector("#mobile-fullscreen");
-const mobilePokedexToggle = document.querySelector("#mobile-pokedex-toggle");
-const mobileEmulatorSettings = document.querySelector("#mobile-emulator-settings");
-const mobileSaveFile = document.querySelector("#mobile-save-file");
-const mobileLoadFile = document.querySelector("#mobile-load-file");
-const mobileControlSettings = document.querySelector("#mobile-control-settings");
-const mobileTouchLayoutToggle = document.querySelector("#mobile-touch-layout-toggle");
-const mobileActionHint = document.querySelector("#mobile-action-hint");
 const saveImportInput = document.querySelector("#save-import-input");
-const mobileTouchControls = document.querySelector("#mobile-touch-controls");
+const playSpace = document.querySelector("#play-space");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
 const pokedexPanel = document.querySelector("#emulator-pokedex-panel");
@@ -60,49 +63,30 @@ let fullDexList = [];
 let quickDexHistory = [];
 let activeDexTab = "dados";
 let currentQuickDexPokemon = null;
-let activeLauncherTab = "recentes";
+let activeLauncherTab = "biblioteca";
 let romLibrary = [];
 let activeRomId = "";
 let activeBootToken = 0;
 let romLibraryQuery = "";
 let romLibrarySortMode = "recent";
 let romLibraryExpanded = false;
+let romLibraryFilter = "all";
 let mobileToolbarObserver = null;
-let touchLayoutEditMode = false;
-let activeTouchLayoutDrag = null;
-let mobileActionFabOpen = false;
-let mobileActionFabDrag = null;
-let mobileActionFabPositionPx = null;
-const activeTouchKeys = new Map();
+let fullscreenControlScreenObserver = null;
+let activeSessionStartedAt = 0;
 
 const EMULATORJS_CDN_VERSION = "4.2.3";
 const EMULATORJS_DATA_PATH = `https://cdn.emulatorjs.org/${EMULATORJS_CDN_VERSION}/data/`;
 const ROM_DB_NAME = "pokemon-emerald-gx";
 const ROM_STORE_NAME = "rom-library";
+const SAVE_STORE_NAME = "save-library";
 const LAST_ROM_STORAGE_KEY = "emulatorLastRomId";
 const RECENT_ROMS_STORAGE_KEY = "emulatorRecentRoms";
 const PENDING_ROM_BOOT_KEY = "emulatorPendingRomBoot";
+const SESSION_META_STORAGE_KEY = "emulatorSessionMeta";
 const RECENT_ROMS_LIMIT = 3;
 const ROM_LIBRARY_PAGE_SIZE = 6;
 const MOBILE_TOOLBAR_LABELS = ["context menu", "settings", "menu", "fullscreen", "save"];
-const TOUCH_LAYOUT_STORAGE_KEY = "emulatorTouchLayout";
-const MOBILE_ACTION_FAB_STORAGE_KEY = "emulatorMobileActionFab";
-const DEFAULT_TOUCH_LAYOUT = {
-  dpad: { x: 4, y: 52 },
-  actions: { x: 76, y: 54 },
-  meta: { x: 36, y: 82 },
-};
-const DEFAULT_MOBILE_ACTION_FAB_POSITION = { x: 82, y: 74 };
-const TOUCH_KEY_MAP = {
-  ArrowUp: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
-  ArrowDown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
-  ArrowLeft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
-  ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
-  z: { key: "z", code: "KeyZ", keyCode: 90 },
-  x: { key: "x", code: "KeyX", keyCode: 88 },
-  Enter: { key: "Enter", code: "Enter", keyCode: 13 },
-  Shift: { key: "Shift", code: "ShiftLeft", keyCode: 16 },
-};
 
 const dexTypeGlow = {
   normal: "190 188 138",
@@ -175,12 +159,285 @@ function syncSessionSummary() {
   if (sessionInlineRom) {
     sessionInlineRom.textContent = romText;
   }
+
+  if (launcherRuntimeFlags) {
+    const flags = [];
+    if (document.body.classList.contains("has-rom")) {
+      flags.push("ROM ativa");
+    }
+    if (document.fullscreenElement) {
+      flags.push("Tela cheia");
+    }
+    flags.push(emulationPaused ? "Pausado" : "Ao vivo");
+    launcherRuntimeFlags.textContent = flags.join(" • ");
+  }
+
+  if (launcherRuntimeDetail) {
+    launcherRuntimeDetail.textContent = document.fullscreenElement
+      ? "Fullscreen ativo e sessao em destaque."
+      : "Sessao local pronta para jogar neste navegador.";
+  }
+
+  syncSessionInsights();
+}
+
+function loadSessionMeta() {
+  try {
+    const saved = window.localStorage.getItem(SESSION_META_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveSessionMeta(nextMeta) {
+  try {
+    const current = loadSessionMeta();
+    window.localStorage.setItem(SESSION_META_STORAGE_KEY, JSON.stringify({ ...current, ...nextMeta }));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function formatRelativeTime(timestamp) {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return "agora mesmo";
+  }
+
+  const diffMs = Date.now() - timestamp;
+  const diffMinutes = Math.max(Math.round(diffMs / 60000), 0);
+
+  if (diffMinutes < 1) {
+    return "agora mesmo";
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} min atras`;
+  }
+
+  const diffHours = Math.round(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours} h atras`;
+  }
+
+  const diffDays = Math.round(diffHours / 24);
+  return `${diffDays} d atras`;
+}
+
+function inferRomVersion(name) {
+  const normalized = formatRomTitle(name).toLowerCase();
+  if (normalized.includes("emerald")) return "emerald";
+  if (normalized.includes("fire red") || normalized.includes("firered")) return "fire red";
+  if (normalized.includes("leaf green") || normalized.includes("leafgreen")) return "leaf green";
+  if (normalized.includes("ruby")) return "ruby";
+  if (normalized.includes("sapphire")) return "sapphire";
+  return "other";
+}
+
+function getVersionLabel(version) {
+  const labels = {
+    emerald: "Emerald",
+    "fire red": "Fire Red",
+    "leaf green": "Leaf Green",
+    ruby: "Ruby",
+    sapphire: "Sapphire",
+    other: "Outra ROM",
+  };
+  return labels[version] || "Outra ROM";
+}
+
+function syncSessionInsights() {
+  const sessionMeta = loadSessionMeta();
+  const lastSaveAction = sessionMeta.lastSaveAction || "";
+  const lastSaveAt = Number(sessionMeta.lastSaveAt || 0);
+
+  if (launcherSaveStatus) {
+    launcherSaveStatus.textContent = lastSaveAction || "Nenhuma acao recente";
+  }
+
+  if (launcherSaveDetail) {
+    launcherSaveDetail.textContent = lastSaveAction
+      ? `Ultimo evento: ${formatRelativeTime(lastSaveAt)}.`
+      : "Importacoes e exportacoes de save vao aparecer aqui.";
+  }
+
+  const latestPlayedEntry = [...romLibrary].sort((a, b) => (b.lastPlayedAt || 0) - (a.lastPlayedAt || 0))[0];
+  if (launcherPlaySummary) {
+    launcherPlaySummary.textContent = latestPlayedEntry
+      ? `${formatRomTitle(latestPlayedEntry.name)} • ${formatRelativeTime(latestPlayedEntry.lastPlayedAt || latestPlayedEntry.updatedAt || 0)}`
+      : "Sem historico recente";
+  }
+
+  if (launcherPlayDetail) {
+    const minutes = latestPlayedEntry?.playMinutes || 0;
+    launcherPlayDetail.textContent = latestPlayedEntry
+      ? `Tempo local estimado: ${minutes ? `${minutes} min` : "ainda sem estimativa"}.`
+      : "A ultima jogada e o tempo local estimado vao aparecer aqui.";
+  }
+}
+
+function getActiveRomBaseName() {
+  return formatRomTitle(romFileName?.textContent || sessionInlineRom?.textContent || sessionTitle?.textContent || "");
+}
+
+function matchesSaveToRom(saveName, romName) {
+  const normalizedSave = normalizeQuickDexSearch(String(saveName || "").replace(/\.(sav|srm|state|slot)$/i, ""));
+  const normalizedRom = normalizeQuickDexSearch(String(romName || "").replace(/\s*-\s*biblioteca local/i, ""));
+  return Boolean(normalizedSave && normalizedRom && normalizedSave.includes(normalizedRom));
+}
+
+async function loadStoredSaves() {
+  return withSaveStore("readonly", (store, resolve, reject, database) => {
+    const request = store.getAll();
+
+    request.addEventListener("success", () => {
+      database.close();
+      resolve(request.result || []);
+    });
+
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao listar saves."));
+    });
+  });
+}
+
+async function saveImportedSaveFile(file) {
+  if (!(file instanceof File)) {
+    return;
+  }
+
+  const linkedRomName = getActiveRomBaseName();
+  const record = {
+    id: `${file.name}-${file.size}-${file.lastModified}-${Date.now()}`,
+    name: file.name,
+    size: file.size,
+    linkedRomName,
+    importedAt: Date.now(),
+    file,
+  };
+
+  await withSaveStore("readwrite", (store, resolve, reject, database) => {
+    const request = store.put(record);
+    request.addEventListener("success", () => {
+      database.close();
+      resolve();
+    });
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao salvar save importado."));
+    });
+  });
+}
+
+async function getStoredSave(saveId) {
+  return withSaveStore("readonly", (store, resolve, reject, database) => {
+    const request = store.get(saveId);
+    request.addEventListener("success", () => {
+      database.close();
+      resolve(request.result || null);
+    });
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao abrir save local."));
+    });
+  });
+}
+
+async function deleteStoredSave(saveId) {
+  await withSaveStore("readwrite", (store, resolve, reject, database) => {
+    const request = store.delete(saveId);
+    request.addEventListener("success", () => {
+      database.close();
+      resolve();
+    });
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao remover save local."));
+    });
+  });
+}
+
+async function renderStoredSaves() {
+  if (!sessionSaveList) {
+    return;
+  }
+
+  try {
+    const activeRomName = getActiveRomBaseName();
+    const saves = await loadStoredSaves();
+    const visibleSaves = saves
+      .filter((entry) => !activeRomName || matchesSaveToRom(entry.linkedRomName || entry.name, activeRomName))
+      .sort((first, second) => (second.importedAt || 0) - (first.importedAt || 0))
+      .slice(0, 4);
+
+    if (!visibleSaves.length) {
+      sessionSaveList.innerHTML = '<p class="rom-library-empty">Nenhum save recente salvo neste navegador.</p>';
+      return;
+    }
+
+    sessionSaveList.innerHTML = visibleSaves
+      .map(
+        (entry) => `
+          <article class="session-save-item">
+            <button type="button" class="session-save-load" data-load-save="${entry.id}">
+              <strong>${entry.name}</strong>
+              <span>${entry.linkedRomName || "ROM local"} • ${formatRelativeTime(entry.importedAt)}</span>
+              <span>${formatBytes(entry.size)} • ${entry.name.split(".").pop()?.toUpperCase() || "SAVE"}</span>
+            </button>
+            <button type="button" class="session-save-remove" data-delete-save="${entry.id}" aria-label="Excluir save importado">Excluir</button>
+          </article>
+        `,
+      )
+      .join("");
+  } catch (error) {
+    sessionSaveList.innerHTML = '<p class="rom-library-empty">Nao foi possivel listar os saves locais.</p>';
+  }
 }
 
 function setSessionTitleText(value) {
   if (sessionTitle) {
     sessionTitle.textContent = value;
   }
+}
+
+function renderSessionResumeHero(featuredEntry) {
+  if (
+    !sessionResumeHero ||
+    !sessionResumeCover ||
+    !sessionResumeKicker ||
+    !sessionTitle ||
+    !sessionResumeDetail ||
+    !sessionResumeTags
+  ) {
+    return;
+  }
+
+  if (!featuredEntry) {
+    sessionResumeHero.disabled = true;
+    sessionResumeHero.removeAttribute("data-rom-launch");
+    sessionResumeCover.innerHTML = "";
+    sessionResumeKicker.textContent = "Emulador";
+    sessionTitle.textContent = "Oak Emulator";
+    sessionResumeDetail.textContent = "Sua proxima retomada vai aparecer aqui assim que voce jogar uma ROM.";
+    sessionResumeTags.innerHTML = "";
+    return;
+  }
+
+  const minutes = Number(featuredEntry.playMinutes || 0);
+  const progressLabel = minutes ? `${minutes} min locais` : "Sem tempo estimado";
+  const version = inferRomVersion(featuredEntry.name);
+  sessionResumeHero.disabled = false;
+  sessionResumeHero.dataset.romLaunch = featuredEntry.id;
+  sessionResumeCover.innerHTML = getRomCoverMarkup(featuredEntry);
+  sessionResumeKicker.textContent = "Retomar agora";
+  sessionTitle.textContent = formatRomTitle(featuredEntry.name);
+  sessionResumeDetail.textContent = `${featuredEntry.lastPlayedLabel || "Ultima sessao"} - ${progressLabel}`;
+  sessionResumeTags.innerHTML = `
+    ${version !== "other" ? `<span class="session-resume-tag">${getVersionLabel(version)}</span>` : ""}
+    ${featuredEntry.favorite ? '<span class="session-resume-tag session-resume-tag-favorite">Favorita</span>' : ""}
+    ${featuredEntry.id === activeRomId ? '<span class="session-resume-tag session-resume-tag-live">Em execucao</span>' : ""}
+  `;
 }
 
 function syncLauncherTabs() {
@@ -202,13 +459,17 @@ function openRomLibraryDb() {
       return;
     }
 
-    const request = window.indexedDB.open(ROM_DB_NAME, 1);
+    const request = window.indexedDB.open(ROM_DB_NAME, 2);
 
     request.addEventListener("upgradeneeded", () => {
       const database = request.result;
 
       if (!database.objectStoreNames.contains(ROM_STORE_NAME)) {
         database.createObjectStore(ROM_STORE_NAME, { keyPath: "id" });
+      }
+
+      if (!database.objectStoreNames.contains(SAVE_STORE_NAME)) {
+        database.createObjectStore(SAVE_STORE_NAME, { keyPath: "id" });
       }
     });
 
@@ -274,6 +535,31 @@ function saveLastRomSelection(romId) {
   }
 }
 
+async function withSaveStore(mode, callback) {
+  const database = await openRomLibraryDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(SAVE_STORE_NAME, mode);
+    const store = transaction.objectStore(SAVE_STORE_NAME);
+
+    transaction.addEventListener("complete", () => {
+      database.close();
+    });
+
+    transaction.addEventListener("error", () => {
+      database.close();
+      reject(transaction.error || new Error("Falha ao acessar a biblioteca de saves."));
+    });
+
+    try {
+      callback(store, resolve, reject, database);
+    } catch (error) {
+      database.close();
+      reject(error);
+    }
+  });
+}
+
 function getLastRomSelection() {
   try {
     return window.localStorage.getItem(LAST_ROM_STORAGE_KEY) || "";
@@ -329,259 +615,6 @@ function saveRecentRoms(entries) {
   }
 }
 
-function loadTouchLayout() {
-  try {
-    const saved = window.localStorage.getItem(TOUCH_LAYOUT_STORAGE_KEY);
-    if (!saved) {
-      return { ...DEFAULT_TOUCH_LAYOUT };
-    }
-
-    const parsed = JSON.parse(saved);
-    return {
-      dpad: {
-        x: Number(parsed?.dpad?.x ?? DEFAULT_TOUCH_LAYOUT.dpad.x),
-        y: Number(parsed?.dpad?.y ?? DEFAULT_TOUCH_LAYOUT.dpad.y),
-      },
-      actions: {
-        x: Number(parsed?.actions?.x ?? DEFAULT_TOUCH_LAYOUT.actions.x),
-        y: Number(parsed?.actions?.y ?? DEFAULT_TOUCH_LAYOUT.actions.y),
-      },
-      meta: {
-        x: Number(parsed?.meta?.x ?? DEFAULT_TOUCH_LAYOUT.meta.x),
-        y: Number(parsed?.meta?.y ?? DEFAULT_TOUCH_LAYOUT.meta.y),
-      },
-    };
-  } catch (error) {
-    return { ...DEFAULT_TOUCH_LAYOUT };
-  }
-}
-
-function saveTouchLayout(layout) {
-  try {
-    window.localStorage.setItem(TOUCH_LAYOUT_STORAGE_KEY, JSON.stringify(layout));
-  } catch (error) {
-    // Ignore storage failures.
-  }
-}
-
-function loadMobileActionFabPosition() {
-  try {
-    const saved = window.localStorage.getItem(MOBILE_ACTION_FAB_STORAGE_KEY);
-    if (!saved) {
-      return { ...DEFAULT_MOBILE_ACTION_FAB_POSITION };
-    }
-
-    const parsed = JSON.parse(saved);
-    return {
-      x: Number(parsed?.x ?? DEFAULT_MOBILE_ACTION_FAB_POSITION.x),
-      y: Number(parsed?.y ?? DEFAULT_MOBILE_ACTION_FAB_POSITION.y),
-    };
-  } catch (error) {
-    return { ...DEFAULT_MOBILE_ACTION_FAB_POSITION };
-  }
-}
-
-function saveMobileActionFabPosition(position) {
-  try {
-    window.localStorage.setItem(MOBILE_ACTION_FAB_STORAGE_KEY, JSON.stringify(position));
-  } catch (error) {
-    // Ignore storage failures.
-  }
-}
-
-function isTouchLayoutOverlayMode() {
-  return (
-    isCompactTouchUi() &&
-    window.matchMedia("(orientation: landscape)").matches &&
-    document.body.classList.contains("has-rom")
-  );
-}
-
-function clampTouchLayoutValue(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function applyTouchLayout() {
-  if (!mobileTouchControls) {
-    return;
-  }
-
-  const groups = mobileTouchControls.querySelectorAll("[data-touch-group]");
-  if (!groups.length) {
-    return;
-  }
-
-  if (!isTouchLayoutOverlayMode()) {
-    if (touchLayoutEditMode) {
-      touchLayoutEditMode = false;
-      document.body.classList.remove("is-touch-layout-editing");
-      if (mobileTouchLayoutToggle) {
-        mobileTouchLayoutToggle.textContent = "Mover";
-      }
-    }
-
-    groups.forEach((group) => {
-      group.style.left = "";
-      group.style.top = "";
-    });
-    return;
-  }
-
-  const layout = loadTouchLayout();
-
-  groups.forEach((group) => {
-    const key = group.dataset.touchGroup;
-    const position = layout[key];
-    if (!position) {
-      return;
-    }
-
-    group.style.left = `${position.x}%`;
-    group.style.top = `${position.y}%`;
-  });
-}
-
-function setMobileActionFabOpen(nextOpen) {
-  if (!mobileActionFab || !mobileActionFabToggle || !mobileActionFabPanel) {
-    return;
-  }
-
-  mobileActionFabOpen = nextOpen;
-  mobileActionFab.classList.toggle("is-open", nextOpen);
-  mobileActionFabToggle.setAttribute("aria-expanded", String(nextOpen));
-  mobileActionFabPanel.hidden = !nextOpen;
-}
-
-function applyMobileActionFabPosition() {
-  if (!mobileActionFab || !isCompactTouchUi()) {
-    return;
-  }
-
-  const fabWidth = 54;
-  const fabHeight = 54;
-  const position = mobileActionFabPositionPx || loadMobileActionFabPosition();
-  const maxLeft = Math.max(window.innerWidth - fabWidth - 8, 8);
-  const maxTop = Math.max(window.innerHeight - fabHeight - 8, 8);
-  const rawLeft = position.unit === "px" ? position.x : (position.x / 100) * window.innerWidth;
-  const rawTop = position.unit === "px" ? position.y : (position.y / 100) * window.innerHeight;
-  const left = clampTouchLayoutValue(rawLeft, 8, maxLeft);
-  const top = clampTouchLayoutValue(rawTop, 8, maxTop);
-
-  mobileActionFab.style.left = `${left}px`;
-  mobileActionFab.style.top = `${top}px`;
-  mobileActionFab.style.right = "auto";
-  mobileActionFab.style.bottom = "auto";
-}
-
-function setupMobileActionFab() {
-  if (!mobileActionFab || !mobileActionFabToggle || !mobileActionFabPanel) {
-    return;
-  }
-
-  applyMobileActionFabPosition();
-  setMobileActionFabOpen(false);
-
-  mobileActionFabToggle.addEventListener("click", (event) => {
-    if (mobileActionFabDrag?.moved) {
-      mobileActionFabDrag.moved = false;
-      return;
-    }
-
-    event.preventDefault();
-    setMobileActionFabOpen(!mobileActionFabOpen);
-  });
-
-  mobileActionFabToggle.addEventListener("pointerdown", (event) => {
-    if (!isCompactTouchUi()) {
-      return;
-    }
-
-    event.preventDefault();
-    const rect = mobileActionFabToggle.getBoundingClientRect();
-    mobileActionFabDrag = {
-      pointerId: event.pointerId,
-      offsetX: event.clientX - rect.left,
-      offsetY: event.clientY - rect.top,
-      startX: event.clientX,
-      startY: event.clientY,
-      moved: false,
-    };
-    mobileActionFabToggle.setPointerCapture?.(event.pointerId);
-  });
-
-  const stopFabDrag = (event) => {
-    if (!mobileActionFabDrag || mobileActionFabDrag.pointerId !== event.pointerId) {
-      return;
-    }
-
-    if (mobileActionFabPositionPx) {
-      const position = {
-        x: Number(((mobileActionFabPositionPx.x / Math.max(window.innerWidth, 1)) * 100).toFixed(2)),
-        y: Number(((mobileActionFabPositionPx.y / Math.max(window.innerHeight, 1)) * 100).toFixed(2)),
-      };
-      saveMobileActionFabPosition(position);
-      mobileActionFabPositionPx = null;
-      applyMobileActionFabPosition();
-    }
-
-    mobileActionFabDrag = null;
-  };
-
-  mobileActionFabToggle.addEventListener("pointermove", (event) => {
-    if (!mobileActionFabDrag || mobileActionFabDrag.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const deltaX = event.clientX - mobileActionFabDrag.startX;
-    const deltaY = event.clientY - mobileActionFabDrag.startY;
-    const distance = Math.hypot(deltaX, deltaY);
-
-    if (!mobileActionFabDrag.moved && distance < 8) {
-      return;
-    }
-
-    const width = 54;
-    const height = 54;
-    const maxLeft = Math.max(window.innerWidth - width, 0);
-    const maxTop = Math.max(window.innerHeight - height, 0);
-    const left = clampTouchLayoutValue(event.clientX - mobileActionFabDrag.offsetX, 8, maxLeft - 8);
-    const top = clampTouchLayoutValue(event.clientY - mobileActionFabDrag.offsetY, 8, maxTop - 8);
-
-    mobileActionFabDrag.moved = true;
-    mobileActionFabPositionPx = {
-      unit: "px",
-      x: left,
-      y: top,
-    };
-    applyMobileActionFabPosition();
-    event.preventDefault();
-  });
-
-  mobileActionFabToggle.addEventListener("pointerup", stopFabDrag);
-  mobileActionFabToggle.addEventListener("pointercancel", stopFabDrag);
-  mobileActionFabToggle.addEventListener("lostpointercapture", stopFabDrag);
-
-  document.addEventListener("pointerdown", (event) => {
-    if (!mobileActionFabOpen || mobileActionFab.contains(event.target)) {
-      return;
-    }
-
-    setMobileActionFabOpen(false);
-  });
-
-  mobileActionFabPanel.addEventListener("click", (event) => {
-    if (!(event.target instanceof HTMLElement) || !event.target.closest("button")) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      setMobileActionFabOpen(false);
-    }, 0);
-  });
-
-  window.addEventListener("resize", applyMobileActionFabPosition);
-}
-
 function pushRecentRom(entry) {
   const nextEntries = [entry, ...loadRecentRoms().filter((item) => item.id !== entry.id)].slice(0, 6);
   saveRecentRoms(nextEntries);
@@ -589,6 +622,23 @@ function pushRecentRom(entry) {
 
 function getSortedRomLibrary(entries) {
   const nextEntries = [...entries];
+
+  if (romLibrarySortMode === "favorite") {
+    nextEntries.sort((first, second) => {
+      const favoriteDelta = Number(Boolean(second.favorite)) - Number(Boolean(first.favorite));
+      if (favoriteDelta) {
+        return favoriteDelta;
+      }
+
+      return (second.updatedAt || 0) - (first.updatedAt || 0);
+    });
+    return nextEntries;
+  }
+
+  if (romLibrarySortMode === "lastplayed") {
+    nextEntries.sort((first, second) => (second.lastPlayedAt || 0) - (first.lastPlayedAt || 0));
+    return nextEntries;
+  }
 
   if (romLibrarySortMode === "az") {
     nextEntries.sort((first, second) => formatRomTitle(first.name).localeCompare(formatRomTitle(second.name), "pt-BR"));
@@ -607,6 +657,13 @@ function getSortedRomLibrary(entries) {
 function getVisibleRomLibraryEntries() {
   const normalizedQuery = normalizeQuickDexSearch(romLibraryQuery);
   const filteredEntries = getSortedRomLibrary(romLibrary).filter((entry) => {
+    const version = inferRomVersion(entry.name);
+    const passesFilter = romLibraryFilter === "all" || romLibraryFilter === version;
+
+    if (!passesFilter) {
+      return false;
+    }
+
     if (!normalizedQuery) {
       return true;
     }
@@ -842,20 +899,29 @@ function getRomCoverMarkup(entry) {
 }
 
 function renderRecentRoms() {
-  if (!recentRomList) {
+  if (!recentRomList && !sessionResumeHero) {
     return;
   }
 
   const recentEntries = hydrateRecentRomEntries(loadRecentRoms()).slice(0, RECENT_ROMS_LIMIT);
+  const resumeLabel = "Retomar";
 
   if (!recentEntries.length) {
-    recentRomList.innerHTML = '<p class="rom-library-empty">Seu historico de jogos vai aparecer aqui.</p>';
+    renderSessionResumeHero(null);
+    if (recentRomList) {
+      recentRomList.innerHTML = '<p class="rom-library-empty">Seu historico de jogos vai aparecer aqui.</p>';
+    }
     return;
   }
 
-  recentRomList.innerHTML = recentEntries
-    .map(
-      (entry) => `
+  const [featuredEntry, ...queueEntries] = recentEntries;
+  renderSessionResumeHero(featuredEntry);
+
+  if (recentRomList) {
+    recentRomList.innerHTML = queueEntries.length
+      ? queueEntries
+          .map(
+            (entry) => `
         <button
           type="button"
           class="recent-rom-card${entry.id === activeRomId ? " is-active" : ""}"
@@ -866,14 +932,20 @@ function renderRecentRoms() {
             <strong>${formatRomTitle(entry.name)}</strong>
             <span>${entry.lastPlayedLabel || "Ultima sessao"}</span>
           </span>
+          <span class="rom-card-tag-row">
+            <span class="rom-card-tag">${getVersionLabel(inferRomVersion(entry.name))}</span>
+            ${entry.favorite ? '<span class="rom-card-tag rom-card-tag-favorite">Favorita</span>' : ""}
+          </span>
           <span class="rom-card-badge-row">
             ${entry.id === activeRomId ? '<span class="rom-card-badge rom-card-badge-live">Em execucao</span>' : ""}
-            <span class="rom-card-badge">Retomar</span>
+            <span class="rom-card-badge">${resumeLabel}</span>
           </span>
         </button>
       `,
-    )
-    .join("");
+          )
+          .join("")
+      : '<p class="rom-library-empty">A ROM principal da sessao ja esta destacada acima.</p>';
+  }
 }
 
 function renderRomLibrary() {
@@ -882,6 +954,7 @@ function renderRomLibrary() {
   }
 
   const lastRomId = getLastRomSelection();
+  const launchLabel = "Jogar";
   romLibraryCount.textContent =
     romLibrary.length === 1 ? "1 ROM salva" : romLibrary.length ? `${romLibrary.length} ROMs salvas` : "Nenhuma ROM salva";
 
@@ -927,16 +1000,23 @@ function renderRomLibrary() {
       (entry) => `
         <article class="rom-library-card${entry.id === lastRomId ? " is-last-used" : ""}${entry.id === activeRomId ? " is-active" : ""}">
           ${getRomCoverMarkup(entry)}
+          <button type="button" class="rom-favorite-toggle${entry.favorite ? " is-active" : ""}" data-rom-favorite="${entry.id}" aria-label="${entry.favorite ? "Remover dos favoritos" : "Marcar como favorita"}">★</button>
           <div class="rom-library-card-copy">
             <strong>${formatRomTitle(entry.name)}</strong>
             <span>${formatBytes(entry.size)}</span>
           </div>
+          <div class="rom-card-tag-row">
+            <span class="rom-card-tag">${getVersionLabel(inferRomVersion(entry.name))}</span>
+            ${entry.playMinutes ? `<span class="rom-card-tag">${entry.playMinutes} min</span>` : ""}
+            ${entry.lastPlayedAt ? `<span class="rom-card-tag">Jogada ${formatRelativeTime(entry.lastPlayedAt)}</span>` : ""}
+          </div>
           <div class="rom-card-badge-row">
             ${entry.id === activeRomId ? '<span class="rom-card-badge rom-card-badge-live">Em execucao</span>' : ""}
             ${entry.id === lastRomId ? '<span class="rom-card-badge">Ultima jogada</span>' : ""}
+            ${entry.favorite ? '<span class="rom-card-badge">Favorita</span>' : ""}
           </div>
           <div class="rom-library-card-actions">
-            <button type="button" class="library-card-button" data-rom-launch="${entry.id}">Jogar</button>
+            <button type="button" class="library-card-button" data-rom-launch="${entry.id}">${launchLabel}</button>
             <button type="button" class="library-card-button is-secondary" data-rom-delete="${entry.id}">Remover</button>
           </div>
         </article>
@@ -1115,12 +1195,16 @@ async function loadRomLibrary() {
 
 async function saveRomToLibrary(file) {
   const coverUrl = await fetchAutomaticRomCover(file.name);
+  const existingRecord = romLibrary.find((entry) => entry.id === createRomId(file));
   const record = {
     id: createRomId(file),
     name: file.name,
     size: file.size,
     updatedAt: Date.now(),
     coverUrl,
+    favorite: existingRecord?.favorite || false,
+    lastPlayedAt: existingRecord?.lastPlayedAt || 0,
+    playMinutes: existingRecord?.playMinutes || 0,
     file,
   };
 
@@ -1187,9 +1271,8 @@ async function launchLibraryRom(romId) {
     throw new Error("Nao encontrei essa ROM na biblioteca local.");
   }
 
-  const shouldColdBoot = shouldColdBootRom(entry.id);
-
   activeRomId = entry.id;
+  activeSessionStartedAt = Date.now();
   saveLastRomSelection(entry.id);
   pushRecentRom({
     id: entry.id,
@@ -1199,13 +1282,24 @@ async function launchLibraryRom(romId) {
   romFileName.textContent = `${entry.name} - Biblioteca local`;
   setSessionTitleText(formatRomTitle(entry.name));
 
-  if (shouldColdBoot) {
-    scheduleColdRomBoot(entry.id);
-    return;
-  }
+  entry.lastPlayedAt = Date.now();
+  await withRomStore("readwrite", (store, resolve, reject, database) => {
+    const request = store.put(entry);
+
+    request.addEventListener("success", () => {
+      database.close();
+      resolve();
+    });
+
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao atualizar ultima jogada."));
+    });
+  });
 
   await bootEmulator(entry.file);
   renderRomLibrary();
+  void renderStoredSaves();
 }
 
 function setPokedexOpen(open) {
@@ -2170,24 +2264,77 @@ function triggerEmulatorActionOrToast(actionNames, message) {
   if (!actionSucceeded && message) {
     showRuntimeHint(message);
   }
+
+  return actionSucceeded;
 }
 
 function showRuntimeHint(message) {
-  if (mobileActionHint) {
-    mobileActionHint.textContent = message;
-    mobileActionHint.hidden = false;
-  } else if (romStatus) {
+  if (romStatus) {
     romStatus.textContent = message;
   }
 
   window.setTimeout(() => {
-    if (mobileActionHint) {
-      mobileActionHint.hidden = true;
-      mobileActionHint.textContent = "";
-    } else if (romStatus && document.body.classList.contains("has-rom")) {
+    if (romStatus && document.body.classList.contains("has-rom")) {
       romStatus.textContent = "Emulador em execucao";
     }
   }, 2200);
+}
+
+async function updateRomLibraryEntry(romId, updater) {
+  if (!romId) {
+    return;
+  }
+
+  const entry = await getRomFromLibrary(romId);
+  if (!entry) {
+    return;
+  }
+
+  const nextEntry = updater({ ...entry }) || entry;
+  await withRomStore("readwrite", (store, resolve, reject, database) => {
+    const request = store.put(nextEntry);
+    request.addEventListener("success", () => {
+      database.close();
+      resolve();
+    });
+    request.addEventListener("error", () => {
+      database.close();
+      reject(request.error || new Error("Falha ao atualizar ROM."));
+    });
+  });
+}
+
+async function flushActiveSessionPlaytime() {
+  if (!activeRomId || !activeSessionStartedAt) {
+    return;
+  }
+
+  const elapsedMinutes = Math.max(Math.round((Date.now() - activeSessionStartedAt) / 60000), 0);
+  activeSessionStartedAt = Date.now();
+
+  if (!elapsedMinutes) {
+    return;
+  }
+
+  await updateRomLibraryEntry(activeRomId, (entry) => {
+    entry.playMinutes = Number(entry.playMinutes || 0) + elapsedMinutes;
+    entry.lastPlayedAt = Date.now();
+    return entry;
+  });
+}
+
+async function exitFullscreenIfActive() {
+  const fullscreenElement = document.fullscreenElement;
+  if (!fullscreenElement || typeof document.exitFullscreen !== "function") {
+    return false;
+  }
+
+  try {
+    await document.exitFullscreen();
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 function resetRuntimeState() {
@@ -2269,201 +2416,11 @@ function clearExistingRuntime() {
     emulatorRuntime.classList.remove("is-visible");
   }
   setEmulationReady(false);
-}
-
-function forceRuntimeSizing() {
-  const runtimeHost = getEmulatorHost();
-
-  if (!runtimeHost) {
-    return;
-  }
-
-  const nestedNodes = runtimeHost.querySelectorAll("iframe, canvas, .ejs_player, .game");
-
-  nestedNodes.forEach((node) => {
-    node.style.width = "100%";
-    node.style.height = "100%";
-    node.style.maxWidth = "100%";
-    node.style.display = "block";
-
-    if (node instanceof HTMLCanvasElement) {
-      node.style.imageRendering = "pixelated";
-      node.style.backgroundColor = "#000";
-      node.style.transform = "translateZ(0)";
-      node.style.backfaceVisibility = "hidden";
-    }
-  });
-}
-
-function dispatchVirtualKey(type, touchKey) {
-  const keyConfig = TOUCH_KEY_MAP[touchKey];
-  if (!keyConfig) {
-    return;
-  }
-
-  const runtimeHost = getEmulatorHost();
-  const canvas = runtimeHost?.querySelector("canvas");
-  const targets = [window, document, runtimeHost, canvas].filter(Boolean);
-
-  if (runtimeHost instanceof HTMLElement) {
-    runtimeHost.tabIndex = 0;
-    runtimeHost.focus({ preventScroll: true });
-  }
-
-  if (canvas instanceof HTMLElement) {
-    canvas.tabIndex = 0;
-    canvas.focus({ preventScroll: true });
-  }
-
-  targets.forEach((target) => {
-    const keyboardEvent = new KeyboardEvent(type, {
-      key: keyConfig.key,
-      code: keyConfig.code,
-      bubbles: true,
-      cancelable: true,
-    });
-
-    Object.defineProperty(keyboardEvent, "keyCode", { get: () => keyConfig.keyCode });
-    Object.defineProperty(keyboardEvent, "which", { get: () => keyConfig.keyCode });
-
-    target.dispatchEvent(keyboardEvent);
-  });
-}
-
-function releaseAllTouchKeys() {
-  activeTouchKeys.forEach((touchKey, pointerId) => {
-    dispatchVirtualKey("keyup", touchKey);
-    activeTouchKeys.delete(pointerId);
-  });
-
-  if (!mobileTouchControls) {
-    return;
-  }
-
-  mobileTouchControls.querySelectorAll(".touch-key.is-pressed").forEach((button) => {
-    button.classList.remove("is-pressed");
-  });
-}
-
-function setupMobileTouchControls() {
-  if (!mobileTouchControls) {
-    return;
-  }
-
-  applyTouchLayout();
-
-  const touchButtons = mobileTouchControls.querySelectorAll("[data-touch-key]");
-
-  touchButtons.forEach((button) => {
-    button.addEventListener("pointerdown", (event) => {
-      if (touchLayoutEditMode) {
-        return;
-      }
-
-      const touchKey = button.dataset.touchKey;
-      if (!touchKey) {
-        return;
-      }
-
-      event.preventDefault();
-      button.classList.add("is-pressed");
-      activeTouchKeys.set(event.pointerId, touchKey);
-      dispatchVirtualKey("keydown", touchKey);
-      button.setPointerCapture?.(event.pointerId);
-    });
-
-    const releasePointer = (event) => {
-      const touchKey = activeTouchKeys.get(event.pointerId);
-      if (!touchKey) {
-        return;
-      }
-
-      event.preventDefault();
-      activeTouchKeys.delete(event.pointerId);
-      button.classList.remove("is-pressed");
-      dispatchVirtualKey("keyup", touchKey);
-    };
-
-    button.addEventListener("pointerup", releasePointer);
-    button.addEventListener("pointercancel", releasePointer);
-    button.addEventListener("lostpointercapture", releasePointer);
-  });
-
-  window.addEventListener("blur", releaseAllTouchKeys);
-  window.addEventListener("resize", applyTouchLayout);
-
-  mobileTouchControls.querySelectorAll("[data-touch-group]").forEach((group) => {
-    group.addEventListener("pointerdown", (event) => {
-      if (!touchLayoutEditMode || !isTouchLayoutOverlayMode()) {
-        return;
-      }
-
-      const hostRect = mobileTouchControls.getBoundingClientRect();
-      const groupRect = group.getBoundingClientRect();
-
-      activeTouchLayoutDrag = {
-        groupKey: group.dataset.touchGroup || "",
-        pointerId: event.pointerId,
-        offsetX: event.clientX - groupRect.left,
-        offsetY: event.clientY - groupRect.top,
-        hostRect,
-        width: groupRect.width,
-        height: groupRect.height,
-      };
-
-      group.setPointerCapture?.(event.pointerId);
-      event.preventDefault();
-    });
-
-    group.addEventListener("pointermove", (event) => {
-      if (
-        !activeTouchLayoutDrag ||
-        activeTouchLayoutDrag.pointerId !== event.pointerId ||
-        activeTouchLayoutDrag.groupKey !== group.dataset.touchGroup
-      ) {
-        return;
-      }
-
-      const maxLeft = Math.max(activeTouchLayoutDrag.hostRect.width - activeTouchLayoutDrag.width, 0);
-      const maxTop = Math.max(activeTouchLayoutDrag.hostRect.height - activeTouchLayoutDrag.height, 0);
-      const left = clampTouchLayoutValue(
-        event.clientX - activeTouchLayoutDrag.hostRect.left - activeTouchLayoutDrag.offsetX,
-        0,
-        maxLeft,
-      );
-      const top = clampTouchLayoutValue(
-        event.clientY - activeTouchLayoutDrag.hostRect.top - activeTouchLayoutDrag.offsetY,
-        0,
-        maxTop,
-      );
-
-      const layout = loadTouchLayout();
-      layout[activeTouchLayoutDrag.groupKey] = {
-        x: Number(((left / activeTouchLayoutDrag.hostRect.width) * 100).toFixed(2)),
-        y: Number(((top / activeTouchLayoutDrag.hostRect.height) * 100).toFixed(2)),
-      };
-      saveTouchLayout(layout);
-      applyTouchLayout();
-      event.preventDefault();
-    });
-
-    const stopDrag = (event) => {
-      if (!activeTouchLayoutDrag || activeTouchLayoutDrag.pointerId !== event.pointerId) {
-        return;
-      }
-
-      activeTouchLayoutDrag = null;
-      event.preventDefault();
-    };
-
-    group.addEventListener("pointerup", stopDrag);
-    group.addEventListener("pointercancel", stopDrag);
-    group.addEventListener("lostpointercapture", stopDrag);
-  });
+  activeSessionStartedAt = 0;
 }
 
 function disableMobileRuntimeContextMenu() {
-  if (!emulatorRuntime || !window.matchMedia("(max-width: 820px)").matches) {
+  if (!emulatorRuntime || !isCompactTouchUi()) {
     return;
   }
 
@@ -2474,7 +2431,7 @@ function disableMobileRuntimeContextMenu() {
 }
 
 function isCompactTouchUi() {
-  return window.matchMedia("(max-width: 820px)").matches;
+  return window.matchMedia("(max-width: 1100px), ((hover: none) and (pointer: coarse) and (max-width: 1400px))").matches;
 }
 
 function getMobileToolbarContainer(node, runtimeHost) {
@@ -2494,47 +2451,71 @@ function getMobileToolbarContainer(node, runtimeHost) {
   return null;
 }
 
-function hideMobileEmulatorToolbar() {
-  if (!isCompactTouchUi()) {
-    return;
-  }
-
-  const runtimeHost = getEmulatorHost();
+function sanitizeNativeToolbar(runtimeHost = getEmulatorHost()) {
   if (!runtimeHost) {
     return;
   }
 
-  const nodes = runtimeHost.querySelectorAll("*");
+  const interactiveNodes = [
+    ...runtimeHost.querySelectorAll('button, [role="button"], input[type="range"], a'),
+  ];
 
-  nodes.forEach((node) => {
-    const text = (node.textContent || "").trim().toLowerCase();
-    const title = (node.getAttribute("title") || "").trim().toLowerCase();
-    const ariaLabel = (node.getAttribute("aria-label") || "").trim().toLowerCase();
-    const matchesToolbarLabel = MOBILE_TOOLBAR_LABELS.some((label) =>
-      text.includes(label) || title.includes(label) || ariaLabel.includes(label),
-    );
-
-    if (!matchesToolbarLabel && !node.matches('input[type="range"]')) {
+  interactiveNodes.forEach((node) => {
+    if (!(node instanceof HTMLElement)) {
       return;
     }
 
-    const toolbarContainer = getMobileToolbarContainer(node, runtimeHost);
-    if (!toolbarContainer || toolbarContainer.dataset.ejsToolbarHidden === "true") {
-      return;
-    }
+    const label = [
+      node.getAttribute("title"),
+      node.getAttribute("aria-label"),
+      node.textContent,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
-    toolbarContainer.dataset.ejsToolbarHidden = "true";
-    toolbarContainer.style.display = "none";
-    toolbarContainer.style.pointerEvents = "none";
+    if (
+      label.includes("menu") ||
+      label.includes("fullscreen") ||
+      label.includes("context")
+    ) {
+      node.style.display = "none";
+      node.setAttribute("data-oak-hidden", "true");
+    }
   });
+
+  const volumeSlider = runtimeHost.querySelector('input[type="range"]');
+  if (volumeSlider) {
+    const toolbarContainer = getMobileToolbarContainer(volumeSlider, runtimeHost);
+
+    if (toolbarContainer) {
+      let seenSlider = false;
+      [...toolbarContainer.children].forEach((child) => {
+        if (!(child instanceof HTMLElement)) {
+          return;
+        }
+
+        if (child.contains(volumeSlider) || child === volumeSlider) {
+          seenSlider = true;
+          return;
+        }
+
+        if (seenSlider) {
+          child.style.display = "none";
+          child.setAttribute("data-oak-hidden", "true");
+        }
+      });
+    }
+  }
+}
+
+function hideMobileEmulatorToolbar() {
+  sanitizeNativeToolbar();
 }
 
 function ensureMobileToolbarObserver() {
-  if (!isCompactTouchUi() || !window.MutationObserver) {
-    return;
-  }
-
   const runtimeHost = getEmulatorHost();
+
   if (!runtimeHost) {
     return;
   }
@@ -2544,7 +2525,7 @@ function ensureMobileToolbarObserver() {
   }
 
   mobileToolbarObserver = new MutationObserver(() => {
-    hideMobileEmulatorToolbar();
+    sanitizeNativeToolbar(runtimeHost);
   });
 
   mobileToolbarObserver.observe(runtimeHost, {
@@ -2554,32 +2535,43 @@ function ensureMobileToolbarObserver() {
     attributeFilter: ["title", "aria-label", "style", "class"],
   });
 
-  hideMobileEmulatorToolbar();
+  sanitizeNativeToolbar(runtimeHost);
+
+  if (fullscreenControlScreenObserver) {
+    fullscreenControlScreenObserver.disconnect();
+  }
+
+  fullscreenControlScreenObserver = new MutationObserver(() => {
+    sanitizeNativeToolbar(runtimeHost);
+  });
+
+  fullscreenControlScreenObserver.observe(runtimeHost, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
+
 }
 
 function getEmulatorToolbarConfig() {
-  if (!isCompactTouchUi()) {
-    return {};
-  }
-
   return {
-    playPause: false,
-    restart: false,
-    mute: false,
-    settings: false,
+    playPause: true,
+    restart: true,
+    mute: true,
+    settings: true,
     fullscreen: false,
-    saveState: false,
-    loadState: false,
-    screenRecord: false,
-    gamepad: false,
-    cheat: false,
-    volume: false,
-    saveSavFiles: false,
-    loadSavFiles: false,
-    quickSave: false,
-    quickLoad: false,
-    screenshot: false,
-    cacheManager: false,
+    saveState: true,
+    loadState: true,
+    screenRecord: true,
+    gamepad: true,
+    cheat: true,
+    volume: true,
+    saveSavFiles: true,
+    loadSavFiles: true,
+    quickSave: true,
+    quickLoad: true,
+    screenshot: true,
+    cacheManager: true,
     exitEmulation: false,
   };
 }
@@ -2635,14 +2627,13 @@ async function bootEmulator(file) {
     document.body.classList.remove("is-loading-rom");
     emulatorLoading.hidden = true;
     emulatorRuntime.classList.add("is-visible");
-    window.setTimeout(forceRuntimeSizing, 250);
-    window.setTimeout(forceRuntimeSizing, 1200);
     window.setTimeout(hideMobileEmulatorToolbar, 150);
     window.setTimeout(hideMobileEmulatorToolbar, 800);
     window.setTimeout(ensureMobileToolbarObserver, 150);
     romStatus.textContent = "Emulador em execucao";
     hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
+    activeSessionStartedAt = Date.now();
     if (screenBadge) {
       setSessionBadgeText("Sessao ativa");
     }
@@ -2676,9 +2667,6 @@ async function bootEmulator(file) {
 
 if (romInput && romStatus && romFileName) {
   romInput.addEventListener("change", async () => {
-    romStatus.textContent = "Arquivo selecionado";
-    syncSessionSummary();
-
     const [file] = romInput.files || [];
 
     if (!file) {
@@ -2696,11 +2684,16 @@ if (romInput && romStatus && romFileName) {
       if (screenBadge) {
         setSessionBadgeText("Pronto para iniciar");
       }
-      setSessionTitleText("Oak Emulador");
+      setSessionTitleText("Oak Emulator Lounge");
       setEmulationReady(false);
       syncSessionSummary();
       return;
     }
+
+    await flushActiveSessionPlaytime();
+
+    romStatus.textContent = "Arquivo selecionado";
+    syncSessionSummary();
 
     romStatus.textContent = "ROM pronta para integrar";
     romFileName.textContent = file.name;
@@ -2737,16 +2730,7 @@ if (romInput && romStatus && romFileName) {
     await bootEmulator(file);
     renderRecentRoms();
     syncSessionSummary();
-  });
-}
-
-if (demoToggle && hudMode) {
-  demoToggle.addEventListener("click", () => {
-    const demoEnabled = document.body.classList.toggle("is-demo-on");
-    hudMode.textContent = demoEnabled ? "HUD demo ativo" : "Aguardando ROM";
-    if (screenBadge) {
-      setSessionBadgeText(demoEnabled ? "HUD energizado" : "Pronto para iniciar");
-    }
+    void renderStoredSaves();
   });
 }
 
@@ -2782,66 +2766,6 @@ if (dockFullscreen && emulatorRuntime) {
   });
 }
 
-if (mobileFullscreen && dockFullscreen) {
-  mobileFullscreen.addEventListener("click", () => {
-    dockFullscreen.click();
-  });
-}
-
-if (mobileEmulatorSettings) {
-  mobileEmulatorSettings.addEventListener("click", () => {
-    triggerEmulatorActionOrToast(
-      ["settings", "menu", "control settings"],
-      "Nao consegui abrir as configuracoes do emulador agora.",
-    );
-  });
-}
-
-if (mobilePokedexToggle && pokedexToggle) {
-  mobilePokedexToggle.addEventListener("click", () => {
-    pokedexToggle.click();
-  });
-}
-
-if (mobileSaveFile) {
-  mobileSaveFile.addEventListener("click", () => {
-    triggerEmulatorActionOrToast(
-      ["saveSavFiles", "save files", "export save file", "save file", "save"],
-      "Nao consegui abrir a exportacao de save agora.",
-    );
-  });
-}
-
-if (mobileLoadFile) {
-  mobileLoadFile.addEventListener("click", () => {
-    if (!document.body.classList.contains("has-rom")) {
-      showRuntimeHint("Carregue uma ROM antes de importar um save.");
-      return;
-    }
-
-    saveImportInput?.click();
-  });
-}
-
-if (mobileControlSettings) {
-  mobileControlSettings.addEventListener("click", () => {
-    triggerEmulatorActionOrToast(
-      ["gamepad", "control settings", "keyboard"],
-      "Nao consegui abrir os controles do emulador agora.",
-    );
-  });
-}
-
-if (mobileTouchLayoutToggle) {
-  mobileTouchLayoutToggle.addEventListener("click", () => {
-    touchLayoutEditMode = !touchLayoutEditMode;
-    document.body.classList.toggle("is-touch-layout-editing", touchLayoutEditMode);
-    mobileTouchLayoutToggle.textContent = touchLayoutEditMode ? "Fixar" : "Mover";
-    releaseAllTouchKeys();
-    applyTouchLayout();
-  });
-}
-
 if (saveImportInput) {
   saveImportInput.addEventListener("change", () => {
     const [file] = saveImportInput.files || [];
@@ -2864,11 +2788,105 @@ if (saveImportInput) {
       if (!actionSucceeded && !openEmulatorHiddenFileInput("import-save")) {
         showRuntimeHint("Nao consegui importar esse save agora.");
       }
+    } else {
+      saveSessionMeta({
+        lastSaveAction: `Save importado: ${file.name}`,
+        lastSaveAt: Date.now(),
+      });
+      void saveImportedSaveFile(file).then(() => {
+        void renderStoredSaves();
+      });
+      syncSessionInsights();
     }
 
     saveImportInput.value = "";
   });
 }
+
+if (sessionExportSaveButton) {
+  sessionExportSaveButton.addEventListener("click", () => {
+    const ok = triggerEmulatorActionOrToast(
+      ["saveSavFiles", "save files", "export save file", "save file", "save"],
+      "Nao consegui exportar o save agora.",
+    );
+
+    if (ok) {
+      saveSessionMeta({
+        lastSaveAction: `Save exportado de ${formatRomTitle(romFileName?.textContent || "ROM atual")}`,
+        lastSaveAt: Date.now(),
+      });
+      syncSessionInsights();
+    }
+  });
+}
+
+if (sessionImportSaveButton) {
+  sessionImportSaveButton.addEventListener("click", () => {
+    if (!document.body.classList.contains("has-rom")) {
+      showRuntimeHint("Carregue uma ROM antes de importar um save.");
+      return;
+    }
+
+    saveImportInput?.click();
+  });
+}
+
+if (sessionSaveList) {
+  sessionSaveList.addEventListener("click", async (event) => {
+    const loadButton = event.target.closest("[data-load-save]");
+    const deleteButton = event.target.closest("[data-delete-save]");
+
+    if (deleteButton?.dataset.deleteSave) {
+      try {
+        await deleteStoredSave(deleteButton.dataset.deleteSave);
+        await renderStoredSaves();
+        showRuntimeHint("Save removido da sessao local.");
+      } catch (error) {
+        showRuntimeHint("Nao consegui excluir esse save local.");
+      }
+      return;
+    }
+
+    if (!loadButton?.dataset.loadSave) {
+      return;
+    }
+
+    const entry = await getStoredSave(loadButton.dataset.loadSave);
+    if (!entry?.file) {
+      showRuntimeHint("Nao consegui abrir esse save salvo localmente.");
+      return;
+    }
+
+    const imported = importSaveFileIntoEmulator(entry.file);
+    if (!imported) {
+      showRuntimeHint("Nao consegui carregar esse save no emulador.");
+      return;
+    }
+
+    saveSessionMeta({
+      lastSaveAction: `Save reaplicado: ${entry.name}`,
+      lastSaveAt: Date.now(),
+    });
+    syncSessionInsights();
+  });
+}
+
+window.addEventListener("beforeunload", () => {
+  if (!activeRomId || !activeSessionStartedAt) {
+    return;
+  }
+
+  const elapsedMinutes = Math.max(Math.round((Date.now() - activeSessionStartedAt) / 60000), 0);
+  if (!elapsedMinutes) {
+    return;
+  }
+
+  const entry = romLibrary.find((item) => item.id === activeRomId);
+  if (entry) {
+    entry.playMinutes = Number(entry.playMinutes || 0) + elapsedMinutes;
+    entry.lastPlayedAt = Date.now();
+  }
+});
 
 if (pokedexToggle) {
   pokedexToggle.addEventListener("click", () => {
@@ -2968,12 +2986,41 @@ if (romLibraryList) {
   romLibraryList.addEventListener("click", async (event) => {
     const launchButton = event.target.closest("[data-rom-launch]");
     const deleteButton = event.target.closest("[data-rom-delete]");
+    const favoriteButton = event.target.closest("[data-rom-favorite]");
 
     if (launchButton?.dataset.romLaunch) {
       try {
         await launchLibraryRom(launchButton.dataset.romLaunch);
       } catch (error) {
         showRuntimeError("Nao consegui iniciar essa ROM da biblioteca local.");
+      }
+      return;
+    }
+
+    if (favoriteButton?.dataset.romFavorite) {
+      try {
+        const entry = await getRomFromLibrary(favoriteButton.dataset.romFavorite);
+        if (!entry) {
+          return;
+        }
+
+        entry.favorite = !entry.favorite;
+        entry.updatedAt = Date.now();
+        await withRomStore("readwrite", (store, resolve, reject, database) => {
+          const request = store.put(entry);
+          request.addEventListener("success", () => {
+            database.close();
+            resolve();
+          });
+          request.addEventListener("error", () => {
+            database.close();
+            reject(request.error || new Error("Falha ao atualizar favorita."));
+          });
+        });
+        await loadRomLibrary();
+        syncSessionInsights();
+      } catch (error) {
+        showRuntimeHint("Nao consegui atualizar essa favorita.");
       }
       return;
     }
@@ -2987,6 +3034,7 @@ if (romLibraryList) {
     }
   });
 }
+
 
 if (recentRomList) {
   recentRomList.addEventListener("click", async (event) => {
@@ -3004,6 +3052,22 @@ if (recentRomList) {
   });
 }
 
+if (sessionResumeHero) {
+  sessionResumeHero.addEventListener("click", async (event) => {
+    const launchButton = event.target.closest("[data-rom-launch]");
+
+    if (!launchButton?.dataset.romLaunch) {
+      return;
+    }
+
+    try {
+      await launchLibraryRom(launchButton.dataset.romLaunch);
+    } catch (error) {
+      showRuntimeError("Nao consegui retomar essa ROM do topo da sessao.");
+    }
+  });
+}
+
 if (clearLastRomButton) {
   clearLastRomButton.addEventListener("click", () => {
     saveLastRomSelection("");
@@ -3013,6 +3077,17 @@ if (clearLastRomButton) {
     renderRecentRoms();
     romStatus.textContent = "Historico limpo";
     syncSessionSummary();
+  });
+}
+
+if (romLibraryFilters.length) {
+  romLibraryFilters.forEach((button) => {
+    button.addEventListener("click", () => {
+      romLibraryFilter = button.dataset.libraryFilter || "all";
+      romLibraryFilters.forEach((item) => item.classList.toggle("is-active", item === button));
+      romLibraryExpanded = false;
+      renderRomLibrary();
+    });
   });
 }
 
@@ -3080,31 +3155,7 @@ syncPokedexTabs();
 syncLauncherTabs();
 syncDockState();
 disableMobileRuntimeContextMenu();
-setupMobileTouchControls();
-setupMobileActionFab();
 await loadRomLibrary();
 renderRecentRoms();
 syncSessionSummary();
-
-const pendingRomId = getPendingColdRomBoot();
-
-if (pendingRomId) {
-  try {
-    clearPendingColdRomBoot();
-    await launchLibraryRom(pendingRomId);
-  } catch (error) {
-    clearPendingColdRomBoot();
-    saveLastRomSelection("");
-    renderRomLibrary();
-  }
-} else {
-  const lastRomId = getLastRomSelection();
-  if (lastRomId) {
-    try {
-      await launchLibraryRom(lastRomId);
-    } catch (error) {
-      saveLastRomSelection("");
-      renderRomLibrary();
-    }
-  }
-}
+void renderStoredSaves();

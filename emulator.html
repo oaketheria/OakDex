@@ -40,10 +40,17 @@
             <section class="session-hud">
               <div class="session-hud-main">
                 <div class="session-hud-panel session-hud-panel-title">
-                  <div class="session-hud-copy">
-                    <span class="session-line-kicker">Sessao atual</span>
-                    <h1 id="session-title">Oak Emulador</h1>
-                  </div>
+                  <button type="button" class="session-resume-hero" id="session-resume-hero">
+                    <div class="session-resume-cover" id="session-resume-cover" aria-hidden="true"></div>
+                    <div class="session-hud-copy">
+                      <span class="session-line-kicker" id="session-resume-kicker">Emulador</span>
+                      <h1 id="session-title">Oak Emulator</h1>
+                      <p class="session-resume-detail" id="session-resume-detail">
+                        Sua proxima retomada vai aparecer aqui assim que voce jogar uma ROM.
+                      </p>
+                    </div>
+                    <div class="session-resume-tags" id="session-resume-tags"></div>
+                  </button>
                 </div>
 
                 <div class="session-hud-panel session-hud-panel-meta">
@@ -55,146 +62,82 @@
                 </div>
 
                 <div class="session-hud-panel session-hud-panel-upload">
-                  <div class="session-hud-actions">
-                    <div class="hud-upload-native">
-                      <label class="hud-upload-native-label" for="rom-input">Adicionar ROM ao navegador</label>
-                      <input id="rom-input" class="hud-upload-native-input" type="file" accept=".gba" />
-                      <p class="hud-upload-native-caption">Selecione um arquivo `.gba` para jogar ou salvar na sua biblioteca local.</p>
-                    </div>
+                  <div class="hud-upload-native">
+                    <label class="hud-upload-native-label" for="rom-input">Adicionar ROM</label>
+                    <input id="rom-input" class="hud-upload-native-input" type="file" accept=".gba" />
+                    <p class="hud-upload-native-caption">A ROM fica salva na biblioteca local deste navegador.</p>
                   </div>
                 </div>
               </div>
             </section>
 
-            <section class="gba-stage">
-            <header class="player-header">
-              <div class="player-header-copy">
-                <div class="player-session-meta">
-                  <span class="player-meta-chip">Runtime GBA</span>
-                  <span class="player-meta-chip player-meta-chip-live" id="screen-badge-inline">Pronto para iniciar</span>
-                </div>
-              </div>
-
-              <div class="player-header-actions">
-                <button class="player-pill is-live" type="button">Modo local</button>
-                <button class="player-pill" type="button" id="demo-toggle">HUD demo</button>
-                <button
-                  type="button"
-                  class="dock-button dock-button-compact"
-                  id="dock-fullscreen"
-                  aria-label="Abrir em tela cheia"
-                >
-                  Tela cheia
-                </button>
-                <button
-                  type="button"
-                  class="dock-button dock-button-compact pokedex-toggle-inline"
-                  id="pokedex-toggle"
-                  aria-expanded="false"
-                  aria-controls="emulator-pokedex-panel"
-                >
-                  Pokedex
-                </button>
-              </div>
-            </header>
-
-            <div class="mobile-action-fab" id="mobile-action-fab" aria-label="Acoes do emulador no mobile">
-              <button
-                type="button"
-                class="mobile-action-fab-toggle"
-                id="mobile-action-fab-toggle"
-                aria-expanded="false"
-                aria-controls="mobile-action-fab-panel"
-                aria-label="Abrir acoes do emulador"
-              >
-                <span class="mobile-action-fab-icon" aria-hidden="true">+</span>
-              </button>
-
-              <div class="mobile-emulator-actions" id="mobile-action-fab-panel" hidden>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-fullscreen">Tela cheia</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-pokedex-toggle">Pokedex</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-emulator-settings">Config</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-save-file">Salvar</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-load-file">Importar</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-control-settings">Controles</button>
-                <button type="button" class="dock-button dock-button-compact" id="mobile-touch-layout-toggle">Mover</button>
-              </div>
-            </div>
-            <p class="mobile-action-hint" id="mobile-action-hint" hidden></p>
-            <input
-              id="save-import-input"
-              class="save-import-input"
-              type="file"
-              accept=".sav,.srm,.state,.slot"
-              hidden
-            />
-
-            <div class="gba-shell">
-              <div class="gba-lid">
-                <div class="player-screen-crown">
-                  <span class="screen-led is-online"></span>
-                  <span class="screen-led"></span>
-                  <span class="screen-led"></span>
-                  <strong>Camara do emulador</strong>
-                </div>
-
-                <div class="player-screen">
-                  <div class="screen-frame-trim" aria-hidden="true"></div>
-
-                  <div class="screen-overlay">
-                    <div class="battle-hud">
-                      <span>Regiao Hoenn</span>
-                      <span id="hud-mode">Aguardando ROM</span>
-                    </div>
-
-                    <div class="screen-center-copy">
-                      <span class="screen-badge">Pronto para iniciar</span>
-                      <h3>Area pronta para iniciar a ROM</h3>
-                      <p>Depois do upload, o jogo aparece aqui dentro da moldura principal.</p>
-                    </div>
-
-                    <div id="emulator-runtime" class="emulator-runtime" aria-live="polite">
-                      <div id="emulatorjs-player" class="emulator-runtime-player"></div>
-                    </div>
-
-                    <div class="mobile-touch-controls" id="mobile-touch-controls" aria-label="Controles touch do jogo">
-                      <div class="touch-controls-row">
-                        <div class="touch-dpad" data-touch-group="dpad" aria-label="Direcional">
-                          <button type="button" class="touch-key touch-key-up" data-touch-key="ArrowUp" aria-label="Cima">▲</button>
-                          <button type="button" class="touch-key touch-key-left" data-touch-key="ArrowLeft" aria-label="Esquerda">◀</button>
-                          <button type="button" class="touch-key touch-key-right" data-touch-key="ArrowRight" aria-label="Direita">▶</button>
-                          <button type="button" class="touch-key touch-key-down" data-touch-key="ArrowDown" aria-label="Baixo">▼</button>
-                        </div>
-
-                        <div class="touch-actions" data-touch-group="actions" aria-label="Acoes">
-                          <button type="button" class="touch-key touch-key-action touch-key-b" data-touch-key="x" aria-label="Botao B">B</button>
-                          <button type="button" class="touch-key touch-key-action touch-key-a" data-touch-key="z" aria-label="Botao A">A</button>
-                        </div>
-                      </div>
-
-                      <div class="touch-controls-meta" data-touch-group="meta">
-                        <button type="button" class="touch-key touch-key-meta" data-touch-key="Shift" aria-label="Select">Select</button>
-                        <button type="button" class="touch-key touch-key-meta" data-touch-key="Enter" aria-label="Start">Start</button>
-                      </div>
-                    </div>
-
-                    <div id="emulator-loading" class="emulator-loading" hidden>
-                      <span class="emulator-loading-ring" aria-hidden="true"></span>
-                      <strong>Inicializando emulador...</strong>
-                      <p>Baixando o core GBA e preparando a ROM local para execucao.</p>
-                    </div>
-
-                    <div id="emulator-error" class="emulator-error" hidden>
-                      <strong>Nao foi possivel iniciar o emulador.</strong>
-                      <p id="emulator-error-message">
-                        Verifique sua conexao com a internet e tente novamente.
-                      </p>
-                    </div>
+            <section class="player-stage">
+              <header class="player-header">
+                <div class="player-header-copy">
+                  <div class="player-session-meta">
+                    <span class="player-meta-chip">Runtime GBA</span>
+                    <span class="player-meta-chip player-meta-chip-live" id="screen-badge-inline">Pronto para iniciar</span>
                   </div>
                 </div>
+
+                <div class="player-header-actions">
+                  <button
+                    type="button"
+                    class="dock-button dock-button-compact"
+                    id="dock-fullscreen"
+                    aria-label="Abrir em tela cheia"
+                  >
+                    Tela cheia
+                  </button>
+                  <button
+                    type="button"
+                    class="dock-button dock-button-compact pokedex-toggle-inline"
+                    id="pokedex-toggle"
+                    aria-expanded="false"
+                    aria-controls="emulator-pokedex-panel"
+                  >
+                    Pokedex
+                  </button>
+                </div>
+              </header>
+
+              <input
+                id="save-import-input"
+                class="save-import-input"
+                type="file"
+                accept=".sav,.srm,.state,.slot"
+                hidden
+              />
+
+              <div class="player-runtime-topline">
+                <span class="player-runtime-label">Regiao Hoenn</span>
+                <span id="hud-mode">Aguardando ROM</span>
               </div>
 
-            </div>
+              <div class="screen-center-copy">
+                <span class="screen-badge">Pronto para iniciar</span>
+                <h3>Cabine pronta para abrir a ROM</h3>
+                <p>Escolha um arquivo acima ou clique em uma ROM da biblioteca abaixo para carregar a sessao no EmulatorJS.</p>
+              </div>
+
+              <div class="runtime-stage">
+                <div id="emulator-runtime" class="emulator-runtime" aria-live="polite">
+                  <div id="emulatorjs-player" class="emulator-runtime-player"></div>
+                </div>
+              </div>
+
+              <div id="emulator-loading" class="emulator-loading" hidden>
+                <span class="emulator-loading-ring" aria-hidden="true"></span>
+                <strong>Inicializando emulador...</strong>
+                <p>Baixando o core GBA e preparando a ROM local para execucao.</p>
+              </div>
+
+              <div id="emulator-error" class="emulator-error" hidden>
+                <strong>Nao foi possivel iniciar o emulador.</strong>
+                <p id="emulator-error-message">
+                  Verifique sua conexao com a internet e tente novamente.
+                </p>
+              </div>
             </section>
 
             <aside class="emulator-pokedex" id="emulator-pokedex-panel" aria-hidden="true">
@@ -241,93 +184,133 @@
 
             <section class="launcher-section">
               <div class="launcher-tabs" role="tablist" aria-label="Areas do launcher">
-                <button type="button" class="launcher-tab is-active" data-launcher-tab="recentes">Recentes</button>
-                <button type="button" class="launcher-tab" data-launcher-tab="biblioteca">Biblioteca</button>
+                <button type="button" class="launcher-tab is-active" data-launcher-tab="biblioteca">Biblioteca</button>
                 <button type="button" class="launcher-tab" data-launcher-tab="sessao">Sessao</button>
                 <button type="button" class="launcher-tab" data-launcher-tab="controles">Controles</button>
               </div>
 
-              <div class="launcher-panel is-active" data-launcher-panel="recentes">
-              <div class="launcher-row">
-                <div class="launcher-heading">
-                  <span class="status-label">Continuar jogando</span>
-                  <h3>Ultimos jogos</h3>
-                  <p>Retome rapido a partir das ROMs usadas mais recentemente neste navegador.</p>
+              <div class="launcher-panel is-active" data-launcher-panel="biblioteca">
+                <div class="launcher-heading launcher-heading-library-panel">
+                  <span class="status-label">Biblioteca local</span>
+                  <h3 id="rom-library-count">Nenhuma ROM salva</h3>
+                  <p>Suas ROMs privadas, filtros e retomada rapida em um painel so.</p>
                 </div>
-                <div class="recent-rom-list" id="recent-rom-list">
-                  <p class="rom-library-empty">Seu historico de jogos vai aparecer aqui.</p>
-                </div>
-              </div>
-              </div>
 
-              <div class="launcher-panel" data-launcher-panel="biblioteca">
-              <div class="launcher-row launcher-row-library">
-                <div class="launcher-heading launcher-heading-library">
-                  <div>
-                    <span class="status-label">Biblioteca local</span>
-                    <h3 id="rom-library-count">Nenhuma ROM salva</h3>
-                    <p>Cards com suas ROMs privadas para abrir rapido sem novo upload.</p>
+                <div class="launcher-row launcher-row-library">
+                  <div class="launcher-heading launcher-heading-library library-tools-card">
+                    <div class="library-toolbar" aria-label="Ferramentas da biblioteca">
+                      <label class="library-search" for="rom-library-search">
+                        <span class="status-label">Buscar</span>
+                        <input
+                          id="rom-library-search"
+                          type="search"
+                          placeholder="Buscar ROM por nome"
+                          autocomplete="off"
+                        />
+                      </label>
+
+                      <label class="library-sort" for="rom-library-sort">
+                        <span class="status-label">Ordenar</span>
+                        <select id="rom-library-sort">
+                          <option value="recent">Mais recentes</option>
+                          <option value="lastplayed">Ultima jogada</option>
+                          <option value="favorite">Favoritas</option>
+                          <option value="az">A-Z</option>
+                          <option value="size">Maior tamanho</option>
+                        </select>
+                      </label>
+                    </div>
                   </div>
 
-                  <div class="library-toolbar" aria-label="Ferramentas da biblioteca">
-                    <label class="library-search" for="rom-library-search">
-                      <span class="status-label">Buscar</span>
-                      <input
-                        id="rom-library-search"
-                        type="search"
-                        placeholder="Buscar ROM por nome"
-                        autocomplete="off"
-                      />
-                    </label>
+                  <div class="library-controls-stack">
+                    <div class="library-toolbar-actions">
+                      <span class="library-results-label" id="rom-library-results">0 exibidos</span>
+                      <button type="button" class="library-action" id="clear-last-rom">
+                        Limpar historico
+                      </button>
+                    </div>
 
-                    <label class="library-sort" for="rom-library-sort">
-                      <span class="status-label">Ordenar</span>
-                      <select id="rom-library-sort">
-                        <option value="recent">Mais recentes</option>
-                        <option value="az">A-Z</option>
-                        <option value="size">Maior tamanho</option>
-                      </select>
-                    </label>
+                    <div class="library-filter-chips" id="rom-library-filters" aria-label="Filtrar por versao">
+                      <button type="button" class="library-filter-chip is-active" data-library-filter="all">Todas</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="emerald">Emerald</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="fire red">Fire Red</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="leaf green">Leaf Green</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="ruby">Ruby</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="sapphire">Sapphire</button>
+                      <button type="button" class="library-filter-chip" data-library-filter="other">Outras</button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="library-toolbar-actions">
-                  <span class="library-results-label" id="rom-library-results">0 exibidos</span>
-                  <button type="button" class="library-action" id="clear-last-rom">
-                    Limpar historico
+                <div class="rom-library-list rom-library-grid" id="rom-library-list">
+                  <p class="rom-library-empty">Envie uma ROM para criar sua biblioteca particular neste navegador.</p>
+                </div>
+
+                <div class="library-footer" id="rom-library-footer" hidden>
+                  <button type="button" class="library-action library-action-primary" id="rom-library-more">
+                    Ver mais
                   </button>
                 </div>
               </div>
 
-              <div class="rom-library-list rom-library-grid" id="rom-library-list">
-                <p class="rom-library-empty">Envie uma ROM para criar sua biblioteca particular neste navegador.</p>
-              </div>
-
-              <div class="library-footer" id="rom-library-footer" hidden>
-                <button type="button" class="library-action library-action-primary" id="rom-library-more">
-                  Ver mais
-                </button>
-              </div>
-              </div>
-
               <div class="launcher-panel" data-launcher-panel="sessao">
-                <div class="launcher-info-grid">
-                  <article class="info-card launcher-info-card">
-                    <span class="status-label">Estado da sessao</span>
-                    <strong id="launcher-session-status">Sem ROM carregada</strong>
-                    <p>Status do boot e da execucao atual do emulador.</p>
+                <div class="launcher-heading launcher-heading-session">
+                  <span class="status-label">Painel da sessao</span>
+                  <h3>Controle rapido da sua partida</h3>
+                  <p>Estado atual, continuidade e saves locais em uma leitura mais direta.</p>
+                </div>
+
+                <div class="session-panel-layout">
+                  <article class="info-card launcher-info-card launcher-info-card-status session-hero-card">
+                    <div class="session-hero-head">
+                      <div>
+                        <span class="status-label">Sessao ativa</span>
+                        <strong id="launcher-session-status">Sem ROM carregada</strong>
+                      </div>
+                      <span class="session-hero-chip">Biblioteca local</span>
+                    </div>
+
+                    <div class="session-hero-title">
+                      <span class="session-hero-kicker">ROM atual</span>
+                      <strong id="launcher-rom-name">Nenhum arquivo selecionado</strong>
+                    </div>
+
+                    <div class="session-status-strip">
+                      <article class="session-status-pill">
+                        <span class="status-label">Runtime</span>
+                        <strong id="launcher-runtime-flags">Sem ROM ativa</strong>
+                        <p id="launcher-runtime-detail">Fullscreen, audio e estado atual do jogo.</p>
+                      </article>
+
+                      <article class="session-status-pill">
+                        <span class="status-label">Continuidade</span>
+                        <strong id="launcher-play-summary">Sem historico recente</strong>
+                        <p id="launcher-play-detail">Ultima jogada e tempo local estimado.</p>
+                      </article>
+                    </div>
                   </article>
 
-                  <article class="info-card launcher-info-card">
-                    <span class="status-label">ROM atual</span>
-                    <strong id="launcher-rom-name">Nenhum arquivo selecionado</strong>
-                    <p>Origem ativa na sessao atual, seja upload ou biblioteca local.</p>
+                  <article class="info-card launcher-info-card launcher-info-card-save session-save-card">
+                    <span class="status-label">Save mais recente</span>
+                    <strong id="launcher-save-status">Nenhuma acao recente</strong>
+                    <p id="launcher-save-detail">Importacoes e exportacoes vao aparecer aqui.</p>
+                    <div class="session-save-list" id="session-save-list">
+                      <p class="rom-library-empty">Nenhum save recente salvo neste navegador.</p>
+                    </div>
+                    <div class="launcher-control-actions">
+                      <button type="button" class="library-action" id="session-export-save">Exportar save</button>
+                      <button type="button" class="library-action" id="session-import-save">Importar save</button>
+                    </div>
                   </article>
 
-                  <article class="info-card launcher-info-card">
-                    <span class="status-label">Sessao local</span>
-                    <strong>Biblioteca privada</strong>
-                    <p>Suas ROMs ficam salvas apenas neste navegador, sem backend.</p>
+                  <article class="info-card launcher-info-card launcher-info-card-local session-notes-card">
+                    <span class="status-label">Resumo local</span>
+                    <strong>Tudo salvo neste navegador</strong>
+                    <ul class="session-notes-list">
+                      <li>ROMs e saves ficam neste dispositivo.</li>
+                      <li>Importe e exporte arquivos sem backend.</li>
+                      <li>Use a biblioteca para retomar rapido.</li>
+                    </ul>
                   </article>
                 </div>
               </div>
@@ -351,6 +334,7 @@
                     <strong>P e Fullscreen</strong>
                     <p>P abre a Pokedex, enquanto a barra superior controla a tela cheia.</p>
                   </article>
+
                 </div>
               </div>
             </section>
