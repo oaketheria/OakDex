@@ -40,16 +40,13 @@ const emulatorLoading = document.querySelector("#emulator-loading");
 const emulatorError = document.querySelector("#emulator-error");
 const emulatorErrorMessage = document.querySelector("#emulator-error-message");
 const dockFullscreen = document.querySelector("#dock-fullscreen");
+const integratedDexVoiceButton = document.querySelector("#integrated-dex-voice");
 const saveImportInput = document.querySelector("#save-import-input");
 const playSpace = document.querySelector("#play-space");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
 const pokedexPanel = document.querySelector("#emulator-pokedex-panel");
-const pokedexSearch = document.querySelector("#emulator-pokedex-search");
-const pokedexSummary = document.querySelector("#emulator-pokedex-summary");
-const pokedexList = document.querySelector("#emulator-pokedex-list");
-const pokedexDetail = document.querySelector("#emulator-pokedex-detail");
-const pokedexTabs = [...document.querySelectorAll(".pokedex-tab")];
+const pokedexFrame = document.querySelector("#emulator-pokedex-frame");
 const launcherTabs = [...document.querySelectorAll(".launcher-tab")];
 const launcherPanels = [...document.querySelectorAll(".launcher-panel")];
 
@@ -57,12 +54,6 @@ let activeRomUrl = "";
 let activeLoaderScript = null;
 let emulationReady = false;
 let emulationPaused = false;
-let pokedexSearchTimer = null;
-let activePokedexSelection = "";
-let fullDexList = [];
-let quickDexHistory = [];
-let activeDexTab = "dados";
-let currentQuickDexPokemon = null;
 let activeLauncherTab = "biblioteca";
 let romLibrary = [];
 let activeRomId = "";
@@ -74,6 +65,10 @@ let romLibraryFilter = "all";
 let mobileToolbarObserver = null;
 let fullscreenControlScreenObserver = null;
 let activeSessionStartedAt = 0;
+let integratedDexVoiceRecognition = null;
+
+const IntegratedDexSpeechRecognitionApi =
+  window.SpeechRecognition || window.webkitSpeechRecognition || null;
 
 const EMULATORJS_CDN_VERSION = "4.2.3";
 const EMULATORJS_DATA_PATH = `https://cdn.emulatorjs.org/${EMULATORJS_CDN_VERSION}/data/`;
@@ -88,29 +83,6 @@ const RECENT_ROMS_LIMIT = 3;
 const ROM_LIBRARY_PAGE_SIZE = 6;
 const MOBILE_TOOLBAR_LABELS = ["context menu", "settings", "menu", "fullscreen", "save"];
 
-const dexTypeGlow = {
-  normal: "190 188 138",
-  fire: "245 125 49",
-  water: "100 147 235",
-  electric: "249 207 48",
-  grass: "116 203 72",
-  ice: "154 214 223",
-  fighting: "193 34 57",
-  poison: "164 62 158",
-  ground: "222 193 107",
-  flying: "168 145 236",
-  psychic: "251 85 132",
-  bug: "167 183 35",
-  rock: "182 158 49",
-  ghost: "112 85 155",
-  dragon: "112 55 255",
-  dark: "117 87 76",
-  steel: "183 185 208",
-  fairy: "230 158 172",
-};
-
-const POKEAPI_BASE = "https://pokeapi.co/api/v2";
-const quickDexCache = new Map();
 const LOCAL_ROM_COVER_MAP = {
   emerald: "assets/rom-covers/emerald.png.jfif",
   "fire red": "assets/rom-covers/fire-red.png.jfif",
@@ -199,6 +171,44 @@ function saveSessionMeta(nextMeta) {
   }
 }
 
+function getPendingPlaytimeMap() {
+  const sessionMeta = loadSessionMeta();
+  return sessionMeta.pendingPlaytime && typeof sessionMeta.pendingPlaytime === "object"
+    ? sessionMeta.pendingPlaytime
+    : {};
+}
+
+function savePendingPlaytimeMap(pendingPlaytime) {
+  saveSessionMeta({ pendingPlaytime });
+}
+
+function queuePendingPlaytime(romId, elapsedMinutes, lastPlayedAt = Date.now()) {
+  if (!romId || !elapsedMinutes) {
+    return;
+  }
+
+  const pendingPlaytime = getPendingPlaytimeMap();
+  const current = pendingPlaytime[romId] || { minutes: 0, lastPlayedAt: 0 };
+
+  pendingPlaytime[romId] = {
+    minutes: Number(current.minutes || 0) + Number(elapsedMinutes || 0),
+    lastPlayedAt: Math.max(Number(current.lastPlayedAt || 0), Number(lastPlayedAt || 0)),
+  };
+
+  savePendingPlaytimeMap(pendingPlaytime);
+}
+
+function consumeElapsedSessionMinutes() {
+  if (!activeSessionStartedAt) {
+    return 0;
+  }
+
+  const elapsedMs = Math.max(Date.now() - activeSessionStartedAt, 0);
+  const elapsedMinutes = Math.floor(elapsedMs / 60000);
+  activeSessionStartedAt = Date.now() - (elapsedMs % 60000);
+  return elapsedMinutes;
+}
+
 function formatRelativeTime(timestamp) {
   if (!Number.isFinite(timestamp) || timestamp <= 0) {
     return "agora mesmo";
@@ -222,6 +232,17 @@ function formatRelativeTime(timestamp) {
 
   const diffDays = Math.round(diffHours / 24);
   return `${diffDays} d atras`;
+}
+
+function getEntryEstimatedPlayMinutes(entry) {
+  const storedMinutes = Number(entry?.playMinutes || 0);
+
+  if (!entry?.id || entry.id !== activeRomId || !activeSessionStartedAt) {
+    return storedMinutes;
+  }
+
+  const liveElapsedMinutes = Math.max(Math.ceil((Date.now() - activeSessionStartedAt) / 60000), 0);
+  return storedMinutes + liveElapsedMinutes;
 }
 
 function inferRomVersion(name) {
@@ -269,7 +290,7 @@ function syncSessionInsights() {
   }
 
   if (launcherPlayDetail) {
-    const minutes = latestPlayedEntry?.playMinutes || 0;
+    const minutes = getEntryEstimatedPlayMinutes(latestPlayedEntry);
     launcherPlayDetail.textContent = latestPlayedEntry
       ? `Tempo local estimado: ${minutes ? `${minutes} min` : "ainda sem estimativa"}.`
       : "A ultima jogada e o tempo local estimado vao aparecer aqui.";
@@ -281,8 +302,8 @@ function getActiveRomBaseName() {
 }
 
 function matchesSaveToRom(saveName, romName) {
-  const normalizedSave = normalizeQuickDexSearch(String(saveName || "").replace(/\.(sav|srm|state|slot)$/i, ""));
-  const normalizedRom = normalizeQuickDexSearch(String(romName || "").replace(/\s*-\s*biblioteca local/i, ""));
+  const normalizedSave = normalizeIntegratedDexSearch(String(saveName || "").replace(/\.(sav|srm|state|slot)$/i, ""));
+  const normalizedRom = normalizeIntegratedDexSearch(String(romName || "").replace(/\s*-\s*biblioteca local/i, ""));
   return Boolean(normalizedSave && normalizedRom && normalizedSave.includes(normalizedRom));
 }
 
@@ -424,7 +445,7 @@ function renderSessionResumeHero(featuredEntry) {
     return;
   }
 
-  const minutes = Number(featuredEntry.playMinutes || 0);
+  const minutes = getEntryEstimatedPlayMinutes(featuredEntry);
   const progressLabel = minutes ? `${minutes} min locais` : "Sem tempo estimado";
   const version = inferRomVersion(featuredEntry.name);
   sessionResumeHero.disabled = false;
@@ -655,7 +676,7 @@ function getSortedRomLibrary(entries) {
 }
 
 function getVisibleRomLibraryEntries() {
-  const normalizedQuery = normalizeQuickDexSearch(romLibraryQuery);
+  const normalizedQuery = normalizeIntegratedDexSearch(romLibraryQuery);
   const filteredEntries = getSortedRomLibrary(romLibrary).filter((entry) => {
     const version = inferRomVersion(entry.name);
     const passesFilter = romLibraryFilter === "all" || romLibraryFilter === version;
@@ -668,7 +689,7 @@ function getVisibleRomLibraryEntries() {
       return true;
     }
 
-    return normalizeQuickDexSearch(formatRomTitle(entry.name)).includes(normalizedQuery);
+    return normalizeIntegratedDexSearch(formatRomTitle(entry.name)).includes(normalizedQuery);
   });
 
   const visibleEntries = romLibraryExpanded ? filteredEntries : filteredEntries.slice(0, ROM_LIBRARY_PAGE_SIZE);
@@ -690,6 +711,9 @@ function hydrateRecentRomEntries(entries) {
     return {
       ...entry,
       name: libraryMatch.name,
+      playMinutes: libraryMatch.playMinutes || 0,
+      lastPlayedAt: libraryMatch.lastPlayedAt || entry.lastPlayedAt || 0,
+      favorite: Boolean(libraryMatch.favorite),
       coverUrl: libraryMatch.coverUrl || entry.coverUrl || "",
     };
   });
@@ -1067,6 +1091,38 @@ async function loadRomLibrary() {
       });
     });
 
+    const pendingPlaytime = getPendingPlaytimeMap();
+    const pendingIds = Object.keys(pendingPlaytime);
+
+    if (pendingIds.length) {
+      for (const entry of romLibrary) {
+        const pendingEntry = pendingPlaytime[entry.id];
+
+        if (!pendingEntry?.minutes) {
+          continue;
+        }
+
+        entry.playMinutes = Number(entry.playMinutes || 0) + Number(pendingEntry.minutes || 0);
+        entry.lastPlayedAt = Math.max(Number(entry.lastPlayedAt || 0), Number(pendingEntry.lastPlayedAt || 0));
+
+        await withRomStore("readwrite", (store, resolve, reject, database) => {
+          const request = store.put(entry);
+
+          request.addEventListener("success", () => {
+            database.close();
+            resolve();
+          });
+
+          request.addEventListener("error", () => {
+            database.close();
+            reject(request.error || new Error("Falha ao reconciliar tempo jogado da ROM."));
+          });
+        });
+      }
+
+      savePendingPlaytimeMap({});
+    }
+
     const mismatchedKnownPokemonCovers = romLibrary.filter(
       (entry) => entry.coverUrl && isKnownPokemonRom(entry.name),
     );
@@ -1314,11 +1370,93 @@ function setPokedexOpen(open) {
   }
 
   if (open) {
-    playQuickDexOpenSound();
+    playIntegratedDexOpenSound();
   }
 }
 
-function playQuickDexOpenSound() {
+function setIntegratedDexVoiceButtonState(isListening, supported = true) {
+  if (!integratedDexVoiceButton) {
+    return;
+  }
+
+  integratedDexVoiceButton.disabled = !supported;
+  integratedDexVoiceButton.classList.toggle("is-listening", isListening);
+  integratedDexVoiceButton.textContent = supported
+    ? (isListening ? "Ouvindo" : "Voz")
+    : "Sem voz";
+}
+
+function setIntegratedDexFrameSource(searchTerm = "") {
+  if (!pokedexFrame) {
+    return;
+  }
+
+  const nextUrl = new URL("./pokedex.html", window.location.href);
+  nextUrl.searchParams.set("embed", "1");
+
+  if (searchTerm) {
+    nextUrl.searchParams.set("pokemon", searchTerm);
+  }
+
+  const nextSrc = nextUrl.pathname + nextUrl.search;
+  const currentSrc = pokedexFrame.getAttribute("src") || "";
+
+  if (currentSrc !== nextSrc) {
+    pokedexFrame.setAttribute("src", nextSrc);
+  }
+}
+
+function handleIntegratedDexVoiceCommand(transcript) {
+  const command = String(transcript || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+  if (!command) {
+    return;
+  }
+
+  const wantsOpen =
+    command.includes("abrir pokedex") ||
+    command.includes("abrir a pokedex") ||
+    command.includes("mostrar pokedex") ||
+    command.includes("abrir dex");
+
+  const wantsClose =
+    command.includes("fechar pokedex") ||
+    command.includes("fechar a pokedex") ||
+    command.includes("esconder pokedex") ||
+    command.includes("fechar dex");
+
+  const searchMatch =
+    command.match(/abrir (?:a )?pokedex (?:e )?buscar (.+)$/) ||
+    command.match(/abrir dex (?:e )?buscar (.+)$/) ||
+    command.match(/buscar (.+) na pokedex$/);
+
+  const requestedPokemon = searchMatch?.[1]?.trim().replace(/\s+/g, "-") || "";
+
+  if (requestedPokemon) {
+    setIntegratedDexFrameSource(requestedPokemon);
+    setPokedexOpen(true);
+    pokedexFrame?.focus();
+    return;
+  }
+
+  if (wantsOpen) {
+    setIntegratedDexFrameSource();
+    setPokedexOpen(true);
+    pokedexFrame?.focus();
+    return;
+  }
+
+  if (wantsClose) {
+    setPokedexOpen(false);
+    return;
+  }
+}
+
+function playIntegratedDexOpenSound() {
   try {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
@@ -1345,80 +1483,7 @@ function playQuickDexOpenSound() {
   }
 }
 
-function syncPokedexTabs() {
-  pokedexTabs.forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.dexTab === activeDexTab);
-  });
-}
-
-function loadQuickDexHistory() {
-  try {
-    const saved = window.localStorage.getItem("emulatorQuickDexHistory");
-    quickDexHistory = saved ? JSON.parse(saved) : [];
-  } catch (error) {
-    quickDexHistory = [];
-  }
-}
-
-function saveQuickDexHistory() {
-  try {
-    window.localStorage.setItem("emulatorQuickDexHistory", JSON.stringify(quickDexHistory.slice(0, 8)));
-  } catch (error) {
-    // Ignore storage failures.
-  }
-}
-
-function pushQuickDexHistory(entry) {
-  quickDexHistory = [entry, ...quickDexHistory.filter((item) => item.name !== entry.name)].slice(0, 6);
-  saveQuickDexHistory();
-}
-
-async function fetchQuickDexJson(url) {
-  if (!quickDexCache.has(url)) {
-    quickDexCache.set(
-      url,
-      fetch(url).then((response) => {
-        if (!response.ok) {
-          throw new Error("Falha ao buscar dados da PokeAPI.");
-        }
-
-        return response.json();
-      }),
-    );
-  }
-
-  return quickDexCache.get(url);
-}
-
-function formatQuickDexLabel(value) {
-  return String(value).replace(/-/g, " ");
-}
-
-function translateEvolutionTerm(value) {
-  const normalized = String(value || "").toLowerCase();
-  const dictionary = {
-    "level-up": "Subindo de nivel",
-    trade: "Troca",
-    use: "Usando item",
-    other: "Metodo especial",
-    "thunder-stone": "Pedra do Trovao",
-    "fire-stone": "Pedra do Fogo",
-    "water-stone": "Pedra da Agua",
-    "leaf-stone": "Pedra da Folha",
-    "moon-stone": "Pedra da Lua",
-    "sun-stone": "Pedra do Sol",
-    "dusk-stone": "Pedra do Anoitecer",
-    "dawn-stone": "Pedra do Amanhecer",
-    "shiny-stone": "Pedra Brilhante",
-    "oval-stone": "Pedra Oval",
-    "ice-stone": "Pedra do Gelo",
-    "kings-rock": "Rocha do Rei",
-  };
-
-  return dictionary[normalized] || formatQuickDexLabel(normalized);
-}
-
-function normalizeQuickDexSearch(value) {
+function normalizeIntegratedDexSearch(value) {
   return String(value ?? "")
     .toLowerCase()
     .normalize("NFD")
@@ -1427,674 +1492,42 @@ function normalizeQuickDexSearch(value) {
     .trim();
 }
 
-function getQuickDexArtwork(pokemon) {
-  return (
-    pokemon.sprites.other?.["official-artwork"]?.front_default ||
-    pokemon.sprites.other?.home?.front_default ||
-    pokemon.sprites.front_default ||
-    ""
-  );
-}
+function handleIntegratedDexShortcuts(event, ownerWindow = window) {
+  const target = event.target;
+  const view = ownerWindow;
+  const isTyping =
+    target instanceof view.HTMLInputElement ||
+    target instanceof view.HTMLTextAreaElement ||
+    target instanceof view.HTMLSelectElement ||
+    target?.isContentEditable;
 
-function getQuickDexTypeColor(typeName) {
-  const colors = {
-    normal: "#9e9e7a",
-    fire: "#f57d31",
-    water: "#6493eb",
-    electric: "#f9cf30",
-    grass: "#74cb48",
-    ice: "#9ad6df",
-    fighting: "#c12239",
-    poison: "#a43e9e",
-    ground: "#dec16b",
-    flying: "#a891ec",
-    psychic: "#fb5584",
-    bug: "#a7b723",
-    rock: "#b69e31",
-    ghost: "#70559b",
-    dragon: "#7037ff",
-    dark: "#75574c",
-    steel: "#b7b9d0",
-    fairy: "#e69eac",
-  };
-
-  return colors[typeName] || "#4cc4ff";
-}
-
-function getQuickDexTypeTextColor(typeName) {
-  const darkTextTypes = new Set(["electric", "ice", "ground", "rock", "steel", "normal", "fairy"]);
-  return darkTextTypes.has(typeName) ? "#182230" : "#f7fbff";
-}
-
-function hexToRgbChannels(hexColor) {
-  const normalized = String(hexColor || "").replace("#", "");
-
-  if (normalized.length !== 6) {
-    return "76, 196, 255";
-  }
-
-  const r = Number.parseInt(normalized.slice(0, 2), 16);
-  const g = Number.parseInt(normalized.slice(2, 4), 16);
-  const b = Number.parseInt(normalized.slice(4, 6), 16);
-
-  return `${r}, ${g}, ${b}`;
-}
-
-function getQuickDexTypeChipStyle(typeName) {
-  const base = getQuickDexTypeColor(typeName);
-  const text = getQuickDexTypeTextColor(typeName);
-  const rgb = hexToRgbChannels(base);
-
-  return [
-    `color:${text}`,
-    `background:linear-gradient(180deg, rgba(${rgb}, 0.96), rgba(${rgb}, 0.78))`,
-    `border-color:rgba(${rgb}, 0.42)`,
-    `box-shadow:inset 0 1px 0 rgba(255,255,255,0.14), 0 10px 18px rgba(${rgb}, 0.18)`,
-  ].join("; ");
-}
-
-function translateTypeName(typeName) {
-  const dictionary = {
-    normal: "Normal",
-    fire: "Fogo",
-    water: "Agua",
-    electric: "Eletrico",
-    grass: "Planta",
-    ice: "Gelo",
-    fighting: "Lutador",
-    poison: "Veneno",
-    ground: "Terra",
-    flying: "Voador",
-    psychic: "Psiquico",
-    bug: "Inseto",
-    rock: "Pedra",
-    ghost: "Fantasma",
-    dragon: "Dragao",
-    dark: "Sombrio",
-    steel: "Aco",
-    fairy: "Fada",
-  };
-
-  return dictionary[String(typeName || "").toLowerCase()] || formatQuickDexLabel(typeName);
-}
-
-function getTypeShortLabel(typeName) {
-  const dictionary = {
-    normal: "NR",
-    fire: "FG",
-    water: "AG",
-    electric: "EL",
-    grass: "PL",
-    ice: "GL",
-    fighting: "LT",
-    poison: "VN",
-    ground: "TR",
-    flying: "VO",
-    psychic: "PS",
-    bug: "IN",
-    rock: "PD",
-    ghost: "FT",
-    dragon: "DG",
-    dark: "SM",
-    steel: "AC",
-    fairy: "FD",
-  };
-
-  return dictionary[String(typeName || "").toLowerCase()] || String(typeName || "").slice(0, 2).toUpperCase();
-}
-
-function getTypeIcon(typeName) {
-  const dictionary = {
-    normal: "N",
-    fire: "F",
-    water: "W",
-    electric: "E",
-    grass: "G",
-    ice: "I",
-    fighting: "K",
-    poison: "P",
-    ground: "T",
-    flying: "V",
-    psychic: "Y",
-    bug: "B",
-    rock: "R",
-    ghost: "H",
-    dragon: "D",
-    dark: "S",
-    steel: "A",
-    fairy: "Z",
-  };
-
-  return dictionary[String(typeName || "").toLowerCase()] || "?";
-}
-
-function setQuickDexGlowFromPokemon(pokemon) {
-  const primaryType = pokemon.types?.[0]?.type?.name || "water";
-  const glow = dexTypeGlow[primaryType] || "76 196 255";
-  document.documentElement.style.setProperty("--dex-glow-rgb", glow);
-}
-
-async function getTypeDamageProfile(typeEntries) {
-  const multiplierMap = new Map();
-
-  for (const { type } of typeEntries) {
-    const typeData = await fetchQuickDexJson(type.url);
-
-    typeData.damage_relations.double_damage_from.forEach((entry) => {
-      multiplierMap.set(entry.name, (multiplierMap.get(entry.name) || 1) * 2);
-    });
-
-    typeData.damage_relations.half_damage_from.forEach((entry) => {
-      multiplierMap.set(entry.name, (multiplierMap.get(entry.name) || 1) * 0.5);
-    });
-
-    typeData.damage_relations.no_damage_from.forEach((entry) => {
-      multiplierMap.set(entry.name, 0);
-    });
-  }
-
-  return [...multiplierMap.entries()]
-    .filter(([, multiplier]) => multiplier > 1)
-    .sort((first, second) => second[1] - first[1])
-    .slice(0, 6);
-}
-
-async function getTypeDefenseProfile(typeEntries) {
-  const multiplierMap = new Map();
-
-  for (const { type } of typeEntries) {
-    const typeData = await fetchQuickDexJson(type.url);
-
-    typeData.damage_relations.double_damage_to.forEach((entry) => {
-      multiplierMap.set(entry.name, (multiplierMap.get(entry.name) || 1) * 2);
-    });
-
-    typeData.damage_relations.half_damage_to.forEach((entry) => {
-      multiplierMap.set(entry.name, (multiplierMap.get(entry.name) || 1) * 0.5);
-    });
-
-    typeData.damage_relations.no_damage_to.forEach((entry) => {
-      multiplierMap.set(entry.name, 0);
-    });
-  }
-
-  const advantages = [...multiplierMap.entries()]
-    .filter(([, multiplier]) => multiplier > 1)
-    .sort((first, second) => second[1] - first[1])
-    .slice(0, 6);
-
-  const resistances = [...multiplierMap.entries()]
-    .filter(([, multiplier]) => multiplier > 0 && multiplier < 1)
-    .sort((first, second) => first[1] - second[1])
-    .slice(0, 6);
-
-  return { advantages, resistances };
-}
-
-function flattenQuickDexEvolution(chain, result = []) {
-  if (!chain) {
-    return result;
-  }
-
-  result.push({
-    name: chain.species.name,
-    requirement: chain.evolution_details?.[0] || null,
-  });
-
-  chain.evolves_to.forEach((entry) => flattenQuickDexEvolution(entry, result));
-  return result;
-}
-
-async function getQuickDexEvolutionCards(pokemon) {
-  const speciesData = await fetchQuickDexJson(pokemon.species.url);
-
-  if (!speciesData.evolution_chain?.url) {
-    return [];
-  }
-
-  const evolutionData = await fetchQuickDexJson(speciesData.evolution_chain.url);
-  const speciesList = flattenQuickDexEvolution(evolutionData.chain).slice(0, 4);
-
-  return Promise.all(
-    speciesList.map(async (species) => {
-      const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${species.name}`);
-      return {
-        id: details.id,
-        name: details.name,
-        image: getQuickDexArtwork(details),
-        requirement: species.requirement,
-      };
-    }),
-  );
-}
-
-function formatEvolutionRequirement(requirement) {
-  if (!requirement) {
-    return "Forma base";
-  }
-
-  const parts = [];
-
-  if (requirement.min_level) {
-    parts.push(`Nivel ${requirement.min_level}`);
-  }
-
-  if (requirement.item?.name) {
-    parts.push(`Item: ${translateEvolutionTerm(requirement.item.name)}`);
-  }
-
-  if (requirement.held_item?.name) {
-    parts.push(`Segurando: ${translateEvolutionTerm(requirement.held_item.name)}`);
-  }
-
-  if (requirement.min_happiness) {
-    parts.push("Amizade");
-  }
-
-  if (requirement.time_of_day) {
-    parts.push(requirement.time_of_day === "day" ? "Durante o dia" : "Durante a noite");
-  }
-
-  if (
-    requirement.trigger?.name &&
-    !requirement.min_level &&
-    !requirement.item?.name &&
-    !requirement.min_happiness
-  ) {
-    parts.push(translateEvolutionTerm(requirement.trigger.name));
-  }
-
-  if (!parts.length) {
-    parts.push("Metodo especial");
-  }
-
-  return parts.join(" - ");
-}
-
-async function renderQuickDexDetail(pokemon) {
-  if (!pokedexDetail) {
+  if (isTyping) {
     return;
   }
 
-  currentQuickDexPokemon = pokemon;
-  setQuickDexGlowFromPokemon(pokemon);
-  pokedexDetail.classList.remove("is-animating");
-  void pokedexDetail.offsetWidth;
-  pokedexDetail.classList.add("is-animating");
+  if (event.key.toLowerCase() === "p") {
+    event.preventDefault();
+    const willOpen = !document.body.classList.contains("is-pokedex-open");
+    setPokedexOpen(willOpen);
 
-  const types = pokemon.types
-    .map(
-      ({ type }) => `
-        <span class="pokedex-type-chip" style="${getQuickDexTypeChipStyle(type.name)}">
-          <span class="pokedex-type-icon" aria-hidden="true">${getTypeIcon(type.name)}</span>
-          <span>${translateTypeName(type.name)}</span>
-        </span>
-      `,
-    )
-    .join("");
-
-  const abilities = pokemon.abilities
-    .slice(0, 2)
-    .map(({ ability }) => formatQuickDexLabel(ability.name))
-    .join(", ");
-
-  const stats = pokemon.stats
-    .slice(0, 4)
-    .map(
-      (stat, index) => `
-        <div class="pokedex-stat-row">
-          <span>${formatQuickDexLabel(stat.stat.name)}</span>
-          <strong>${stat.base_stat}</strong>
-          <div class="pokedex-stat-meter" aria-hidden="true">
-            <div class="pokedex-stat-fill" style="width:${Math.min((stat.base_stat / 180) * 100, 100)}%; animation-delay:${index * 70}ms;"></div>
-          </div>
-        </div>
-      `,
-    )
-    .join("");
-
-  const statMap = Object.fromEntries(pokemon.stats.map((entry) => [entry.stat.name, entry.base_stat]));
-  const radarAttack = Math.min(((statMap.attack || 1) / 180) * 100, 100);
-  const radarDefense = Math.min(((statMap.defense || 1) / 180) * 100, 100);
-  const radarSpeed = Math.min(((statMap.speed || 1) / 180) * 100, 100);
-  const radarSpAtk = Math.min(((statMap["special-attack"] || 1) / 180) * 100, 100);
-
-  const weaknesses = await getTypeDamageProfile(pokemon.types);
-  const battleProfile = await getTypeDefenseProfile(pokemon.types);
-  const evolutions = await getQuickDexEvolutionCards(pokemon);
-  const hiddenAbility = pokemon.abilities.find((entry) => entry.is_hidden)?.ability?.name || "";
-  const moves = pokemon.moves
-    .map((entry) => {
-      const preferred =
-        entry.version_group_details.find((detail) => detail.move_learn_method.name === "level-up") ||
-        entry.version_group_details[0];
-
-      return {
-        name: entry.move.name,
-        method: preferred?.move_learn_method?.name || "unknown",
-        level: preferred?.level_learned_at || 0,
-      };
-    })
-    .sort((first, second) => {
-      if (first.method === "level-up" && second.method !== "level-up") {
-        return -1;
-      }
-
-      if (first.method !== "level-up" && second.method === "level-up") {
-        return 1;
-      }
-
-      return first.level - second.level;
-    })
-    .slice(0, 6);
-
-  const weaknessMarkup = weaknesses.length
-    ? weaknesses
-        .map(
-          ([typeName, multiplier]) => `
-            <span
-              class="pokedex-weakness-chip"
-              style="${getQuickDexTypeChipStyle(typeName)}"
-            >
-              <span class="type-chip-mark" aria-hidden="true">${getTypeIcon(typeName)}</span>
-              <span class="type-chip-copy">
-                <span class="type-chip-name">${translateTypeName(typeName)}</span>
-                <span class="type-chip-value">${multiplier}x de dano</span>
-              </span>
-            </span>
-          `,
-        )
-        .join("")
-    : "<p>Sem fraquezas destacadas.</p>";
-
-  const advantageMarkup = battleProfile.advantages.length
-    ? battleProfile.advantages
-        .map(
-          ([typeName, multiplier]) => `
-            <span
-              class="pokedex-advantage-chip"
-              style="${getQuickDexTypeChipStyle(typeName)}"
-            >
-              <span class="type-chip-mark" aria-hidden="true">${getTypeIcon(typeName)}</span>
-              <span class="type-chip-copy">
-                <span class="type-chip-name">${translateTypeName(typeName)}</span>
-                <span class="type-chip-value">${multiplier}x ofensivo</span>
-              </span>
-            </span>
-          `,
-        )
-        .join("")
-    : "<p>Sem vantagens destacadas.</p>";
-
-  const resistanceMarkup = battleProfile.resistances.length
-    ? battleProfile.resistances
-        .map(
-          ([typeName, multiplier]) => `
-            <span
-              class="pokedex-advantage-chip"
-              style="${getQuickDexTypeChipStyle(typeName)}"
-            >
-              <span class="type-chip-mark" aria-hidden="true">${getTypeIcon(typeName)}</span>
-              <span class="type-chip-copy">
-                <span class="type-chip-name">${translateTypeName(typeName)}</span>
-                <span class="type-chip-value">${multiplier}x resistente</span>
-              </span>
-            </span>
-          `,
-        )
-        .join("")
-    : "<p>Sem resistencias destacadas.</p>";
-
-  const evolutionMarkup = evolutions.length
-    ? evolutions
-        .map(
-          (entry) => `
-            <button
-              type="button"
-              class="pokedex-evolution-card${entry.name === pokemon.name ? " is-active" : ""}"
-              data-evolution-name="${entry.name}"
-            >
-              <img src="${entry.image}" alt="${entry.name}" />
-              <strong>${formatQuickDexLabel(entry.name)}</strong>
-              <span>#${String(entry.id).padStart(4, "0")}</span>
-              <small>${formatEvolutionRequirement(entry.requirement)}</small>
-            </button>
-          `,
-        )
-        .join("")
-    : "<p>Sem cadeia evolutiva disponivel.</p>";
-
-  const moveMarkup = moves.length
-    ? moves
-        .map(
-          (move) => `
-            <div class="pokedex-move-card">
-              <strong>${formatQuickDexLabel(move.name)}</strong>
-              <span>${formatQuickDexLabel(move.method)}${move.level ? ` - nivel ${move.level}` : ""}</span>
-            </div>
-          `,
-        )
-        .join("")
-    : "<p>Sem moves disponiveis.</p>";
-
-  const historyMarkup = quickDexHistory.length
-    ? quickDexHistory
-        .map(
-          (entry) => `
-            <button type="button" class="pokedex-history-chip" data-history-name="${entry.name}">
-              <strong>${formatQuickDexLabel(entry.name)}</strong>
-              <span>#${String(entry.id).padStart(4, "0")}</span>
-            </button>
-          `,
-        )
-        .join("")
-    : "<p>Sem historico ainda.</p>";
-
-  pushQuickDexHistory({
-    name: pokemon.name,
-    id: pokemon.id,
-  });
-
-  const dataSection = `
-    <div class="pokedex-meta-grid pokedex-detail-section">
-      <div class="pokedex-meta-card">
-        <span>Altura</span>
-        <strong>${(pokemon.height / 10).toFixed(1)} m</strong>
-      </div>
-      <div class="pokedex-meta-card">
-        <span>Peso</span>
-        <strong>${(pokemon.weight / 10).toFixed(1)} kg</strong>
-      </div>
-      <div class="pokedex-meta-card">
-        <span>Base XP</span>
-        <strong>${pokemon.base_experience ?? "?"}</strong>
-      </div>
-      <div class="pokedex-meta-card">
-        <span>Habilidade</span>
-        <strong>${abilities || "Sem dados"}</strong>
-      </div>
-      <div class="pokedex-meta-card">
-        <span>Habilidade oculta</span>
-        <strong>${hiddenAbility ? formatQuickDexLabel(hiddenAbility) : "Nao possui"}</strong>
-      </div>
-    </div>
-
-    <div class="pokedex-stats pokedex-detail-section">${stats}</div>
-
-    <h4 class="pokedex-section-title pokedex-detail-section">Moves principais</h4>
-    <div class="pokedex-moves-grid pokedex-detail-section">${moveMarkup}</div>
-  `;
-
-  const battleSection = `
-    <div class="pokedex-radar pokedex-detail-section">
-      <div
-        class="pokedex-radar-shape"
-        style="clip-path: polygon(
-          50% ${50 - radarAttack / 2}%,
-          ${50 + radarSpAtk / 2}% 50%,
-          50% ${50 + radarDefense / 2}%,
-          ${50 - radarSpeed / 2}% 50%
-        );"
-      ></div>
-      <div class="pokedex-radar-sweep"></div>
-      <div class="pokedex-radar-center"></div>
-      <span class="pokedex-radar-label pokedex-radar-label-top">Atk</span>
-      <span class="pokedex-radar-label pokedex-radar-label-right">Res</span>
-      <span class="pokedex-radar-label pokedex-radar-label-bottom">Def</span>
-      <span class="pokedex-radar-label pokedex-radar-label-left">Spd</span>
-    </div>
-
-    <h4 class="pokedex-section-title pokedex-detail-section">Fraquezas</h4>
-    <div class="pokedex-weakness-grid pokedex-detail-section">${weaknessMarkup}</div>
-
-    <h4 class="pokedex-section-title pokedex-detail-section">Vantagens ofensivas</h4>
-    <div class="pokedex-advantage-grid pokedex-detail-section">${advantageMarkup}</div>
-
-    <h4 class="pokedex-section-title pokedex-detail-section">Resistencias ofensivas</h4>
-    <div class="pokedex-advantage-grid pokedex-detail-section">${resistanceMarkup}</div>
-  `;
-
-  const evolutionSection = `
-    <h4 class="pokedex-section-title pokedex-detail-section">Evolucoes</h4>
-    <div class="pokedex-evolution-grid pokedex-detail-section">${evolutionMarkup}</div>
-
-    <h4 class="pokedex-section-title pokedex-detail-section">Ultimas pesquisas</h4>
-    <div class="pokedex-history-grid pokedex-detail-section">${historyMarkup}</div>
-  `;
-
-  const tabContent =
-    activeDexTab === "batalha"
-      ? battleSection
-      : activeDexTab === "evolucao"
-        ? evolutionSection
-        : dataSection;
-
-  pokedexDetail.innerHTML = `
-    <div class="pokedex-detail-hero">
-      <div class="pokedex-detail-hero-visual">
-        <img src="${getQuickDexArtwork(pokemon)}" alt="${pokemon.name}" />
-      </div>
-      <div class="pokedex-detail-heading">
-        <strong>${formatQuickDexLabel(pokemon.name)}</strong>
-        <span>#${String(pokemon.id).padStart(4, "0")}</span>
-      </div>
-    </div>
-
-    <div class="pokedex-type-list pokedex-detail-section">${types}</div>
-    ${tabContent}
-  `;
-
-  const radarSweep = pokedexDetail.querySelector(".pokedex-radar-sweep");
-  if (radarSweep) {
-    radarSweep.style.animation = "radar-sweep 4.2s linear infinite";
-  }
-}
-
-async function renderQuickDexResults(searchTerm) {
-  if (!pokedexList || !pokedexSummary) {
-    return;
-  }
-
-  const normalized = String(searchTerm || "").trim().toLowerCase();
-
-  if (!normalized) {
-    pokedexSummary.textContent = "Digite para pesquisar.";
-    pokedexList.innerHTML = "";
-    if (pokedexDetail) {
-      const historyMarkup = quickDexHistory.length
-        ? quickDexHistory
-            .map(
-              (entry) => `
-                <button type="button" class="pokedex-history-chip" data-history-name="${entry.name}">
-                  <strong>${formatQuickDexLabel(entry.name)}</strong>
-                  <span>#${String(entry.id).padStart(4, "0")}</span>
-                </button>
-              `,
-            )
-            .join("")
-        : "<p>Sem historico ainda.</p>";
-
-      pokedexDetail.innerHTML = `
-        <div class="pokedex-detail-empty">
-          <div>
-            <p>Selecione um Pokemon para consultar seus dados enquanto joga.</p>
-            <h4 class="pokedex-section-title">Ultimas pesquisas</h4>
-            <div class="pokedex-history-grid">${historyMarkup}</div>
-          </div>
-        </div>
-      `;
+    if (willOpen) {
+      pokedexFrame?.focus();
     }
     return;
   }
 
-  pokedexSummary.textContent = "Pesquisando...";
+  if (event.key === "Escape" && document.body.classList.contains("is-pokedex-open")) {
+    setPokedexOpen(false);
+    return;
+  }
 
-  try {
-    if (!fullDexList.length) {
-      const listPayload = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon?limit=1025&offset=0`);
-      fullDexList = listPayload.results.map((pokemon, index) => ({
-        name: pokemon.name,
-        id: index + 1,
-        searchLabel: normalizeQuickDexSearch(pokemon.name),
-      }));
-    }
+  if (event.key.toLowerCase() === "v" && integratedDexVoiceRecognition && integratedDexVoiceButton) {
+    event.preventDefault();
 
-    const filtered = fullDexList
-      .filter(
-        (pokemon) =>
-          pokemon.searchLabel.includes(normalized) || String(pokemon.id).includes(normalized),
-      )
-      .slice(0, 8);
-
-    pokedexSummary.textContent = `${filtered.length} resultado(s)`;
-
-    if (!filtered.length) {
-      pokedexList.innerHTML = "";
-      if (pokedexDetail) {
-        pokedexDetail.innerHTML = "<p>Nenhum Pokemon encontrado nessa busca.</p>";
-      }
-      return;
-    }
-
-    pokedexList.innerHTML = filtered
-      .map(
-        (pokemon) => `
-          <button
-            type="button"
-            class="pokedex-result${activePokedexSelection === pokemon.name ? " is-active" : ""}"
-            data-pokemon-name="${pokemon.name}"
-          >
-            <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png" alt="${pokemon.name}" />
-            <span>
-              <strong>${formatQuickDexLabel(pokemon.name)}</strong>
-              <span>#${String(pokemon.id).padStart(4, "0")}</span>
-            </span>
-          </button>
-        `,
-      )
-      .join("");
-
-    pokedexList.classList.remove("is-refreshing");
-    void pokedexList.offsetWidth;
-    pokedexList.classList.add("is-refreshing");
-
-    const nextSelection =
-      filtered.find((pokemon) => pokemon.name === activePokedexSelection)?.name || filtered[0].name;
-
-    activePokedexSelection = nextSelection;
-
-    const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${nextSelection}`);
-    await renderQuickDexDetail(details);
-    pokedexList
-      .querySelectorAll(".pokedex-result")
-      .forEach((button) =>
-        button.classList.toggle("is-active", button.dataset.pokemonName === activePokedexSelection),
-      );
-  } catch (error) {
-    pokedexSummary.textContent = "Falha ao buscar.";
-    pokedexList.innerHTML = "";
-    if (pokedexDetail) {
-      pokedexDetail.innerHTML = "<p>Nao foi possivel carregar a Pokedex agora.</p>";
+    try {
+      integratedDexVoiceRecognition.start();
+    } catch (error) {
+      setIntegratedDexVoiceButtonState(false, true);
     }
   }
 }
@@ -2309,8 +1742,7 @@ async function flushActiveSessionPlaytime() {
     return;
   }
 
-  const elapsedMinutes = Math.max(Math.round((Date.now() - activeSessionStartedAt) / 60000), 0);
-  activeSessionStartedAt = Date.now();
+  const elapsedMinutes = consumeElapsedSessionMinutes();
 
   if (!elapsedMinutes) {
     return;
@@ -2334,6 +1766,42 @@ async function exitFullscreenIfActive() {
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+async function toggleFullscreenMode(forceOpen = null) {
+  const target = document.querySelector("#play-space") || document.querySelector(".player-screen");
+
+  if (!target) {
+    return;
+  }
+
+  const isFullscreen = Boolean(document.fullscreenElement);
+  const shouldOpen = forceOpen === null ? !isFullscreen : forceOpen;
+
+  try {
+    if (!shouldOpen && isFullscreen) {
+      await document.exitFullscreen();
+
+      if (window.screen?.orientation?.unlock) {
+        window.screen.orientation.unlock();
+      }
+      return;
+    }
+
+    if (shouldOpen && !isFullscreen) {
+      await target.requestFullscreen();
+
+      if (window.screen?.orientation?.lock) {
+        try {
+          await window.screen.orientation.lock("landscape");
+        } catch (error) {
+          // Ignore orientation lock failures on unsupported browsers.
+        }
+      }
+    }
+  } catch (error) {
+    showRuntimeHint("O navegador bloqueou o fullscreen dessa sessao.");
   }
 }
 
@@ -2736,33 +2204,7 @@ if (romInput && romStatus && romFileName) {
 
 if (dockFullscreen && emulatorRuntime) {
   dockFullscreen.addEventListener("click", async () => {
-    const target = document.querySelector("#play-space") || document.querySelector(".player-screen");
-
-    if (!target) {
-      return;
-    }
-
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-
-        if (window.screen?.orientation?.unlock) {
-          window.screen.orientation.unlock();
-        }
-      } else {
-        await target.requestFullscreen();
-
-        if (window.screen?.orientation?.lock) {
-          try {
-            await window.screen.orientation.lock("landscape");
-          } catch (error) {
-            // Ignore orientation lock failures on unsupported browsers.
-          }
-        }
-      }
-    } catch (error) {
-      showRuntimeHint("O navegador bloqueou o fullscreen dessa sessao.");
-    }
+    await toggleFullscreenMode();
   });
 }
 
@@ -2876,10 +2318,12 @@ window.addEventListener("beforeunload", () => {
     return;
   }
 
-  const elapsedMinutes = Math.max(Math.round((Date.now() - activeSessionStartedAt) / 60000), 0);
+  const elapsedMinutes = consumeElapsedSessionMinutes();
   if (!elapsedMinutes) {
     return;
   }
+
+  queuePendingPlaytime(activeRomId, elapsedMinutes, Date.now());
 
   const entry = romLibrary.find((item) => item.id === activeRomId);
   if (entry) {
@@ -2894,7 +2338,7 @@ if (pokedexToggle) {
     setPokedexOpen(willOpen);
 
     if (willOpen) {
-      pokedexSearch?.focus();
+      pokedexFrame?.focus();
     }
   });
 }
@@ -2905,81 +2349,42 @@ if (pokedexClose) {
   });
 }
 
-if (pokedexSearch) {
-  pokedexSearch.addEventListener("input", () => {
-    window.clearTimeout(pokedexSearchTimer);
-    pokedexSearchTimer = window.setTimeout(() => {
-      renderQuickDexResults(pokedexSearch.value);
-    }, 220);
-  });
-}
+if (integratedDexVoiceButton) {
+  if (IntegratedDexSpeechRecognitionApi) {
+    integratedDexVoiceRecognition = new IntegratedDexSpeechRecognitionApi();
+    integratedDexVoiceRecognition.lang = "pt-BR";
+    integratedDexVoiceRecognition.interimResults = false;
+    integratedDexVoiceRecognition.maxAlternatives = 1;
 
-if (pokedexTabs.length) {
-  pokedexTabs.forEach((button) => {
-    button.addEventListener("click", async () => {
-      activeDexTab = button.dataset.dexTab || "dados";
-      syncPokedexTabs();
-
-      if (!activePokedexSelection || !currentQuickDexPokemon) {
-        return;
-      }
-
-      pokedexDetail?.classList.remove("tab-switching");
-      void pokedexDetail?.offsetWidth;
-      pokedexDetail?.classList.add("tab-switching");
-
-      const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${activePokedexSelection}`);
-      await renderQuickDexDetail(details);
+    integratedDexVoiceRecognition.addEventListener("start", () => {
+      setIntegratedDexVoiceButtonState(true, true);
     });
-  });
-}
 
-if (pokedexList) {
-  pokedexList.addEventListener("click", async (event) => {
-    const button = event.target.closest(".pokedex-result");
+    integratedDexVoiceRecognition.addEventListener("end", () => {
+      setIntegratedDexVoiceButtonState(false, true);
+    });
 
-    if (!button?.dataset.pokemonName) {
-      return;
-    }
+    integratedDexVoiceRecognition.addEventListener("result", (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim() ?? "";
+      handleIntegratedDexVoiceCommand(transcript);
+    });
 
-    activePokedexSelection = button.dataset.pokemonName;
-    const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${activePokedexSelection}`);
-    await renderQuickDexDetail(details);
-    pokedexList
-      .querySelectorAll(".pokedex-result")
-      .forEach((item) => item.classList.toggle("is-active", item === button));
-  });
-}
+    integratedDexVoiceRecognition.addEventListener("error", () => {
+      setIntegratedDexVoiceButtonState(false, true);
+    });
 
-if (pokedexDetail) {
-  pokedexDetail.addEventListener("click", async (event) => {
-    const evolutionButton = event.target.closest("[data-evolution-name]");
-    const button = event.target.closest("[data-history-name]");
-
-    if (evolutionButton?.dataset.evolutionName) {
-      activePokedexSelection = evolutionButton.dataset.evolutionName;
-      const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${activePokedexSelection}`);
-      await renderQuickDexDetail(details);
-
-      if (pokedexSearch) {
-        pokedexSearch.value = activePokedexSelection;
+    integratedDexVoiceButton.addEventListener("click", () => {
+      try {
+        integratedDexVoiceRecognition.start();
+      } catch (error) {
+        setIntegratedDexVoiceButtonState(false, true);
       }
+    });
 
-      return;
-    }
-
-    if (!button?.dataset.historyName) {
-      return;
-    }
-
-    activePokedexSelection = button.dataset.historyName;
-    const details = await fetchQuickDexJson(`${POKEAPI_BASE}/pokemon/${activePokedexSelection}`);
-    await renderQuickDexDetail(details);
-
-    if (pokedexSearch) {
-      pokedexSearch.value = activePokedexSelection;
-    }
-  });
+    setIntegratedDexVoiceButtonState(false, true);
+  } else {
+    setIntegratedDexVoiceButtonState(false, false);
+  }
 }
 
 if (romLibraryList) {
@@ -3124,34 +2529,29 @@ if (romLibraryMore) {
 }
 
 window.addEventListener("keydown", (event) => {
-  const target = event.target;
-  const isTyping =
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement ||
-    target?.isContentEditable;
-
-  if (isTyping) {
-    return;
-  }
-
-  if (event.key.toLowerCase() === "p") {
-    event.preventDefault();
-    const willOpen = !document.body.classList.contains("is-pokedex-open");
-    setPokedexOpen(willOpen);
-
-    if (willOpen) {
-      pokedexSearch?.focus();
-    }
-  }
-
-  if (event.key === "Escape" && document.body.classList.contains("is-pokedex-open")) {
-    setPokedexOpen(false);
-  }
+  handleIntegratedDexShortcuts(event, window);
 });
 
-loadQuickDexHistory();
-syncPokedexTabs();
+if (pokedexFrame) {
+  pokedexFrame.addEventListener("load", () => {
+    try {
+      const frameWindow = pokedexFrame.contentWindow;
+      const frameDocument = pokedexFrame.contentDocument;
+
+      if (!frameWindow || !frameDocument || frameDocument.body?.dataset.integratedDexShortcutsBound === "true") {
+        return;
+      }
+
+      frameDocument.body.dataset.integratedDexShortcutsBound = "true";
+      frameWindow.addEventListener("keydown", (event) => {
+        handleIntegratedDexShortcuts(event, frameWindow);
+      });
+    } catch (error) {
+      // Ignore iframe binding failures.
+    }
+  });
+}
+
 syncLauncherTabs();
 syncDockState();
 disableMobileRuntimeContextMenu();

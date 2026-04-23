@@ -1,6 +1,7 @@
 const API_BASE = "https://pokeapi.co/api/v2";
 const PAGE_SIZE = 12;
 const ALL_POKEMON_LIMIT = 2000;
+const IS_EMBED = new URLSearchParams(window.location.search).get("embed") === "1";
 const DEFAULT_THEME = {
   primary: "#4cc4ff",
   secondary: "#74cb48",
@@ -331,6 +332,30 @@ function getArtwork(pokemon, shiny = false) {
     pokemon.sprites.other["official-artwork"].front_default ||
     pokemon.sprites.other.home?.front_default ||
     pokemon.sprites.front_default
+  );
+}
+
+function getAnimatedSprite(pokemon, shiny = false) {
+  const blackWhiteAnimated = pokemon.sprites.versions?.["generation-v"]?.["black-white"]?.animated;
+  const crystalAnimated = pokemon.sprites.versions?.["generation-ii"]?.crystal?.animated;
+  const showdownSprites = pokemon.sprites.other?.showdown;
+
+  if (shiny) {
+    return (
+      blackWhiteAnimated?.front_shiny ||
+      showdownSprites?.front_shiny ||
+      crystalAnimated?.front_shiny ||
+      pokemon.sprites.front_shiny ||
+      getArtwork(pokemon, true)
+    );
+  }
+
+  return (
+    blackWhiteAnimated?.front_default ||
+    showdownSprites?.front_default ||
+    crystalAnimated?.front_default ||
+    pokemon.sprites.front_default ||
+    getArtwork(pokemon, false)
   );
 }
 
@@ -808,7 +833,7 @@ function renderDamageChip(typeName, multiplier, labelSuffix) {
 }
 
 function renderArtPane(label, pokemon, shiny = false) {
-  const artwork = getArtwork(pokemon, shiny);
+  const artwork = getAnimatedSprite(pokemon, shiny);
   return `
     <article class="art-pane">
       <span class="art-badge">${escapeHtml(label)}</span>
@@ -848,7 +873,7 @@ async function renderSpotlight() {
       button.className = `evolution-button${stage.details.id === pokemon.id ? " is-active" : ""}`;
       button.dataset.pokemonId = String(stage.details.id);
       button.innerHTML = `
-        <img src="${escapeHtml(getArtwork(stage.details))}" alt="${escapeHtml(stage.details.name)}" />
+        <img src="${escapeHtml(getAnimatedSprite(stage.details))}" alt="${escapeHtml(stage.details.name)}" />
         <strong>${escapeHtml(stage.details.name)}</strong>
         <span>${escapeHtml(formatEvolutionRequirement(stage))}</span>
       `;
@@ -976,6 +1001,7 @@ function renderStatsTab(pokemon) {
 }
 
 function renderMovesTab(pokemon) {
+  const moveLimit = IS_EMBED ? 8 : 12;
   const moveCards = pokemon.moves
     .map((move) => {
       const preferred =
@@ -999,7 +1025,7 @@ function renderMovesTab(pokemon) {
 
       return first.level - second.level;
     })
-    .slice(0, 12);
+    .slice(0, moveLimit);
 
   return `
     <section class="detail-section">
@@ -1118,7 +1144,7 @@ async function renderDetail(pokemon) {
 
     const matchups = await getTypeMatchups(pokemon.types);
     const speciesDetails = await fetchSpeciesDetails(pokemon.species.url);
-    const artwork = getArtwork(pokemon, false);
+    const artwork = getAnimatedSprite(pokemon, false);
     const joinedTypes = pokemon.types.map(({ type }) => type.name).join(" / ");
     let tabContent = "";
 

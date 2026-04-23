@@ -70,6 +70,18 @@ function formatPokemonNumber(id) {
   return `#${String(id).padStart(4, "0")}`;
 }
 
+function getHighlightImage(detail) {
+  return (
+    detail.sprites.versions?.["generation-v"]?.["black-white"]?.animated?.front_default ||
+    detail.sprites.other?.showdown?.front_default ||
+    detail.sprites.versions?.["generation-ii"]?.crystal?.animated?.front_default ||
+    detail.sprites.other?.["official-artwork"]?.front_default ||
+    detail.sprites.other?.home?.front_default ||
+    detail.sprites.front_default ||
+    "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+  );
+}
+
 function getTotalPages() {
   return Math.max(1, Math.ceil(state.filteredPokemon.length / PAGE_SIZE));
 }
@@ -100,17 +112,12 @@ function renderGrid() {
         )
         .join("");
 
-      const artwork =
-        pokemon.artwork ||
-        pokemon.sprite ||
-        "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png";
-
       return `
         <a class="highlights-card" href="./pokedex.html?pokemon=${encodeURIComponent(pokemon.id)}">
           <span class="highlights-card-glow"></span>
           <span class="highlights-number">${formatPokemonNumber(pokemon.id)}</span>
           <div class="highlights-artwrap">
-            <img src="${artwork}" alt="${pokemon.name}" loading="lazy" />
+            <img src="${pokemon.image}" alt="${pokemon.name}" loading="lazy" />
           </div>
           <strong>${pokemon.displayName}</strong>
           <div class="highlights-types">${types}</div>
@@ -215,8 +222,7 @@ async function loadPokemon() {
         name: detail.name,
         displayName: detail.name.replace(/-/g, " "),
         types: detail.types.map(({ type }) => type.name),
-        sprite: detail.sprites.front_default,
-        artwork: detail.sprites.other?.["official-artwork"]?.front_default,
+        image: getHighlightImage(detail),
       };
     }),
   );

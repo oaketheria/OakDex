@@ -6,6 +6,187 @@ body.pokedex-page {
   transition: background 240ms ease;
 }
 
+html.pokedex-embed,
+html.pokedex-embed body.pokedex-page {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+html.pokedex-embed body.pokedex-page {
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--theme-primary) 16%, transparent) 0%, transparent 48%),
+    linear-gradient(180deg, #b2212e 0%, #891721 100%);
+}
+
+html.pokedex-embed .scene-shell {
+  grid-template-columns: 1fr;
+  width: 100%;
+  height: 100%;
+}
+
+html.pokedex-embed .decor-panel {
+  display: none;
+}
+
+html.pokedex-embed .app-shell {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+html.pokedex-embed .pokedex-frame {
+  height: 100%;
+  filter: none;
+}
+
+html.pokedex-embed .detail-shell,
+html.pokedex-embed .detail-bezel,
+html.pokedex-embed .detail-card {
+  min-height: 0;
+  height: 100%;
+}
+
+html.pokedex-embed .pokedex-left {
+  border-radius: 18px 4px 4px 18px;
+}
+
+html.pokedex-embed .pokedex-right {
+  border-radius: 4px 18px 18px 4px;
+}
+
+html.pokedex-embed .detail-card {
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+html.pokedex-embed .art-pane img {
+  max-height: calc(100vh - 290px);
+}
+
+html.pokedex-embed .art-compare {
+  gap: 8px;
+  padding: 8px;
+}
+
+html.pokedex-embed .art-pane {
+  padding: 8px;
+  gap: 6px;
+}
+
+html.pokedex-embed .evolution-strip {
+  gap: 4px;
+}
+
+html.pokedex-embed .evolution-strip > * {
+  flex-basis: 104px;
+}
+
+html.pokedex-embed .evolution-button {
+  min-height: 72px;
+  padding: 5px 4px;
+}
+
+html.pokedex-embed .evolution-button img {
+  width: 34px;
+  height: 34px;
+}
+
+html.pokedex-embed .evolution-button strong {
+  font-size: 0.84rem;
+}
+
+html.pokedex-embed .evolution-button span {
+  font-size: 0.62rem;
+}
+
+html.pokedex-embed .moves-grid {
+  gap: 6px;
+  margin-top: 6px;
+}
+
+html.pokedex-embed .move-card {
+  padding: 6px 7px;
+}
+
+html.pokedex-embed .move-card strong {
+  font-size: 0.92rem;
+}
+
+html.pokedex-embed .move-card span {
+  font-size: 0.74rem;
+}
+
+html.pokedex-embed .forms-grid {
+  max-height: min(360px, calc(100vh - 360px));
+  overflow: auto;
+  align-content: start;
+  padding-right: 4px;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+html.pokedex-embed .form-card {
+  padding: 6px 7px;
+}
+
+html.pokedex-embed .form-card strong {
+  font-size: 0.92rem;
+}
+
+html.pokedex-embed .form-card span {
+  font-size: 0.74rem;
+}
+
+html.pokedex-embed .detail-columns {
+  gap: 4px;
+  margin-top: 4px;
+}
+
+html.pokedex-embed .detail-grid-2 {
+  gap: 6px;
+  margin-top: 6px;
+}
+
+html.pokedex-embed .detail-block,
+html.pokedex-embed .detail-section {
+  padding: 7px;
+}
+
+html.pokedex-embed .detail-block h4,
+html.pokedex-embed .detail-section h4 {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+html.pokedex-embed .measurements {
+  gap: 4px;
+}
+
+html.pokedex-embed .metric {
+  padding: 6px;
+}
+
+html.pokedex-embed .metric strong {
+  margin-top: 3px;
+  font-size: 0.86rem;
+}
+
+html.pokedex-embed .abilities-list,
+html.pokedex-embed .weakness-list {
+  gap: 4px;
+}
+
+html.pokedex-embed .abilities-list li,
+html.pokedex-embed .weakness-list li {
+  padding: 5px 7px;
+  font-size: 0.9rem;
+}
+
+html.pokedex-embed .detail-copy {
+  line-height: 1.25;
+}
+
 .scene-shell {
   width: 100vw;
   height: 100vh;

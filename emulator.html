@@ -84,6 +84,14 @@
                   <button
                     type="button"
                     class="dock-button dock-button-compact"
+                    id="integrated-dex-voice"
+                    aria-label="Comando de voz da Pokedex integrada"
+                  >
+                    Voz
+                  </button>
+                  <button
+                    type="button"
+                    class="dock-button dock-button-compact"
                     id="dock-fullscreen"
                     aria-label="Abrir em tela cheia"
                   >
@@ -98,6 +106,10 @@
                   >
                     Pokedex
                   </button>
+                  <div class="integrated-dex-voice-help" aria-label="Como usar o comando de voz">
+                    <span class="integrated-dex-voice-help-title">Ative com <kbd>V</kbd> ou no botao <strong>Voz</strong></span>
+                    <span class="integrated-dex-voice-help-examples">Diga: "abrir pokedex", "fechar pokedex" ou "abrir pokedex e buscar pikachu".</span>
+                  </div>
                 </div>
               </header>
 
@@ -144,41 +156,32 @@
               <div class="emulator-pokedex-shell">
                 <header class="emulator-pokedex-header">
                   <div>
-                    <span class="status-label">Quick Dex</span>
+                    <span class="status-label">Pokedex integrada</span>
                     <h3>Pokedex em jogo</h3>
                   </div>
 
-                  <button type="button" class="pokedex-close" id="pokedex-close" aria-label="Fechar Pokedex">
-                    Fechar
-                  </button>
+                  <div class="emulator-pokedex-header-actions">
+                    <div class="integrated-dex-shortcuts integrated-dex-shortcuts-inline" aria-label="Atalhos da Pokedex integrada">
+                      <span><kbd>P</kbd> abrir</span>
+                      <span><kbd>V</kbd> voz</span>
+                      <span><kbd>Esc</kbd> fechar</span>
+                    </div>
+
+                    <button type="button" class="pokedex-close" id="pokedex-close" aria-label="Fechar Pokedex">
+                      Fechar
+                    </button>
+                  </div>
                 </header>
-
-                <label class="pokedex-search" for="emulator-pokedex-search">
-                  <span class="status-label">Buscar Pokemon</span>
-                  <input
-                    id="emulator-pokedex-search"
-                    type="search"
-                    placeholder="Nome ou numero"
-                    autocomplete="off"
-                  />
-                </label>
-
-                <div class="pokedex-results-meta">
-                  <span id="emulator-pokedex-summary">Digite para pesquisar.</span>
+                <div class="emulator-pokedex-embed">
+                  <iframe
+                    id="emulator-pokedex-frame"
+                    class="emulator-pokedex-frame"
+                    title="Pokedex integrada"
+                    src="./pokedex.html?embed=1"
+                    loading="lazy"
+                    tabindex="-1"
+                  ></iframe>
                 </div>
-
-                <nav class="pokedex-tabs" aria-label="Secoes da Quick Dex">
-                  <button type="button" class="pokedex-tab is-active" data-dex-tab="dados">Dados</button>
-                  <button type="button" class="pokedex-tab" data-dex-tab="batalha">Batalha</button>
-                  <button type="button" class="pokedex-tab" data-dex-tab="evolucao">Evolucao</button>
-                </nav>
-
-                <section class="pokedex-quick-results">
-                  <div id="emulator-pokedex-list" class="pokedex-list" aria-live="polite"></div>
-                  <article id="emulator-pokedex-detail" class="pokedex-detail">
-                    <p>Selecione um Pokemon para consultar seus dados enquanto joga.</p>
-                  </article>
-                </section>
               </div>
             </aside>
 
