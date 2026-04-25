@@ -1552,14 +1552,14 @@ function setIntegratedDexFrameSource(searchTerm = "") {
     return;
   }
 
-  const nextUrl = new URL("/pokedex.html", window.location.origin);
+  const nextUrl = new URL("./pokedex.html", window.location.href);
   nextUrl.searchParams.set("embed", "1");
 
   if (searchTerm) {
     nextUrl.searchParams.set("pokemon", searchTerm);
   }
 
-  const nextSrc = nextUrl.pathname + nextUrl.search;
+  const nextSrc = `.${nextUrl.pathname.slice(nextUrl.pathname.lastIndexOf("/"))}${nextUrl.search}`;
   const currentSrc = pokedexFrame.getAttribute("src") || "";
 
   if (currentSrc !== nextSrc) {

@@ -45,7 +45,7 @@ export const DEFAULT_ROMS = [
     title: "Pokemon Emerald",
     system: "GBA",
     cover: "./assets/rom-covers/emerald.png.jfif",
-    route: "./rom/emerald",
+    route: "./rom.html?id=emerald",
     version: "emerald",
   },
   {
@@ -53,7 +53,7 @@ export const DEFAULT_ROMS = [
     title: "Pokemon Fire Red",
     system: "GBA",
     cover: "./assets/rom-covers/fire-red.png.jfif",
-    route: "./rom/fire-red",
+    route: "./rom.html?id=fire-red",
     version: "fire red",
   },
   {
@@ -61,7 +61,7 @@ export const DEFAULT_ROMS = [
     title: "Pokemon Leaf Green",
     system: "GBA",
     cover: "./assets/rom-covers/leaf-green.png.jfif",
-    route: "./rom/leaf-green",
+    route: "./rom.html?id=leaf-green",
     version: "leaf green",
   },
   {
@@ -69,7 +69,7 @@ export const DEFAULT_ROMS = [
     title: "Pokemon Ruby",
     system: "GBA",
     cover: "./assets/rom-covers/ruby.png.jfif",
-    route: "./rom/ruby",
+    route: "./rom.html?id=ruby",
     version: "ruby",
   },
   {
@@ -77,7 +77,7 @@ export const DEFAULT_ROMS = [
     title: "Pokemon Sapphire",
     system: "GBA",
     cover: "./assets/rom-covers/sapphire.png.jfif",
-    route: "./rom/sapphire",
+    route: "./rom.html?id=sapphire",
     version: "sapphire",
   },
 ];

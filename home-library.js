@@ -155,7 +155,7 @@ function getRecentLocalRoms() {
       title,
       system: entry.system || getSystemLabelByFileName(entry.name),
       cover: getCoverUrl(entry, version),
-      route: `./rom/local/${encodeURIComponent(entry.id)}`,
+      route: `./rom.html?type=local&id=${encodeURIComponent(entry.id)}`,
       source: "local",
       lastPlayedAt: Number(entry.lastPlayedAt || 0),
       updatedAt: Number(entry.updatedAt || entry.addedAt || entry.file?.lastModified || 0),
@@ -847,7 +847,7 @@ libraryDashboard.addEventListener("click", async (event) => {
   const deleteButton = event.target.closest("[data-dashboard-delete]");
 
   if (openButton?.dataset.dashboardOpen) {
-    window.location.href = `./rom/local/${encodeURIComponent(openButton.dataset.dashboardOpen)}`;
+    window.location.href = `./rom.html?type=local&id=${encodeURIComponent(openButton.dataset.dashboardOpen)}`;
     return;
   }
 
@@ -1291,15 +1291,15 @@ uploadForm.addEventListener("submit", async (event) => {
   }
 
   if (!isSupportedRomFile(file.name)) {
-    window.location.href = `./rom/upload?name=${encodeURIComponent(file.name)}`;
+    window.location.href = `./rom.html?id=upload&name=${encodeURIComponent(file.name)}`;
     return;
   }
 
   try {
     const saved = await saveLocalRom(file, coverFile || null);
-    window.location.href = `./rom/local/${encodeURIComponent(saved.id)}`;
+    window.location.href = `./rom.html?type=local&id=${encodeURIComponent(saved.id)}`;
   } catch (error) {
-    window.location.href = `./rom/upload?name=${encodeURIComponent(file.name)}`;
+    window.location.href = `./rom.html?id=upload&name=${encodeURIComponent(file.name)}`;
   }
 });
 
