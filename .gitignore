@@ -1,2 +1,6 @@
 .env
 node_modules/
+bios/
+*.bin
+socialrom_repo/
+_backups/

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>ROM - Oak Emulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./emulator.css" />
+    <link rel="stylesheet" href="./rom-page.css" />
+  </head>
+  <body class="emulator-page rom-detail-page">
+    <div class="emulator-shell rom-page-shell">
+      <header class="rom-page-topbar">
+        <a class="rom-back-link" href="./index.html" id="rom-back-link">Voltar para biblioteca</a>
+        <div class="rom-page-title">
+          <span id="session-resume-kicker">Runtime</span>
+          <h1 id="session-title">Oak Emulator</h1>
+        </div>
+        <div class="rom-page-status">
+          <span id="session-inline-status">Sem ROM carregada</span>
+          <span id="session-inline-rom">Nenhum arquivo selecionado</span>
+        </div>
+      </header>
+
+      <main class="rom-player-layout">
+        <aside class="rom-controls-panel">
+          <section class="rom-side-card">
+            <span class="status-label" id="controls-title">Controles</span>
+            <div class="rom-control-list">
+              <div><span>D-Pad</span><kbd>Setas</kbd></div>
+              <div><span>A</span><kbd>Z</kbd></div>
+              <div><span>B</span><kbd>X</kbd></div>
+              <div><span>L</span><kbd>Q</kbd></div>
+              <div><span>R</span><kbd>W</kbd></div>
+              <div><span>Start</span><kbd>Enter</kbd></div>
+              <div><span>Select</span><kbd>Shift</kbd></div>
+            </div>
+          </section>
+
+          <section class="rom-side-card">
+            <span class="status-label" id="save-title">Como salvar</span>
+            <p>Use o save do jogo. Save State: Shift + F1 para salvar e F1 para carregar.</p>
+            <div class="rom-side-actions">
+              <button type="button" class="library-action" id="session-export-save">Exportar save</button>
+              <button type="button" class="library-action" id="session-import-save">Importar save</button>
+            </div>
+            <input id="save-import-input" type="file" accept=".sav,.srm,.state,.slot" hidden />
+          </section>
+        </aside>
+
+        <section class="rom-emulator-column">
+          <section class="player-stage rom-player-stage">
+            <header class="player-header">
+              <div class="player-header-copy">
+                <div class="player-session-meta">
+                  <span class="player-meta-chip" id="rom-runtime-label">Runtime</span>
+                  <span class="player-meta-chip player-meta-chip-live" id="screen-badge-inline">Pronto para iniciar</span>
+                </div>
+              </div>
+
+              <div class="player-header-actions">
+                <button type="button" class="dock-button dock-button-compact" id="integrated-dex-voice">Voz</button>
+                <button type="button" class="dock-button dock-button-compact dock-fullscreen-button" id="dock-fullscreen">
+                  Tela cheia
+                </button>
+                <button
+                  type="button"
+                  class="dock-button dock-button-compact pokedex-toggle-inline"
+                  id="pokedex-toggle"
+                  aria-expanded="false"
+                  aria-controls="emulator-pokedex-panel"
+                >
+                  Pokedex
+                </button>
+              </div>
+            </header>
+
+            <div class="rom-upload-strip">
+              <label class="hud-upload-native-label" for="rom-input" id="rom-upload-label">Adicionar ROM local</label>
+              <input id="rom-input" class="hud-upload-native-input" type="file" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.md,.gen,.sms,.gg,.n64,.z64,.v64,.chd,.pbp,.iso,.bin" />
+              <label class="hud-upload-native-label is-secondary" for="bios-import-input" id="bios-import-label">Importar BIOS PS1</label>
+              <input id="bios-import-input" class="hud-upload-native-input" type="file" accept=".bin" />
+              <p class="ps1-bios-alert" id="ps1-bios-alert" hidden>PS1 precisa da BIOS scph5501.bin. Importe sua BIOS legalmente obtida para iniciar jogos de PlayStation 1.</p>
+              <span id="hud-mode">Aguardando ROM</span>
+            </div>
+
+            <div class="screen-center-copy">
+              <span class="screen-badge">Pronto para iniciar</span>
+              <h3 id="rom-empty-title">Emulador pronto</h3>
+              <p id="rom-empty-copy">Adicione o arquivo da ROM para iniciar esta pagina.</p>
+            </div>
+
+            <div class="runtime-stage">
+              <div id="emulator-runtime" class="emulator-runtime" aria-live="polite">
+                <div id="emulatorjs-player" class="emulator-runtime-player"></div>
+              </div>
+              <button type="button" class="emulator-native-menu-button" id="emulator-native-menu" hidden>Menu</button>
+            </div>
+
+            <div id="emulator-loading" class="emulator-loading" hidden>
+              <span class="emulator-loading-ring" aria-hidden="true"></span>
+              <strong>Inicializando emulador...</strong>
+              <p>Baixando o core do console e preparando a ROM local.</p>
+            </div>
+
+            <div id="emulator-error" class="emulator-error" hidden>
+              <strong>Nao foi possivel iniciar o emulador.</strong>
+              <p id="emulator-error-message">Verifique a ROM e tente novamente.</p>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <aside class="emulator-pokedex" id="emulator-pokedex-panel" aria-hidden="true">
+        <div class="emulator-pokedex-shell">
+          <header class="emulator-pokedex-header">
+            <div>
+              <span class="status-label">Pokedex integrada</span>
+              <h3>Pokedex em jogo</h3>
+            </div>
+            <div class="emulator-pokedex-header-actions">
+              <div class="integrated-dex-shortcuts integrated-dex-shortcuts-inline" aria-label="Atalhos da Pokedex integrada">
+                <span><kbd>P</kbd> abre/fecha Pokedex</span>
+                <span><kbd>V</kbd> voz</span>
+                <span><kbd>Esc</kbd> fecha Pokedex</span>
+              </div>
+
+              <button type="button" class="pokedex-close" id="pokedex-close" aria-label="Fechar Pokedex">Fechar</button>
+            </div>
+          </header>
+          <div class="emulator-pokedex-embed">
+            <iframe
+              id="emulator-pokedex-frame"
+              class="emulator-pokedex-frame"
+              title="Pokedex integrada"
+              src="/pokedex.html?embed=1"
+              loading="lazy"
+              tabindex="-1"
+            ></iframe>
+          </div>
+        </div>
+      </aside>
+
+      <div hidden>
+        <button id="session-resume-hero" type="button"></button>
+        <div id="session-resume-cover"></div>
+        <p id="session-resume-detail"></p>
+        <div id="session-resume-tags"></div>
+        <span id="launcher-session-status"></span>
+        <span id="launcher-rom-name"></span>
+        <span id="launcher-save-status"></span>
+        <span id="launcher-save-detail"></span>
+        <span id="launcher-runtime-flags"></span>
+        <span id="launcher-runtime-detail"></span>
+        <span id="launcher-play-summary"></span>
+        <span id="launcher-play-detail"></span>
+        <div id="session-save-list"></div>
+        <div id="rom-library-list"></div>
+        <span id="rom-library-count"></span>
+        <span id="rom-library-results"></span>
+        <div id="rom-library-footer"></div>
+      </div>
+    </div>
+
+    <script src="./rom-page.js" type="module"></script>
+    <script src="./emulator.js" type="module"></script>
+  </body>
+</html>

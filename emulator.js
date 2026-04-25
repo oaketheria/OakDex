@@ -40,8 +40,11 @@ const emulatorLoading = document.querySelector("#emulator-loading");
 const emulatorError = document.querySelector("#emulator-error");
 const emulatorErrorMessage = document.querySelector("#emulator-error-message");
 const dockFullscreen = document.querySelector("#dock-fullscreen");
+const emulatorNativeMenu = document.querySelector("#emulator-native-menu");
 const integratedDexVoiceButton = document.querySelector("#integrated-dex-voice");
 const saveImportInput = document.querySelector("#save-import-input");
+const biosImportInput = document.querySelector("#bios-import-input");
+const biosImportLabel = document.querySelector("#bios-import-label");
 const playSpace = document.querySelector("#play-space");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
@@ -49,39 +52,126 @@ const pokedexPanel = document.querySelector("#emulator-pokedex-panel");
 const pokedexFrame = document.querySelector("#emulator-pokedex-frame");
 const launcherTabs = [...document.querySelectorAll(".launcher-tab")];
 const launcherPanels = [...document.querySelectorAll(".launcher-panel")];
+const pokedexOriginalParent = pokedexPanel?.parentElement || null;
+const pokedexOriginalNextSibling = pokedexPanel?.nextSibling || null;
 
 let activeRomUrl = "";
+let activeBiosUrl = "";
 let activeLoaderScript = null;
 let emulationReady = false;
 let emulationPaused = false;
 let activeLauncherTab = "biblioteca";
 let romLibrary = [];
 let activeRomId = "";
+let activeSupportsPokedex = false;
 let activeBootToken = 0;
 let romLibraryQuery = "";
 let romLibrarySortMode = "recent";
 let romLibraryExpanded = false;
 let romLibraryFilter = "all";
-let mobileToolbarObserver = null;
-let fullscreenControlScreenObserver = null;
+let runtimeResizeInterval = null;
 let activeSessionStartedAt = 0;
 let integratedDexVoiceRecognition = null;
 
 const IntegratedDexSpeechRecognitionApi =
   window.SpeechRecognition || window.webkitSpeechRecognition || null;
 
-const EMULATORJS_CDN_VERSION = "4.2.3";
-const EMULATORJS_DATA_PATH = `https://cdn.emulatorjs.org/${EMULATORJS_CDN_VERSION}/data/`;
+const EMULATORJS_DATA_PATH = "https://cdn.emulatorjs.org/stable/data/";
 const ROM_DB_NAME = "pokemon-emerald-gx";
 const ROM_STORE_NAME = "rom-library";
 const SAVE_STORE_NAME = "save-library";
+const BIOS_STORE_NAME = "bios-library";
 const LAST_ROM_STORAGE_KEY = "emulatorLastRomId";
 const RECENT_ROMS_STORAGE_KEY = "emulatorRecentRoms";
 const PENDING_ROM_BOOT_KEY = "emulatorPendingRomBoot";
 const SESSION_META_STORAGE_KEY = "emulatorSessionMeta";
+const DEFAULT_ROM_LINKS_STORAGE_KEY = "oakDefaultRomLinks";
 const RECENT_ROMS_LIMIT = 3;
 const ROM_LIBRARY_PAGE_SIZE = 6;
-const MOBILE_TOOLBAR_LABELS = ["context menu", "settings", "menu", "fullscreen", "save"];
+
+const EMULATOR_SYSTEMS = [
+  { label: "GBA", name: "Game Boy Advance", core: "gba", extensions: ["gba"] },
+  { label: "GB", name: "Game Boy", core: "gb", extensions: ["gb"] },
+  { label: "GBC", name: "Game Boy Color", core: "gb", extensions: ["gbc"] },
+  { label: "NES", name: "Nintendo Entertainment System", core: "nes", extensions: ["nes"] },
+  { label: "SNES", name: "Super Nintendo", core: "snes", extensions: ["sfc", "smc"] },
+  { label: "Mega Drive", name: "Mega Drive / Genesis", core: "segaMD", extensions: ["md", "gen"] },
+  { label: "Master System", name: "Sega Master System", core: "segaMS", extensions: ["sms"] },
+  { label: "Game Gear", name: "Sega Game Gear", core: "segaGG", extensions: ["gg"] },
+  { label: "N64", name: "Nintendo 64", core: "n64", extensions: ["n64", "z64", "v64"] },
+  { label: "PS1", name: "PlayStation 1", core: "psx", extensions: ["chd", "pbp", "iso", "bin"], biosId: "ps1-scph5501" },
+];
+
+function getRomExtension(fileName) {
+  return String(fileName || "").split(".").pop()?.toLowerCase() || "";
+}
+
+function getSystemByFileName(fileName) {
+  const extension = getRomExtension(fileName);
+  return EMULATOR_SYSTEMS.find((system) => system.extensions.includes(extension)) || null;
+}
+
+function getRomSystem(entryOrFile) {
+  const name = entryOrFile?.name || entryOrFile?.file?.name || "";
+  if (entryOrFile?.system) {
+    return EMULATOR_SYSTEMS.find((system) => system.label === entryOrFile.system) || getSystemByFileName(name) || EMULATOR_SYSTEMS[0];
+  }
+  return getSystemByFileName(name) || EMULATOR_SYSTEMS[0];
+}
+
+function getSupportedRomExtensionsLabel() {
+  return EMULATOR_SYSTEMS.flatMap((system) => system.extensions.map((extension) => `.${extension}`)).join(", ");
+}
+
+function getRouteLocalRomId() {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const romIndex = pathParts.lastIndexOf("rom");
+
+  if (romIndex !== -1 && pathParts[romIndex + 1] === "local") {
+    return decodeURIComponent(pathParts.slice(romIndex + 2).join("/"));
+  }
+
+  return "";
+}
+
+function getRouteDefaultRomId() {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const romIndex = pathParts.lastIndexOf("rom");
+
+  if (romIndex !== -1 && pathParts[romIndex + 1] && pathParts[romIndex + 1] !== "local") {
+    return decodeURIComponent(pathParts[romIndex + 1]);
+  }
+
+  return "";
+}
+
+function loadDefaultRomLinks() {
+  try {
+    const saved = window.localStorage.getItem(DEFAULT_ROM_LINKS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveDefaultRomLink(defaultRomId, localRomId) {
+  if (!defaultRomId || !localRomId) {
+    return;
+  }
+
+  try {
+    const links = loadDefaultRomLinks();
+    links[defaultRomId] = localRomId;
+    window.localStorage.setItem(DEFAULT_ROM_LINKS_STORAGE_KEY, JSON.stringify(links));
+  } catch (error) {
+    // Ignore storage failures.
+  }
+}
+
+function getLinkedDefaultRomId(defaultRomId) {
+  const links = loadDefaultRomLinks();
+  return links[defaultRomId] || "";
+}
 
 const LOCAL_ROM_COVER_MAP = {
   emerald: "assets/rom-covers/emerald.png.jfif",
@@ -452,7 +542,7 @@ function renderSessionResumeHero(featuredEntry) {
   sessionResumeHero.dataset.romLaunch = featuredEntry.id;
   sessionResumeCover.innerHTML = getRomCoverMarkup(featuredEntry);
   sessionResumeKicker.textContent = "Retomar agora";
-  sessionTitle.textContent = formatRomTitle(featuredEntry.name);
+  sessionTitle.textContent = getRomDisplayTitle(featuredEntry);
   sessionResumeDetail.textContent = `${featuredEntry.lastPlayedLabel || "Ultima sessao"} - ${progressLabel}`;
   sessionResumeTags.innerHTML = `
     ${version !== "other" ? `<span class="session-resume-tag">${getVersionLabel(version)}</span>` : ""}
@@ -480,7 +570,7 @@ function openRomLibraryDb() {
       return;
     }
 
-    const request = window.indexedDB.open(ROM_DB_NAME, 2);
+    const request = window.indexedDB.open(ROM_DB_NAME, 3);
 
     request.addEventListener("upgradeneeded", () => {
       const database = request.result;
@@ -491,6 +581,10 @@ function openRomLibraryDb() {
 
       if (!database.objectStoreNames.contains(SAVE_STORE_NAME)) {
         database.createObjectStore(SAVE_STORE_NAME, { keyPath: "id" });
+      }
+
+      if (!database.objectStoreNames.contains(BIOS_STORE_NAME)) {
+        database.createObjectStore(BIOS_STORE_NAME, { keyPath: "id" });
       }
     });
 
@@ -541,7 +635,11 @@ function createRomId(file) {
 }
 
 function formatRomTitle(fileName) {
-  return String(fileName || "ROM local").replace(/\.gba$/i, "");
+  return String(fileName || "ROM local").replace(/\.(gba|gb|gbc|nes|sfc|smc|md|gen|sms|gg|n64|z64|v64|chd|pbp|iso|bin|zip|7z)$/i, "");
+}
+
+function getRomDisplayTitle(entryOrFile) {
+  return entryOrFile?.displayTitle || formatRomTitle(entryOrFile?.name || entryOrFile?.file?.name || entryOrFile || "");
 }
 
 function saveLastRomSelection(romId) {
@@ -689,7 +787,7 @@ function getVisibleRomLibraryEntries() {
       return true;
     }
 
-    return normalizeIntegratedDexSearch(formatRomTitle(entry.name)).includes(normalizedQuery);
+    return normalizeIntegratedDexSearch(getRomDisplayTitle(entry)).includes(normalizedQuery);
   });
 
   const visibleEntries = romLibraryExpanded ? filteredEntries : filteredEntries.slice(0, ROM_LIBRARY_PAGE_SIZE);
@@ -774,7 +872,7 @@ function getRomCoverMeta(fileName) {
 
   return {
     accent: "generic",
-    label: "GBA",
+    label: getRomSystem({ name: fileName }).label,
     edition: "ROM local",
     mascot: "Adventure",
     gradient: "linear-gradient(135deg, #4dc3ff 0%, #2a4ea8 100%)",
@@ -784,20 +882,46 @@ function getRomCoverMeta(fileName) {
 function isKnownPokemonRom(fileName) {
   const normalized = String(fileName || "").toLowerCase();
 
-  return ["emerald", "fire", "red", "leaf", "green", "ruby", "sapphire"].some((term) =>
+  return ["pokemon", "pokémon", "emerald", "fire", "red", "leaf", "green", "ruby", "sapphire", "unbound", "lazarus"].some((term) =>
     normalized.includes(term),
   );
 }
 
+function getSupportsPokedex(entryOrFile) {
+  const name = entryOrFile?.name || entryOrFile?.title || entryOrFile?.file?.name || "";
+  return Boolean(entryOrFile?.supportsPokedex ?? isKnownPokemonRom(name));
+}
+
+function setPokedexAvailable(available) {
+  activeSupportsPokedex = Boolean(available);
+  document.body.classList.toggle("has-pokedex-support", activeSupportsPokedex);
+
+  if (pokedexToggle) {
+    pokedexToggle.hidden = !activeSupportsPokedex;
+    pokedexToggle.disabled = !activeSupportsPokedex;
+    pokedexToggle.setAttribute("aria-hidden", String(!activeSupportsPokedex));
+  }
+
+  if (integratedDexVoiceButton) {
+    integratedDexVoiceButton.hidden = !activeSupportsPokedex;
+    integratedDexVoiceButton.disabled = !activeSupportsPokedex || !IntegratedDexSpeechRecognitionApi;
+    integratedDexVoiceButton.setAttribute("aria-hidden", String(!activeSupportsPokedex));
+  }
+
+  if (!activeSupportsPokedex) {
+    setPokedexOpen(false);
+  }
+}
+
 function normalizeRomSearchQuery(fileName) {
   return String(fileName || "")
-    .replace(/\.gba$/i, "")
+    .replace(/\.(gba|gb|gbc|nes|sfc|smc|md|gen|sms|gg|n64|z64|v64|chd|pbp|iso|bin)$/i, "")
     .replace(/\([^)]*\)/g, " ")
     .replace(/\[[^\]]*\]/g, " ")
     .replace(/[_-]+/g, " ")
     .replace(/\bwww\.[^\s]+/gi, " ")
     .replace(/\bromsportugues(?:\.com)?\b/gi, " ")
-    .replace(/\b(portugues|portuguese|traduzido|translated|translation|br|ptbr|pt-br|rom|gba)\b/gi, " ")
+    .replace(/\b(portugues|portuguese|traduzido|translated|translation|br|ptbr|pt-br|rom|gba|gb|gbc|nes|snes|sfc|smc|md|gen|sms|gg|n64|z64|v64|ps1|psx|chd|pbp|iso|bin)\b/gi, " ")
     .replace(/pokemon/gi, "Pokemon ")
     .replace(/fire\s*red/gi, "Fire Red")
     .replace(/leaf\s*green/gi, "Leaf Green")
@@ -897,7 +1021,7 @@ function getRomCoverMarkup(entry) {
   const mediaMarkup = resolvedCoverUrl
     ? `
       <div class="rom-cover-art">
-        <img class="rom-cover-image" src="${resolvedCoverUrl}" alt="Capa da ROM ${formatRomTitle(entry.name)}" loading="lazy" />
+        <img class="rom-cover-image" src="${resolvedCoverUrl}" alt="Capa da ROM ${getRomDisplayTitle(entry)}" loading="lazy" />
       </div>
     `
     : "";
@@ -910,7 +1034,7 @@ function getRomCoverMarkup(entry) {
           <strong>${coverMeta.edition}</strong>
           <span>${coverMeta.mascot}</span>
         </div>
-        <span class="rom-cover-system">Game Boy Advance</span>
+        <span class="rom-cover-system">${getRomSystem(entry).name}</span>
       </div>
     `;
 
@@ -953,10 +1077,11 @@ function renderRecentRoms() {
         >
           ${getRomCoverMarkup(entry)}
           <span class="recent-rom-copy">
-            <strong>${formatRomTitle(entry.name)}</strong>
+            <strong>${getRomDisplayTitle(entry)}</strong>
             <span>${entry.lastPlayedLabel || "Ultima sessao"}</span>
           </span>
           <span class="rom-card-tag-row">
+            <span class="rom-card-tag">${getRomSystem(entry).label}</span>
             <span class="rom-card-tag">${getVersionLabel(inferRomVersion(entry.name))}</span>
             ${entry.favorite ? '<span class="rom-card-tag rom-card-tag-favorite">Favorita</span>' : ""}
           </span>
@@ -1026,10 +1151,11 @@ function renderRomLibrary() {
           ${getRomCoverMarkup(entry)}
           <button type="button" class="rom-favorite-toggle${entry.favorite ? " is-active" : ""}" data-rom-favorite="${entry.id}" aria-label="${entry.favorite ? "Remover dos favoritos" : "Marcar como favorita"}">★</button>
           <div class="rom-library-card-copy">
-            <strong>${formatRomTitle(entry.name)}</strong>
+            <strong>${getRomDisplayTitle(entry)}</strong>
             <span>${formatBytes(entry.size)}</span>
           </div>
           <div class="rom-card-tag-row">
+            <span class="rom-card-tag">${entry.system || getRomSystem(entry).label}</span>
             <span class="rom-card-tag">${getVersionLabel(inferRomVersion(entry.name))}</span>
             ${entry.playMinutes ? `<span class="rom-card-tag">${entry.playMinutes} min</span>` : ""}
             ${entry.lastPlayedAt ? `<span class="rom-card-tag">Jogada ${formatRelativeTime(entry.lastPlayedAt)}</span>` : ""}
@@ -1252,9 +1378,15 @@ async function loadRomLibrary() {
 async function saveRomToLibrary(file) {
   const coverUrl = await fetchAutomaticRomCover(file.name);
   const existingRecord = romLibrary.find((entry) => entry.id === createRomId(file));
+  const system = getRomSystem(file);
   const record = {
     id: createRomId(file),
     name: file.name,
+    system: system.label,
+    systemName: system.name,
+    emulatorCore: system.core,
+    supportsPokedex: getSupportsPokedex(file),
+    displayTitle: existingRecord?.displayTitle || "",
     size: file.size,
     updatedAt: Date.now(),
     coverUrl,
@@ -1328,15 +1460,17 @@ async function launchLibraryRom(romId) {
   }
 
   activeRomId = entry.id;
+  setPokedexAvailable(getSupportsPokedex(entry));
   activeSessionStartedAt = Date.now();
   saveLastRomSelection(entry.id);
   pushRecentRom({
     id: entry.id,
     name: entry.name,
+    displayTitle: entry.displayTitle || "",
     lastPlayedLabel: "Ultima jogada",
   });
-  romFileName.textContent = `${entry.name} - Biblioteca local`;
-  setSessionTitleText(formatRomTitle(entry.name));
+  romFileName.textContent = `${getRomDisplayTitle(entry)} - Biblioteca local`;
+  setSessionTitleText(getRomDisplayTitle(entry));
 
   entry.lastPlayedAt = Date.now();
   await withRomStore("readwrite", (store, resolve, reject, database) => {
@@ -1359,6 +1493,32 @@ async function launchLibraryRom(romId) {
 }
 
 function setPokedexOpen(open) {
+  if (open && !activeSupportsPokedex) {
+    showRuntimeHint("A Pokedex integrada aparece apenas em jogos Pokemon.");
+    return;
+  }
+
+  if (open && !document.fullscreenElement) {
+    const target = emulatorRuntime || getEmulatorHost();
+
+    if (!target || typeof target.requestFullscreen !== "function") {
+      showRuntimeHint("A Pokedex integrada abre apenas em tela cheia.");
+      return;
+    }
+
+    target
+      .requestFullscreen()
+      .then(() => {
+        syncPokedexFullscreenHost();
+        setPokedexOpen(true);
+      })
+      .catch(() => {
+        showRuntimeHint("Entre em tela cheia para abrir a Pokedex integrada.");
+      });
+    return;
+  }
+
+  syncPokedexFullscreenHost();
   document.body.classList.toggle("is-pokedex-open", open);
 
   if (pokedexToggle) {
@@ -1379,7 +1539,8 @@ function setIntegratedDexVoiceButtonState(isListening, supported = true) {
     return;
   }
 
-  integratedDexVoiceButton.disabled = !supported;
+  integratedDexVoiceButton.hidden = !activeSupportsPokedex;
+  integratedDexVoiceButton.disabled = !supported || !activeSupportsPokedex;
   integratedDexVoiceButton.classList.toggle("is-listening", isListening);
   integratedDexVoiceButton.textContent = supported
     ? (isListening ? "Ouvindo" : "Voz")
@@ -1391,7 +1552,7 @@ function setIntegratedDexFrameSource(searchTerm = "") {
     return;
   }
 
-  const nextUrl = new URL("./pokedex.html", window.location.href);
+  const nextUrl = new URL("/pokedex.html", window.location.origin);
   nextUrl.searchParams.set("embed", "1");
 
   if (searchTerm) {
@@ -1407,6 +1568,10 @@ function setIntegratedDexFrameSource(searchTerm = "") {
 }
 
 function handleIntegratedDexVoiceCommand(transcript) {
+  if (!activeSupportsPokedex) {
+    return;
+  }
+
   const command = String(transcript || "")
     .toLowerCase()
     .normalize("NFD")
@@ -1506,6 +1671,10 @@ function handleIntegratedDexShortcuts(event, ownerWindow = window) {
   }
 
   if (event.key.toLowerCase() === "p") {
+    if (!activeSupportsPokedex) {
+      return;
+    }
+
     event.preventDefault();
     const willOpen = !document.body.classList.contains("is-pokedex-open");
     setPokedexOpen(willOpen);
@@ -1521,7 +1690,7 @@ function handleIntegratedDexShortcuts(event, ownerWindow = window) {
     return;
   }
 
-  if (event.key.toLowerCase() === "v" && integratedDexVoiceRecognition && integratedDexVoiceButton) {
+  if (event.key.toLowerCase() === "v" && activeSupportsPokedex && integratedDexVoiceRecognition && integratedDexVoiceButton) {
     event.preventDefault();
 
     try {
@@ -1541,8 +1710,40 @@ function setDockEnabled(button, enabled) {
   button.classList.toggle("is-disabled", !enabled);
 }
 
+function syncPokedexFullscreenHost() {
+  if (!pokedexPanel) {
+    return;
+  }
+
+  const fullscreenElement = document.fullscreenElement;
+  const shouldAttachToFullscreen =
+    fullscreenElement instanceof HTMLElement &&
+    (fullscreenElement === emulatorRuntime ||
+      fullscreenElement.contains(emulatorRuntime) ||
+      emulatorRuntime?.contains(fullscreenElement));
+
+  if (shouldAttachToFullscreen && !fullscreenElement.contains(pokedexPanel)) {
+    fullscreenElement.appendChild(pokedexPanel);
+    return;
+  }
+
+  if (!shouldAttachToFullscreen && pokedexOriginalParent && pokedexPanel.parentElement !== pokedexOriginalParent) {
+    pokedexOriginalParent.insertBefore(pokedexPanel, pokedexOriginalNextSibling);
+  }
+}
+
 function syncDockState() {
-  setDockEnabled(dockFullscreen, true);
+  const isFullscreen = Boolean(document.fullscreenElement);
+  setDockEnabled(dockFullscreen, Boolean(document.body.classList.contains("has-rom") && emulationReady));
+
+  if (dockFullscreen) {
+    dockFullscreen.classList.toggle("is-active", isFullscreen);
+    dockFullscreen.textContent = isFullscreen ? "Sair da tela cheia" : "Tela cheia";
+    dockFullscreen.setAttribute(
+      "aria-label",
+      isFullscreen ? "Sair da tela cheia" : "Abrir em tela cheia",
+    );
+  }
 }
 
 function setEmulationReady(ready) {
@@ -1769,51 +1970,79 @@ async function exitFullscreenIfActive() {
   }
 }
 
-async function toggleFullscreenMode(forceOpen = null) {
-  const target = document.querySelector("#play-space") || document.querySelector(".player-screen");
+function resetRuntimeState() {
+  document.body.classList.remove("is-loading-rom");
+  emulatorLoading.hidden = true;
+}
+
+async function toggleFullscreenMode() {
+  const target = emulatorRuntime || getEmulatorHost();
 
   if (!target) {
     return;
   }
 
-  const isFullscreen = Boolean(document.fullscreenElement);
-  const shouldOpen = forceOpen === null ? !isFullscreen : forceOpen;
+  if (!document.body.classList.contains("has-rom")) {
+    showRuntimeHint("Carregue uma ROM antes de usar a tela cheia.");
+    return;
+  }
 
   try {
-    if (!shouldOpen && isFullscreen) {
+    if (document.fullscreenElement) {
       await document.exitFullscreen();
-
-      if (window.screen?.orientation?.unlock) {
-        window.screen.orientation.unlock();
-      }
-      return;
-    }
-
-    if (shouldOpen && !isFullscreen) {
+    } else {
       await target.requestFullscreen();
-
-      if (window.screen?.orientation?.lock) {
-        try {
-          await window.screen.orientation.lock("landscape");
-        } catch (error) {
-          // Ignore orientation lock failures on unsupported browsers.
-        }
-      }
+      window.setTimeout(() => syncRuntimeViewport(), 180);
     }
   } catch (error) {
     showRuntimeHint("O navegador bloqueou o fullscreen dessa sessao.");
+  } finally {
+    syncDockState();
   }
 }
 
-function resetRuntimeState() {
-  document.body.classList.remove("is-loading-rom");
-  emulatorLoading.hidden = true;
+function getNativeFullscreenControl(runtimeHost = getEmulatorHost()) {
+  if (!runtimeHost) {
+    return null;
+  }
+
+  const controls = runtimeHost.querySelectorAll(
+    'button, [role="button"], [data-btn], [data-action], .ejs--button, .ejs_button',
+  );
+
+  for (const control of controls) {
+    if (!(control instanceof HTMLElement)) {
+      continue;
+    }
+
+    const label = [
+      control.textContent,
+      control.getAttribute("aria-label"),
+      control.getAttribute("title"),
+      control.getAttribute("data-btn"),
+      control.getAttribute("data-action"),
+      control.className,
+      control.id,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (label.includes("fullscreen") || label.includes("full screen") || label.includes("tela cheia")) {
+      return control;
+    }
+  }
+
+  return null;
 }
 
 function showRuntimeError(message) {
   document.body.classList.remove("has-rom");
   resetRuntimeState();
   emulatorRuntime.classList.remove("is-visible");
+  if (emulatorNativeMenu) {
+    emulatorNativeMenu.hidden = true;
+  }
   emulatorError.hidden = false;
   emulatorErrorMessage.textContent = message;
   romStatus.textContent = "Falha ao iniciar";
@@ -1850,17 +2079,255 @@ function readFileAsObjectUrl(file) {
   return Promise.resolve(URL.createObjectURL(file));
 }
 
+function syncRuntimeViewport(runtimeHost = getEmulatorHost()) {
+  if (!runtimeHost) {
+    return;
+  }
+
+  const frame = runtimeHost.querySelector("iframe");
+  const canvas = runtimeHost.querySelector("canvas");
+
+  [frame, canvas].forEach((node) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    node.style.width = "100%";
+    node.style.height = "100%";
+    node.style.maxWidth = "100%";
+    node.style.display = "block";
+    node.style.border = "0";
+    node.style.left = "0";
+    node.style.top = "0";
+  });
+
+  hideWideBlankTouchControls(runtimeHost);
+}
+
+function getRuntimeTextSignal(node) {
+  return [
+    node.textContent,
+    node.getAttribute("aria-label"),
+    node.getAttribute("title"),
+    node.getAttribute("data-btn"),
+    node.getAttribute("data-action"),
+  ]
+    .filter(Boolean)
+    .join("")
+    .replace(/\s+/g, "")
+    .trim();
+}
+
+function hideWideBlankTouchControls(runtimeHost = getEmulatorHost()) {
+  if (!runtimeHost || !isCompactTouchUi()) {
+    return;
+  }
+
+  const hostRect = runtimeHost.getBoundingClientRect();
+  if (!hostRect.width || !hostRect.height) {
+    return;
+  }
+
+  runtimeHost.querySelectorAll("div, button, [role='button']").forEach((node) => {
+    if (!(node instanceof HTMLElement)) {
+      return;
+    }
+
+    if (node.matches("canvas, iframe") || node.querySelector("canvas, iframe")) {
+      return;
+    }
+
+    if (getRuntimeTextSignal(node)) {
+      return;
+    }
+
+    const rect = node.getBoundingClientRect();
+    const isWideBlankControl =
+      rect.width >= hostRect.width * 0.72 &&
+      rect.height >= 24 &&
+      rect.height <= Math.max(96, hostRect.height * 0.14);
+
+    if (isWideBlankControl) {
+      node.dataset.oakWideBlankControl = "true";
+      node.style.setProperty("display", "none", "important");
+      node.style.setProperty("opacity", "0", "important");
+      node.style.setProperty("pointer-events", "none", "important");
+      node.setAttribute("aria-hidden", "true");
+    }
+  });
+}
+
+async function withBiosStore(mode, callback) {
+  const database = await openRomLibraryDb();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(BIOS_STORE_NAME, mode);
+    const store = transaction.objectStore(BIOS_STORE_NAME);
+
+    transaction.addEventListener("complete", () => {
+      database.close();
+    });
+
+    transaction.addEventListener("error", () => {
+      database.close();
+      reject(transaction.error || new Error("Falha ao acessar a biblioteca de BIOS."));
+    });
+
+    try {
+      callback(store, resolve, reject, database);
+    } catch (error) {
+      database.close();
+      reject(error);
+    }
+  });
+}
+
+function getBiosIdForSystem(system) {
+  return system?.biosId || "";
+}
+
+async function getBiosRecord(biosId) {
+  if (!biosId) {
+    return null;
+  }
+
+  return withBiosStore("readonly", (store, resolve, reject) => {
+    const request = store.get(biosId);
+
+    request.addEventListener("success", () => {
+      resolve(request.result || null);
+    });
+
+    request.addEventListener("error", () => {
+      reject(request.error || new Error("Falha ao carregar BIOS."));
+    });
+  });
+}
+
+async function saveBiosRecord(biosId, file) {
+  const record = {
+    id: biosId,
+    name: file.name,
+    size: file.size,
+    updatedAt: Date.now(),
+    file,
+  };
+
+  await withBiosStore("readwrite", (store, resolve, reject) => {
+    const request = store.put(record);
+
+    request.addEventListener("success", () => resolve(record));
+    request.addEventListener("error", () => reject(request.error || new Error("Falha ao salvar BIOS.")));
+  });
+
+  return record;
+}
+
+function getNativeEmulatorMenuControl(runtimeHost = getEmulatorHost()) {
+  if (!runtimeHost) {
+    return null;
+  }
+
+  const controls = runtimeHost.querySelectorAll(
+    'button, [role="button"], [data-btn], [data-action], .ejs--button, .ejs_button',
+  );
+
+  for (const control of controls) {
+    if (!(control instanceof HTMLElement)) {
+      continue;
+    }
+
+    const label = [
+      control.textContent,
+      control.getAttribute("aria-label"),
+      control.getAttribute("title"),
+      control.getAttribute("data-btn"),
+      control.getAttribute("data-action"),
+      control.className,
+      control.id,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    if (label.includes("menu") || label.includes("context") || label.includes("settings")) {
+      return control;
+    }
+  }
+
+  return null;
+}
+
+function openNativeEmulatorMenu() {
+  const runtimeHost = getEmulatorHost();
+  const nativeControl = getNativeEmulatorMenuControl(runtimeHost);
+
+  if (nativeControl) {
+    nativeControl.click();
+    return;
+  }
+
+  const target = runtimeHost?.querySelector("canvas, iframe") || runtimeHost;
+  if (!target) {
+    return;
+  }
+
+  const rect = target.getBoundingClientRect();
+  target.dispatchEvent(new MouseEvent("contextmenu", {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.right - 18,
+    clientY: rect.top + 18,
+  }));
+}
+
+function ensureRuntimeResizeInterval() {
+  const runtimeHost = getEmulatorHost();
+
+  if (!runtimeHost) {
+    return;
+  }
+
+  syncRuntimeViewport(runtimeHost);
+
+  if (runtimeResizeInterval) {
+    window.clearInterval(runtimeResizeInterval);
+  }
+
+  runtimeResizeInterval = window.setInterval(() => {
+    syncRuntimeViewport(runtimeHost);
+  }, 300);
+}
+
 function clearExistingRuntime() {
   activeBootToken += 1;
 
-  if (mobileToolbarObserver) {
-    mobileToolbarObserver.disconnect();
-    mobileToolbarObserver = null;
+  if (runtimeResizeInterval) {
+    window.clearInterval(runtimeResizeInterval);
+    runtimeResizeInterval = null;
   }
+
+  try {
+    if (window.EJS_emulator?.stop) {
+      window.EJS_emulator.stop();
+    }
+  } catch (error) {
+    // Ignore teardown issues from partially loaded runtimes.
+  }
+
+  document.querySelectorAll("audio").forEach((audio) => {
+    audio.pause();
+    audio.src = "";
+  });
 
   if (activeLoaderScript) {
     activeLoaderScript.remove();
     activeLoaderScript = null;
+  }
+
+  if (activeBiosUrl) {
+    URL.revokeObjectURL(activeBiosUrl);
+    activeBiosUrl = "";
   }
 
   if (emulatorRuntime) {
@@ -1879,169 +2346,25 @@ function clearExistingRuntime() {
   delete window.EJS_gameUrl;
   delete window.EJS_biosUrl;
   delete window.EJS_startOnLoaded;
+  delete window.EJS_threads;
   delete window.EJS_Buttons;
+  delete window.EJS_volume;
+  delete window.EJS_color;
+  delete window.EJS_defaultOptions;
+  delete window.EJS_emulator;
   if (emulatorRuntime) {
     emulatorRuntime.classList.remove("is-visible");
   }
-  setEmulationReady(false);
-  activeSessionStartedAt = 0;
-}
-
-function disableMobileRuntimeContextMenu() {
-  if (!emulatorRuntime || !isCompactTouchUi()) {
-    return;
+  if (emulatorNativeMenu) {
+    emulatorNativeMenu.hidden = true;
   }
-
-  emulatorRuntime.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-  });
+  setEmulationReady(false);
+  setPokedexAvailable(false);
+  activeSessionStartedAt = 0;
 }
 
 function isCompactTouchUi() {
   return window.matchMedia("(max-width: 1100px), ((hover: none) and (pointer: coarse) and (max-width: 1400px))").matches;
-}
-
-function getMobileToolbarContainer(node, runtimeHost) {
-  let current = node instanceof Element ? node : null;
-
-  while (current && current !== runtimeHost) {
-    const interactiveCount = current.querySelectorAll('button, [role="button"], input[type="range"]').length;
-    const hasVolumeSlider = Boolean(current.querySelector('input[type="range"]'));
-
-    if (hasVolumeSlider || interactiveCount >= 2) {
-      return current;
-    }
-
-    current = current.parentElement;
-  }
-
-  return null;
-}
-
-function sanitizeNativeToolbar(runtimeHost = getEmulatorHost()) {
-  if (!runtimeHost) {
-    return;
-  }
-
-  const interactiveNodes = [
-    ...runtimeHost.querySelectorAll('button, [role="button"], input[type="range"], a'),
-  ];
-
-  interactiveNodes.forEach((node) => {
-    if (!(node instanceof HTMLElement)) {
-      return;
-    }
-
-    const label = [
-      node.getAttribute("title"),
-      node.getAttribute("aria-label"),
-      node.textContent,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    if (
-      label.includes("menu") ||
-      label.includes("fullscreen") ||
-      label.includes("context")
-    ) {
-      node.style.display = "none";
-      node.setAttribute("data-oak-hidden", "true");
-    }
-  });
-
-  const volumeSlider = runtimeHost.querySelector('input[type="range"]');
-  if (volumeSlider) {
-    const toolbarContainer = getMobileToolbarContainer(volumeSlider, runtimeHost);
-
-    if (toolbarContainer) {
-      let seenSlider = false;
-      [...toolbarContainer.children].forEach((child) => {
-        if (!(child instanceof HTMLElement)) {
-          return;
-        }
-
-        if (child.contains(volumeSlider) || child === volumeSlider) {
-          seenSlider = true;
-          return;
-        }
-
-        if (seenSlider) {
-          child.style.display = "none";
-          child.setAttribute("data-oak-hidden", "true");
-        }
-      });
-    }
-  }
-}
-
-function hideMobileEmulatorToolbar() {
-  sanitizeNativeToolbar();
-}
-
-function ensureMobileToolbarObserver() {
-  const runtimeHost = getEmulatorHost();
-
-  if (!runtimeHost) {
-    return;
-  }
-
-  if (mobileToolbarObserver) {
-    mobileToolbarObserver.disconnect();
-  }
-
-  mobileToolbarObserver = new MutationObserver(() => {
-    sanitizeNativeToolbar(runtimeHost);
-  });
-
-  mobileToolbarObserver.observe(runtimeHost, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ["title", "aria-label", "style", "class"],
-  });
-
-  sanitizeNativeToolbar(runtimeHost);
-
-  if (fullscreenControlScreenObserver) {
-    fullscreenControlScreenObserver.disconnect();
-  }
-
-  fullscreenControlScreenObserver = new MutationObserver(() => {
-    sanitizeNativeToolbar(runtimeHost);
-  });
-
-  fullscreenControlScreenObserver.observe(runtimeHost, {
-    childList: true,
-    subtree: true,
-    characterData: true,
-  });
-
-}
-
-function getEmulatorToolbarConfig() {
-  return {
-    playPause: true,
-    restart: true,
-    mute: true,
-    settings: true,
-    fullscreen: false,
-    saveState: true,
-    loadState: true,
-    screenRecord: true,
-    gamepad: true,
-    cheat: true,
-    volume: true,
-    saveSavFiles: true,
-    loadSavFiles: true,
-    quickSave: true,
-    quickLoad: true,
-    screenshot: true,
-    cacheManager: true,
-    exitEmulation: false,
-  };
 }
 
 async function bootEmulator(file) {
@@ -2051,11 +2374,15 @@ async function bootEmulator(file) {
 
   clearExistingRuntime();
   clearActiveRomUrl();
+  setPokedexAvailable(getSupportsPokedex(file));
   const bootToken = activeBootToken;
   const runtimeHost = getEmulatorHost();
 
   document.body.classList.add("has-rom", "is-loading-rom");
   emulatorRuntime.classList.remove("is-visible");
+  if (emulatorNativeMenu) {
+    emulatorNativeMenu.hidden = true;
+  }
   emulatorLoading.hidden = false;
   emulatorError.hidden = true;
   romStatus.textContent = "Inicializando core";
@@ -2074,17 +2401,39 @@ async function bootEmulator(file) {
     return;
   }
 
+  const system = getRomSystem(file);
+  const biosId = getBiosIdForSystem(system);
+
+  if (biosId) {
+    const biosRecord = await getBiosRecord(biosId);
+
+    if (!biosRecord?.file) {
+      showRuntimeError("PS1 precisa da BIOS scph5501.bin. Importe sua BIOS legalmente obtida antes de iniciar esta ROM.");
+      return;
+    }
+
+    activeBiosUrl = URL.createObjectURL(biosRecord.file);
+    window.EJS_biosUrl = activeBiosUrl;
+  } else {
+    delete window.EJS_biosUrl;
+  }
+
   window.EJS_player = "#emulatorjs-player";
-  window.EJS_core = "gba";
+  window.EJS_core = system.core;
   window.EJS_pathtodata = EMULATORJS_DATA_PATH;
   window.EJS_gameName = getRomDisplayName(file);
   window.EJS_gameUrl = activeRomUrl;
   window.EJS_startOnLoaded = true;
-  window.EJS_volume = 0.65;
-  window.EJS_Buttons = getEmulatorToolbarConfig();
+  window.EJS_threads = false;
+  window.EJS_volume = 0.7;
+  window.EJS_color = "#00FF80";
+  window.EJS_defaultOptions = {
+    shader: "crt-easymode.glslp",
+    "save-state-location": "browser",
+  };
 
   activeLoaderScript = document.createElement("script");
-  activeLoaderScript.src = `${EMULATORJS_DATA_PATH}loader.js?v=${Date.now()}`;
+  activeLoaderScript.src = `${EMULATORJS_DATA_PATH}loader.js`;
   activeLoaderScript.dataset.emulatorjsLoader = "true";
   activeLoaderScript.async = true;
 
@@ -2095,9 +2444,14 @@ async function bootEmulator(file) {
     document.body.classList.remove("is-loading-rom");
     emulatorLoading.hidden = true;
     emulatorRuntime.classList.add("is-visible");
-    window.setTimeout(hideMobileEmulatorToolbar, 150);
-    window.setTimeout(hideMobileEmulatorToolbar, 800);
-    window.setTimeout(ensureMobileToolbarObserver, 150);
+    if (emulatorNativeMenu) {
+      emulatorNativeMenu.hidden = false;
+    }
+    window.setTimeout(ensureRuntimeResizeInterval, 120);
+    window.setTimeout(() => syncRuntimeViewport(), 500);
+    if (document.fullscreenElement) {
+      window.setTimeout(() => syncRuntimeViewport(), 220);
+    }
     romStatus.textContent = "Emulador em execucao";
     hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
@@ -2122,6 +2476,9 @@ async function bootEmulator(file) {
       document.body.classList.remove("is-loading-rom");
       emulatorLoading.hidden = true;
       emulatorRuntime.classList.add("is-visible");
+      if (emulatorNativeMenu) {
+        emulatorNativeMenu.hidden = false;
+      }
       romStatus.textContent = "Core carregado";
       hudMode.textContent = "Iniciando ROM";
       setEmulationReady(true);
@@ -2143,6 +2500,9 @@ if (romInput && romStatus && romFileName) {
       document.body.classList.remove("has-rom");
       resetRuntimeState();
       emulatorRuntime?.classList.remove("is-visible");
+      if (emulatorNativeMenu) {
+        emulatorNativeMenu.hidden = true;
+      }
       if (emulatorError) {
         emulatorError.hidden = true;
       }
@@ -2169,16 +2529,18 @@ if (romInput && romStatus && romFileName) {
     if (screenBadge) {
       setSessionBadgeText("ROM carregada");
     }
-    setSessionTitleText(file.name.replace(/\.(gba|zip|7z)$/i, ""));
+    setSessionTitleText(formatRomTitle(file.name));
 
-    if (!/\.gba$/i.test(file.name)) {
-      showRuntimeError("Use uma ROM de Game Boy Advance no formato .gba para iniciar o emulador.");
+    if (!getSystemByFileName(file.name)) {
+      showRuntimeError(`Use uma ROM suportada (${getSupportedRomExtensionsLabel()}) para iniciar o emulador.`);
       return;
     }
 
     try {
       const savedRecord = await saveRomToLibrary(file);
       activeRomId = savedRecord.id;
+      setPokedexAvailable(getSupportsPokedex(savedRecord));
+      saveDefaultRomLink(getRouteDefaultRomId(), savedRecord.id);
       saveLastRomSelection(savedRecord.id);
       pushRecentRom({
         id: savedRecord.id,
@@ -2187,19 +2549,20 @@ if (romInput && romStatus && romFileName) {
       });
     } catch (error) {
       romStatus.textContent = "ROM carregada sem biblioteca";
+      setPokedexAvailable(getSupportsPokedex(file));
       activeRomId = "";
-    }
-
-    if (activeRomId) {
-      scheduleColdRomBoot(activeRomId);
-      return;
     }
 
     await bootEmulator(file);
     renderRecentRoms();
+    renderRomLibrary();
     syncSessionSummary();
     void renderStoredSaves();
   });
+}
+
+if (emulatorNativeMenu) {
+  emulatorNativeMenu.addEventListener("click", openNativeEmulatorMenu);
 }
 
 if (dockFullscreen && emulatorRuntime) {
@@ -2207,6 +2570,23 @@ if (dockFullscreen && emulatorRuntime) {
     await toggleFullscreenMode();
   });
 }
+
+document.addEventListener("fullscreenchange", () => {
+  syncPokedexFullscreenHost();
+  if (!document.fullscreenElement && document.body.classList.contains("is-pokedex-open")) {
+    setPokedexOpen(false);
+  }
+  syncDockState();
+  window.setTimeout(() => syncRuntimeViewport(), 60);
+});
+
+window.addEventListener("orientationchange", () => {
+  window.setTimeout(() => syncRuntimeViewport(), 180);
+});
+
+window.addEventListener("resize", () => {
+  window.setTimeout(() => syncRuntimeViewport(), 90);
+});
 
 if (saveImportInput) {
   saveImportInput.addEventListener("change", () => {
@@ -2242,6 +2622,42 @@ if (saveImportInput) {
     }
 
     saveImportInput.value = "";
+  });
+}
+
+if (biosImportInput) {
+  biosImportInput.addEventListener("change", async () => {
+    const [file] = biosImportInput.files || [];
+
+    if (!file) {
+      return;
+    }
+
+    if (!/^scph5501\.bin$/i.test(file.name)) {
+      showRuntimeError("Use a BIOS PS1 scph5501.bin. Ela deve ser fornecida por voce e nao fica no repositorio.");
+      biosImportInput.value = "";
+      return;
+    }
+
+    try {
+      await saveBiosRecord("ps1-scph5501", file);
+      romStatus.textContent = "BIOS PS1 importada";
+      hudMode.textContent = "BIOS PS1 salva neste navegador";
+      if (biosImportLabel) {
+        biosImportLabel.textContent = "BIOS PS1 importada";
+      }
+      if (activeRomId) {
+        try {
+          await launchLibraryRom(activeRomId);
+        } catch (error) {
+          showRuntimeError("BIOS importada, mas nao consegui reiniciar a ROM PS1 automaticamente.");
+        }
+      }
+    } catch (error) {
+      showRuntimeError("Nao consegui salvar a BIOS PS1 neste navegador.");
+    } finally {
+      biosImportInput.value = "";
+    }
   });
 }
 
@@ -2334,6 +2750,10 @@ window.addEventListener("beforeunload", () => {
 
 if (pokedexToggle) {
   pokedexToggle.addEventListener("click", () => {
+    if (!activeSupportsPokedex) {
+      return;
+    }
+
     const willOpen = !document.body.classList.contains("is-pokedex-open");
     setPokedexOpen(willOpen);
 
@@ -2374,6 +2794,10 @@ if (integratedDexVoiceButton) {
     });
 
     integratedDexVoiceButton.addEventListener("click", () => {
+      if (!activeSupportsPokedex) {
+        return;
+      }
+
       try {
         integratedDexVoiceRecognition.start();
       } catch (error) {
@@ -2553,9 +2977,18 @@ if (pokedexFrame) {
 }
 
 syncLauncherTabs();
+setPokedexAvailable(false);
 syncDockState();
-disableMobileRuntimeContextMenu();
 await loadRomLibrary();
+const routeDefaultRomId = window.OAK_DEFAULT_ROM_ID || getRouteDefaultRomId();
+const autoBootRomId = window.OAK_AUTO_BOOT_ROM_ID || getRouteLocalRomId() || getLinkedDefaultRomId(routeDefaultRomId);
+if (autoBootRomId) {
+  try {
+    await launchLibraryRom(autoBootRomId);
+  } catch (error) {
+    showRuntimeError("Nao consegui iniciar essa ROM local. Volte para a biblioteca e tente enviar o arquivo novamente.");
+  }
+}
 renderRecentRoms();
 syncSessionSummary();
 void renderStoredSaves();

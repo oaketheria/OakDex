@@ -1,49 +1,300 @@
-ou<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pokemon Hub</title>
+    <title>Oak ROM Library</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./home.css" />
   </head>
   <body class="home-page">
-    <div class="pokemon-home">
-      <main class="pokemon-hero">
-        <section class="pokemon-hero-inner">
-          <div class="pokemon-copy">
-            <div class="pokemon-logo-lockup">
-              <img
-                class="pokemon-logo-image"
-                src="./assets/logo2.png"
-                alt="Entre no mundo Pokemon antes de abrir sua Pokedex"
-              />
-            </div>
+    <div class="rom-home-shell">
+      <header class="rom-home-header">
+        <a class="rom-logo" href="./index.html" aria-label="OakRom"></a>
 
-            <div class="pokemon-cta-group">
-              <a class="pokemon-cta pokemon-cta-emerald" href="./emulator.html">Abrir emulador</a>
-              <a class="pokemon-cta pokemon-cta-primary" href="./pokedex.html">Abrir Pokedex</a>
-              <a class="pokemon-cta pokemon-cta-secondary" href="./destaques.html">Ver destaques</a>
-            </div>
+        <nav class="rom-main-nav" aria-label="Navegação principal">
+          <a class="is-active" href="./index.html">Home</a>
+          <a href="./sobre.html">Sobre o Projeto</a>
+          <a href="./como-usar.html">Como Usar</a>
+          <a href="./patch-notes.html">Patch Notes</a>
+        </nav>
+
+        <nav class="rom-home-actions" aria-label="Ações da biblioteca">
+          <a class="github-link" id="github-link" target="_blank" rel="noopener noreferrer" aria-label="GitHub do projeto" title="GitHub do projeto">
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
+              <path d="M12 2C6.48 2 2 6.58 2 12.24c0 4.52 2.87 8.35 6.84 9.71.5.09.68-.22.68-.49v-1.9c-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.35 1.11 2.92.85.09-.67.35-1.11.64-1.37-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.35 9.35 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.8c0 .27.18.59.69.49A10.15 10.15 0 0 0 22 12.24C22 6.58 17.52 2 12 2Z" />
+            </svg>
+          </a>
+          <div class="locale-switch" aria-label="Idioma">
+            <button type="button" data-locale="pt">BR</button>
+            <button type="button" data-locale="en">US</button>
+          </div>
+        </nav>
+      </header>
+
+      <main class="rom-home-main">
+        <section class="rom-library-hero">
+          <div>
+            <h1 class="rom-hero-logo">OakRom</h1>
+            <p id="library-subtitle">Escolha uma capa para abrir a página da ROM.</p>
           </div>
 
-          <div class="pokemon-artboard" aria-label="Arte principal">
-            <div class="pokemon-art-card">
-              <img
-                class="pokemon-art-image"
-                src="./assets/legendary.png"
-                alt="Arte lendaria pokemon com efeito 3D"
-              />
+          <div class="home-upload-panel">
+            <button class="home-upload-button" id="open-rom-upload" type="button">
+              <span id="upload-label">Adicionar ROM</span>
+            </button>
+            <button class="home-manage-button" id="open-library-dashboard" type="button">Gerenciar Biblioteca</button>
+            <p class="home-upload-note" id="ps1-bios-note">PS1 requer BIOS scph5501.bin importada na página da ROM.</p>
+          </div>
+        </section>
+
+        <section class="recent-local-section" id="recent-local-section" hidden>
+          <div class="recent-local-heading">
+            <div>
+              <span id="recent-local-kicker">Local</span>
+              <h2 id="recent-local-title">Jogados recentes</h2>
+            </div>
+            <div class="recent-carousel-controls" id="recent-carousel-controls" hidden>
+              <button type="button" id="recent-prev" aria-label="Anterior">‹</button>
+              <button type="button" id="recent-next" aria-label="Próximo">›</button>
             </div>
           </div>
+          <div class="recent-carousel" id="recent-rom-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="default-library-section">
+          <section class="library-toolbar-panel" aria-label="Filtros da biblioteca">
+            <label class="library-search-field">
+              <span class="sr-only">Buscar</span>
+              <input id="library-search" type="search" autocomplete="off" placeholder="Buscar jogo..." />
+            </label>
+
+            <div class="library-filter-group">
+              <label class="library-select-field">
+                <span id="system-label">Sistema</span>
+                <select id="library-system">
+                  <option value="">Todos os sistemas</option>
+                </select>
+              </label>
+
+              <label class="library-select-field">
+                <span id="sort-label">Ordenar por</span>
+                <select id="library-sort">
+                  <option value="console">Console</option>
+                  <option value="name">Nome</option>
+                  <option value="source">Origem</option>
+                  <option value="recent">Mais recentes</option>
+                </select>
+              </label>
+
+              <button class="library-sort-direction" id="library-sort-direction" type="button">↑ Asc</button>
+            </div>
+
+            <div class="library-filter-summary">
+              <strong id="library-results">0 resultado(s)</strong>
+              <button type="button" id="library-clear">Limpar filtros</button>
+            </div>
+          </section>
+
+          <div class="recent-local-heading">
+            <span id="default-library-kicker">Biblioteca</span>
+            <h2 id="default-library-title">ROMs da biblioteca</h2>
+          </div>
+          <div class="home-rom-rows" id="rom-grid" aria-live="polite"></div>
         </section>
       </main>
     </div>
+
+    <dialog class="rom-upload-dialog" id="rom-upload-dialog">
+      <form class="rom-upload-form" id="rom-upload-form" method="dialog">
+        <div class="rom-upload-form-head">
+          <div>
+            <span id="rom-upload-kicker">Biblioteca local</span>
+            <h2 id="rom-upload-title">Adicionar ROM</h2>
+          </div>
+          <button type="button" id="close-rom-upload" aria-label="Fechar">×</button>
+        </div>
+
+        <label class="rom-upload-field">
+          <span id="rom-file-label">Arquivo da ROM</span>
+          <input id="home-rom-input" type="file" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.md,.gen,.sms,.gg,.n64,.z64,.v64,.chd,.pbp,.iso,.bin" required />
+        </label>
+
+        <label class="rom-upload-field">
+          <span id="cover-file-label">Capa da ROM</span>
+          <input id="home-cover-input" type="file" accept="image/png,image/jpeg,image/webp,image/jfif" />
+        </label>
+
+        <div class="rom-upload-preview" id="rom-upload-preview">
+          <span>Sem capa selecionada</span>
+        </div>
+
+        <div class="rom-upload-actions">
+          <button type="button" id="cancel-rom-upload">Cancelar</button>
+          <button type="submit" id="save-rom-upload">Adicionar e abrir</button>
+        </div>
+      </form>
+    </dialog>
+
+    <aside class="library-dashboard" id="library-dashboard" aria-hidden="true">
+      <div class="library-dashboard-shell">
+        <header class="library-dashboard-header">
+          <div>
+            <span>Painel local</span>
+            <h2>Gerenciar Biblioteca</h2>
+          </div>
+          <button type="button" id="close-library-dashboard" aria-label="Fechar painel">Fechar</button>
+        </header>
+
+        <div class="library-dashboard-summary">
+          <strong id="dashboard-rom-count">0 ROMs locais</strong>
+          <span id="dashboard-storage-note">Salvas neste navegador</span>
+        </div>
+
+        <nav class="library-dashboard-tabs" aria-label="Abas do painel">
+          <button type="button" class="is-active" data-dashboard-tab="roms">ROMs</button>
+          <button type="button" data-dashboard-tab="saves">Saves</button>
+          <button type="button" data-dashboard-tab="bios">BIOS</button>
+          <button type="button" data-dashboard-tab="backup">Backup</button>
+          <button type="button" data-dashboard-tab="cleanup">Limpeza</button>
+        </nav>
+
+        <div class="library-dashboard-panels">
+          <section class="library-dashboard-panel is-active" data-dashboard-panel="roms" aria-label="ROMs locais">
+            <section class="library-dashboard-tools" aria-label="Busca no painel">
+              <label>
+                <span>Buscar ROM local</span>
+                <input id="dashboard-search" type="search" autocomplete="off" placeholder="Buscar por nome ou console..." />
+              </label>
+              <label>
+                <span>Console</span>
+                <select id="dashboard-system">
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <label>
+                <span>Ordenar</span>
+                <select id="dashboard-sort">
+                  <option value="recent">Recentes</option>
+                  <option value="name">Nome</option>
+                  <option value="console">Console</option>
+                  <option value="size">Tamanho</option>
+                </select>
+              </label>
+              <button type="button" id="dashboard-search-clear">Limpar</button>
+            </section>
+
+            <section class="library-dashboard-bulk" aria-label="Upload em lote">
+              <div>
+                <span>Upload em lote</span>
+                <strong>Adicionar várias ROMs</strong>
+                <small id="dashboard-bulk-status">Selecione múltiplos arquivos suportados de uma vez.</small>
+              </div>
+              <div class="library-dashboard-bulk-actions">
+                <button type="button" id="dashboard-bulk-covers">Selecionar capas</button>
+                <button type="button" id="dashboard-bulk-import">Selecionar ROMs</button>
+              </div>
+              <input id="dashboard-bulk-cover-input" type="file" accept="image/png,image/jpeg,image/webp,image/jfif" multiple hidden />
+              <input id="dashboard-bulk-input" type="file" accept=".gba,.gb,.gbc,.nes,.sfc,.smc,.md,.gen,.sms,.gg,.n64,.z64,.v64,.chd,.pbp,.iso,.bin" multiple hidden />
+            </section>
+
+            <div class="library-dashboard-list" id="library-dashboard-list" aria-live="polite">
+              <p class="library-empty">Nenhuma ROM local salva neste navegador.</p>
+            </div>
+          </section>
+
+          <section class="library-dashboard-panel" data-dashboard-panel="saves" aria-label="Saves locais">
+            <section class="library-dashboard-saves">
+              <header>
+                <div>
+                  <span>Saves</span>
+                  <strong id="dashboard-save-count">0 saves locais</strong>
+                </div>
+              </header>
+              <section class="library-dashboard-tools" aria-label="Filtros de saves">
+                <label>
+                  <span>Buscar save</span>
+                  <input id="dashboard-save-search" type="search" autocomplete="off" placeholder="Buscar por save ou ROM..." />
+                </label>
+                <label>
+                  <span>Console</span>
+                  <select id="dashboard-save-system">
+                    <option value="">Todos</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Ordenar</span>
+                  <select id="dashboard-save-sort">
+                    <option value="recent">Recentes</option>
+                    <option value="name">Nome</option>
+                    <option value="console">Console</option>
+                    <option value="size">Tamanho</option>
+                  </select>
+                </label>
+                <button type="button" id="dashboard-save-clear">Limpar</button>
+              </section>
+              <div class="library-dashboard-save-list" id="dashboard-save-list" aria-live="polite">
+                <p class="library-empty">Nenhum save local salvo neste navegador.</p>
+              </div>
+            </section>
+          </section>
+
+          <section class="library-dashboard-panel" data-dashboard-panel="bios" aria-label="BIOS PS1">
+            <section class="library-dashboard-bios">
+              <div>
+                <span>PlayStation 1</span>
+                <strong id="dashboard-bios-status">BIOS PS1 ausente</strong>
+                <small id="dashboard-bios-detail">Importe scph5501.bin para iniciar jogos de PS1.</small>
+              </div>
+              <div class="library-dashboard-bios-actions">
+                <button type="button" id="dashboard-bios-import">Importar BIOS</button>
+                <button type="button" class="is-danger" id="dashboard-bios-delete">Remover BIOS</button>
+              </div>
+              <input id="dashboard-bios-input" type="file" accept=".bin" hidden />
+            </section>
+          </section>
+
+          <section class="library-dashboard-panel" data-dashboard-panel="backup" aria-label="Backup da biblioteca">
+            <section class="library-dashboard-backup">
+              <div>
+                <span>Backup</span>
+                <strong>Metadados da biblioteca</strong>
+                <small id="dashboard-backup-status">Exporta dados, capas e ajustes. Nao inclui ROMs ou BIOS.</small>
+              </div>
+              <div class="library-dashboard-backup-actions">
+                <button type="button" id="dashboard-backup-export">Exportar JSON</button>
+                <button type="button" id="dashboard-backup-import">Importar JSON</button>
+              </div>
+              <input id="dashboard-backup-input" type="file" accept="application/json,.json" hidden />
+            </section>
+          </section>
+
+          <section class="library-dashboard-panel" data-dashboard-panel="cleanup" aria-label="Limpeza local">
+            <section class="library-dashboard-cleanup">
+              <div>
+                <span>Limpeza</span>
+                <strong>Remover dados locais</strong>
+                <small id="dashboard-clean-status">Ações permanentes neste navegador.</small>
+              </div>
+              <div class="library-dashboard-cleanup-actions">
+                <button type="button" id="dashboard-clean-roms">Limpar ROMs</button>
+                <button type="button" id="dashboard-clean-saves">Limpar saves</button>
+                <button type="button" id="dashboard-clean-bios">Limpar BIOS</button>
+                <button type="button" class="is-danger" id="dashboard-clean-all">Limpar tudo</button>
+              </div>
+            </section>
+          </section>
+        </div>
+        <input id="dashboard-cover-input" type="file" accept="image/png,image/jpeg,image/webp,image/jfif" hidden />
+      </div>
+    </aside>
+
+    <script src="./home-library.js" type="module"></script>
   </body>
 </html>

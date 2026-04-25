@@ -61,6 +61,10 @@ const contentTypes = {
 
 function resolvePath(urlPath) {
   const pathname = String(urlPath || "").split("?")[0].split("#")[0] || "/";
+  if (pathname === "/rom" || pathname.startsWith("/rom/")) {
+    return path.join(ROOT, "rom.html");
+  }
+
   const sanitizedPath = pathname === "/" ? "/index.html" : pathname;
   const normalized = path.normalize(sanitizedPath).replace(/^(\.\.[/\\])+/, "");
   return path.join(ROOT, normalized);

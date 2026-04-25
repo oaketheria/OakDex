@@ -557,6 +557,28 @@ body.emulator-page {
   font-weight: 700;
 }
 
+.hud-upload-native-label.is-secondary {
+  color: #ffed65;
+}
+
+.hud-upload-native-label.is-attention {
+  border-radius: 999px;
+  color: #02110d;
+  background: linear-gradient(180deg, #ffed65, #f6b73b);
+  padding: 6px 12px;
+  box-shadow: 0 0 24px rgba(255, 237, 101, 0.2);
+}
+
+.ps1-bios-alert {
+  margin: 0;
+  max-width: 360px;
+  color: #ffed65;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .hud-upload-native-input {
   display: block;
   width: fit-content;
@@ -2324,23 +2346,50 @@ body.emulator-page {
 .emulator-loading,
 .emulator-error {
   width: 100%;
-  border-radius: 24px;
 }
 
 .runtime-stage {
   position: relative;
-  overflow: visible;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.emulator-native-menu-button {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  z-index: 50;
+  display: none;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 30px;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .emulator-runtime {
+  position: relative;
   display: block;
-  aspect-ratio: 3 / 2;
-  min-height: 320px;
-  max-height: 620px;
-  border: 0;
-  background: #040812;
-  box-shadow:
-    0 20px 42px rgba(2, 8, 22, 0.24);
+  width: 100%;
+  max-width: 1060px;
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  max-height: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  background: #000;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.38);
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
@@ -2352,22 +2401,24 @@ body.emulator-page {
   visibility: visible;
 }
 
+.emulator-page.has-rom .emulator-runtime {
+  opacity: 1;
+  visibility: visible;
+}
+
 .emulator-runtime-player {
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 320px;
-  background: #040812;
-  overflow: visible;
-  isolation: isolate;
-  contain: layout;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: #000;
+  overflow: hidden;
 }
 
-.emulator-runtime-player > div,
 .emulator-runtime-player iframe,
 .emulator-runtime-player canvas {
-  position: absolute;
-  inset: 0;
   width: 100% !important;
   height: 100% !important;
   max-width: none;
@@ -2375,6 +2426,12 @@ body.emulator-page {
   border: 0;
   margin: 0;
   padding: 0;
+}
+
+.emulator-runtime-player > div {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .emulator-runtime-player canvas {
@@ -2397,19 +2454,23 @@ body.emulator-page {
 }
 
 .emulator-runtime {
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.34)),
-    #040812;
+  background: #000;
 }
 
 .emulator-runtime-player {
   border-radius: inherit;
 }
 
-.emulator-runtime-player > div,
 .emulator-runtime-player iframe,
 .emulator-runtime-player canvas {
-  z-index: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.emulator-runtime [data-oak-wide-blank-control="true"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .emulator-loading,
@@ -2544,11 +2605,6 @@ body.emulator-page {
   pointer-events: none;
 }
 
-.emulator-page.is-pokedex-open .emulator-pokedex {
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
 .emulator-pokedex::before {
   content: "";
   position: absolute;
@@ -2566,7 +2622,7 @@ body.emulator-page {
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 10px;
+  gap: 8px;
   padding: 12px;
   border-radius: 28px;
   border: 0;
@@ -2582,24 +2638,31 @@ body.emulator-page {
 }
 
 .emulator-pokedex-header {
+  position: relative;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: start;
   gap: 12px;
+  min-height: 0;
+  padding-right: min(560px, 54vw);
 }
 
 .emulator-pokedex-header-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-end;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .emulator-pokedex-header h3 {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   font-family: "Orbitron", sans-serif;
   font-size: 1.1rem;
+  line-height: 1.1;
 }
 
 .integrated-dex-shortcuts {
@@ -2607,11 +2670,11 @@ body.emulator-page {
   flex-wrap: wrap;
   gap: 8px;
   color: rgba(214, 232, 255, 0.68);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
 }
 
 .integrated-dex-shortcuts-inline {
-  margin-top: 4px;
+  margin-top: 0;
   justify-content: flex-end;
 }
 
@@ -2619,6 +2682,7 @@ body.emulator-page {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  white-space: nowrap;
 }
 
 .integrated-dex-shortcuts kbd {
@@ -2626,14 +2690,14 @@ body.emulator-page {
   align-items: center;
   justify-content: center;
   min-width: 24px;
-  min-height: 22px;
+  min-height: 20px;
   padding: 0 6px;
   border-radius: 8px;
   border: 1px solid rgba(171, 222, 255, 0.14);
   background: rgba(255, 255, 255, 0.05);
   color: #eef8ff;
   font-family: "Rajdhani", sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -2659,8 +2723,8 @@ body.emulator-page {
 }
 
 .pokedex-close {
-  min-height: 38px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 12px;
   border-radius: 999px;
   border: 1px solid rgba(171, 222, 255, 0.14);
   background: rgba(255, 255, 255, 0.04);
@@ -2750,11 +2814,11 @@ body.emulator-page {
 }
 
 .play-space:fullscreen .emulator-runtime {
-  width: min(calc((100vh - 20px) * 1.5), calc(100vw - 20px));
-  height: min(calc(100vw / 1.5), calc(100vh - 20px));
+  width: min(calc((100vh - 20px) * (16 / 9)), calc(100vw - 20px));
+  height: min(calc(100vw / (16 / 9)), calc(100vh - 20px));
   min-height: 0;
   max-height: none;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 9;
   border: 0;
   border-radius: 0;
   background: #000;
@@ -2763,9 +2827,49 @@ body.emulator-page {
   overflow: hidden;
 }
 
+.emulator-runtime:fullscreen {
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  max-width: none;
+  min-height: 0;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.emulator-runtime:fullscreen .emulator-runtime-player {
+  width: min(calc(100vh * (16 / 9)), 100vw);
+  height: min(calc(100vw / (16 / 9)), 100vh);
+  min-height: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.emulator-runtime:fullscreen .emulator-pokedex,
+.emulator-runtime-player:fullscreen .emulator-pokedex {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2147483646;
+  width: min(1180px, calc(100vw - 48px));
+  transform: translateX(calc(100% + 24px));
+}
+
+.emulator-runtime:fullscreen .emulator-pokedex[aria-hidden="false"],
+.emulator-runtime-player:fullscreen .emulator-pokedex[aria-hidden="false"] {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
 .play-space:fullscreen .emulator-runtime-player {
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .play-space:fullscreen .emulator-runtime-player > div {
@@ -2779,8 +2883,6 @@ body.emulator-page {
 
 .play-space:fullscreen .emulator-runtime-player iframe,
 .play-space:fullscreen .emulator-runtime-player canvas {
-  position: absolute;
-  inset: 0;
   width: 100% !important;
   height: 100% !important;
   margin: 0;
@@ -2819,6 +2921,14 @@ body.emulator-page {
 @media (max-width: 1100px) {
   .emulator-layout {
     grid-template-columns: 1fr;
+  }
+
+  .emulator-pokedex-header {
+    padding-right: 0;
+  }
+
+  .emulator-pokedex-header-actions {
+    position: static;
   }
 
   .emulator-topbar {
@@ -2951,7 +3061,7 @@ body.emulator-page {
 
   .emulator-runtime,
   .emulator-runtime-player {
-    min-height: 360px;
+    min-height: 0;
     border-radius: 18px;
   }
 
@@ -3283,12 +3393,12 @@ body.emulator-page {
   }
 
   .emulator-runtime {
-    min-height: 420px;
+    min-height: 0;
     border-radius: 16px;
   }
 
   .emulator-runtime-player {
-    min-height: 420px;
+    min-height: 0;
   }
 
   .player-dock {
@@ -3420,21 +3530,20 @@ body.emulator-page {
   }
 
   .emulator-runtime {
-    width: min(100%, 100%);
-    min-height: min(52vw, 360px);
-    max-height: none;
-    margin: 0 auto;
-    border-radius: var(--hud-runtime-radius);
+    border-radius: 16px;
   }
 
   .emulator-runtime-player {
-    min-height: inherit;
     border-radius: inherit;
   }
 
 }
 
 @media (max-width: 1100px) and (orientation: portrait) {
+  .runtime-stage {
+    display: flex;
+  }
+
   .player-screen-crown {
     margin-bottom: 8px;
   }
@@ -3453,48 +3562,26 @@ body.emulator-page {
 @media (hover: none) and (pointer: coarse) and (max-width: 1400px) and (orientation: landscape) {
 }
 
-body.emulator-page .emulator-runtime [title*="Settings" i],
-body.emulator-page .emulator-runtime [aria-label*="Settings" i],
-body.emulator-page .emulator-runtime [title*="Menu" i],
-body.emulator-page .emulator-runtime [aria-label*="Menu" i],
-body.emulator-page .emulator-runtime [title*="Fullscreen" i],
-body.emulator-page .emulator-runtime [aria-label*="Fullscreen" i] {
-  display: none !important;
-}
-
 @media (max-width: 1100px) {
   .runtime-stage,
   .emulator-runtime,
   .emulator-runtime-player {
-    overflow: visible;
+    overflow: hidden;
   }
 
-  body.emulator-page .emulator-runtime [class*="gamepad" i],
-  body.emulator-page .emulator-runtime [id*="gamepad" i],
-  body.emulator-page .emulator-runtime [class*="joystick" i],
-  body.emulator-page .emulator-runtime [id*="joystick" i],
-  body.emulator-page .emulator-runtime [title*="Start" i],
-  body.emulator-page .emulator-runtime [aria-label*="Start" i],
-  body.emulator-page .emulator-runtime [title*="Select" i],
-  body.emulator-page .emulator-runtime [aria-label*="Select" i],
-  body.emulator-page .emulator-runtime [title*="Context Menu" i],
-  body.emulator-page .emulator-runtime [aria-label*="Context Menu" i],
-  body.emulator-page .emulator-runtime [title*="Settings" i],
-  body.emulator-page .emulator-runtime [aria-label*="Settings" i],
-  body.emulator-page .emulator-runtime [title*="Menu" i],
-  body.emulator-page .emulator-runtime [aria-label*="Menu" i],
-  body.emulator-page .emulator-runtime [data-ejs-toolbar-hidden="true"] {
-    display: revert !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
+  .dock-fullscreen-button {
+    display: none !important;
   }
 
-  body.emulator-page .emulator-runtime [class*="gamepad" i],
-  body.emulator-page .emulator-runtime [id*="gamepad" i],
-  body.emulator-page .emulator-runtime [class*="joystick" i],
-  body.emulator-page .emulator-runtime [id*="joystick" i] {
-    overflow: visible !important;
+  .emulator-page.has-rom .emulator-native-menu-button:not([hidden]) {
+    display: inline-flex;
+  }
+
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .emulator-page.has-rom .emulator-native-menu-button:not([hidden]) {
+    display: inline-flex;
   }
 }
 .rom-favorite-toggle {
