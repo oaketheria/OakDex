@@ -1,326 +1,257 @@
 # GPT.md
 
-## VisÃ£o geral
+## Visao geral
 
-Projeto web simples de PokÃ©dex com frontend estÃ¡tico e um servidor Node.js prÃ³prio.
+OakRom e um projeto web vanilla com servidor Node.js simples. Ele combina:
 
-- A home fica em `index.html`
-- A pÃ¡gina de destaques fica em `destaques.html`
-- A PokÃ©dex principal fica em `pokedex.html`
-- A pÃ¡gina do emulador fica em `emulator.html`
-- A lÃ³gica da PokÃ©dex fica em `app.js`
-- A lÃ³gica da pÃ¡gina de destaques fica em `destaques.js`
-- A lÃ³gica da pÃ¡gina do emulador fica em `emulator.js`
-- Os estilos base ficam em `styles.css`
-- A home usa `home.css`
-- A pÃ¡gina de destaques usa `highlights.css`
-- A PokÃ©dex usa `pokedex.css`
-- A pÃ¡gina do emulador usa `emulator.css`
-- O servidor local e de deploy fica em `server.js`
+- Home com biblioteca local de ROMs.
+- Pokedex principal.
+- Pagina de destaques.
+- Emulador via EmulatorJS.
+- Pagina dedicada de ROM.
+- Pokedex integrada ao emulador.
+- Mascote OakBit com menu, tutorial e comportamento contextual.
 
-O projeto consome a PokeAPI no frontend, usa EmulatorJS no frontend para o player GBA e tem um endpoint opcional para narraÃ§Ã£o com ElevenLabs no backend.
+Nao ha React, Vue, bundler ou build step.
 
 ## Stack
 
 - HTML
 - CSS
 - JavaScript vanilla
-- Node.js com `http`, sem framework
-
-NÃ£o hÃ¡ React, Vue, build step nem bundler.
+- Node.js com `http`
+- IndexedDB para ROMs, saves, BIOS e metadados locais
+- EmulatorJS via CDN
+- Three.js via CDN apenas para teste do modelo 3D do OakBit
 
 ## Como rodar
 
 ```powershell
+cd "C:\Users\os_ap\Documents\New project"
 npm start
 ```
 
-Servidor padrÃ£o:
+Servidor padrao:
 
 - `http://127.0.0.1:5500`
+- `http://localhost:5500`
 
 ## Estrutura importante
 
-- `index.html`: landing page/home atual
-- `destaques.html`: catÃ¡logo de PokÃ©mon em destaque
-- `pokedex.html`: tela principal da PokÃ©dex
-- `emulator.html`: tela principal do emulador com HUD e PokÃ©dex integrada
-- `app.js`: busca, filtros, tabs, detalhes, Ã¡udio e integraÃ§Ã£o com PokeAPI
-- `destaques.js`: busca, filtro, paginaÃ§Ã£o e cards da pÃ¡gina de destaques
-- `emulator.js`: boot do EmulatorJS, HUD, fullscreen, voz, biblioteca local de ROMs e PokÃ©dex integrada
-- `styles.css`: base compartilhado
-- `home.css`: estilos da home
-- `highlights.css`: estilos da pÃ¡gina de destaques
-- `pokedex.css`: visual da PokÃ©dex
-- `emulator.css`: visual da pÃ¡gina do emulador
-- `server.js`: servidor estÃ¡tico + endpoint `POST /api/narrate`
-- `assets/`: imagens usadas pela home e laterais visuais
-- `README.md`: instruÃ§Ãµes gerais de execuÃ§Ã£o/deploy
-- `GITHUB_CHECKLIST.md`: checklist obrigatÃ³rio antes de commit/push para GitHub
-- `render.yaml`: configuraÃ§Ã£o para Render
+- `index.html`: Home, biblioteca e dashboard.
+- `home-library.js`: logica da Home, ROMs locais, dashboard, backups e integracao com OakBit.
+- `home.css`: Home, dashboard, paginas informativas e biblioteca.
+- `rom.html`: pagina dedicada da ROM.
+- `rom-page.js`: textos, rota da ROM e modo foco da pagina dedicada.
+- `rom-page.css`: layout da pagina dedicada da ROM.
+- `emulator.html`: tela completa do emulador antigo/launcher.
+- `emulator.js`: boot do EmulatorJS, biblioteca local, fullscreen, saves, Pokedex integrada e eventos do OakBit.
+- `emulator.css`: layout do emulador e Pokedex integrada.
+- `pokedex.html`: Pokedex principal e modo embed.
+- `app.js`: logica da Pokedex, busca, voz, cries e postMessage para o emulador.
+- `pokedex.css`: visual da Pokedex e overrides do modo embed.
+- `mascot.js`: OakBit, menu, tutorial, energia, modos, skins e eventos.
+- `mascot.css`: visual do OakBit e tutorial flutuante.
+- `mascot-3d.js`: teste 3D procedural com Three.js.
+- `roms.js`: utilitarios compartilhados de ROMs, sistemas, IndexedDB, saves e BIOS.
+- `info-pages.js`: textos dinamicos e traducao BR/US das paginas informativas.
+- `server.js`: servidor estatico e endpoints auxiliares.
 
-## Regra obrigatÃ³ria antes de subir para o GitHub
+## Regra obrigatoria antes de GitHub
 
-Sempre que o usuÃ¡rio pedir para commitar ou subir atualizaÃ§Ã£o para o GitHub, ler e seguir `GITHUB_CHECKLIST.md` antes de executar `git add`, `git commit` ou `git push`.
+Sempre que o usuario pedir commit, push ou publicacao no GitHub, ler e seguir `GITHUB_CHECKLIST.md` antes de executar `git add`, `git commit` ou `git push`.
 
-Cuidados principais:
+Nunca subir:
 
-- nunca subir `.env`
-- nunca subir BIOS de PS1
-- nunca subir pasta `bios/`
-- nunca subir arquivos `.bin`
-- nunca subir ROMs comerciais
-- nunca subir `socialrom_repo/`, que Ã© apenas repositÃ³rio de referÃªncia local
-- conferir `git status --short`
-- conferir `.gitignore`
-- se existir `bios/scph5501.bin`, conferir `git check-ignore -v bios/scph5501.bin`
+- `.env`
+- BIOS de PS1
+- pasta `bios/`
+- arquivos `.bin`
+- ROMs comerciais
+- `socialrom_repo/`
+- `_backups/`
 
-## Home atual
+Conferir:
 
-A home usa:
+```powershell
+git status --short --ignored
+```
 
-- fundo cÃ³smico em `assets/cosmic-hero-bg.png`
-- logo textual transparente em `assets/logo2.png`
-- arte principal em `assets/legendary.png`
+## Home e biblioteca
 
-Arquivos mais relevantes para mexer na home:
+A Home atual possui:
 
-- `index.html`
-- `home.css`
-- `assets/*`
+- intro retro exibida uma vez por sessao;
+- fundo retro animado;
+- area de adicionar ROM;
+- jogados recentes;
+- biblioteca por console;
+- capas padronizadas;
+- filtros, busca e ordenacao;
+- dashboard local.
 
-Classes principais da home:
+O dashboard possui abas:
 
-- `pokemon-home`
-- `pokemon-hero`
-- `pokemon-hero-inner`
-- `pokemon-copy`
-- `pokemon-logo-lockup`
-- `pokemon-logo-image`
-- `pokemon-artboard`
-- `pokemon-art-card`
-- `pokemon-art-image`
+- ROMs
+- Saves
+- BIOS
+- Backup
+- OakBit
+- Limpeza
 
-## PÃ¡gina de destaques atual
+A aba OakBit mostra estado, voz, modelo, modo, energia, skin e skin secreta. Tambem permite ocultar, silenciar, trocar skin, forcar Pixel, abrir tutorial e resetar preferencias.
 
-A pÃ¡gina de destaques fica em `destaques.html`.
+## Emulador e ROM
 
-Ela depende de:
+A pagina dedicada da ROM (`rom.html`) e o fluxo principal atual para jogar.
 
-- `destaques.js`
-- `highlights.css`
+Funcionalidades:
 
-Funcionalidades relevantes:
+- modo foco para esconder paineis;
+- menu da tela controlado pelo OakBit;
+- fullscreen;
+- Pokedex integrada;
+- controles atualizados por console/core;
+- retomada automatica de ROM local depois do F5 quando existe vinculo salvo;
+- importacao/exportacao de saves;
+- PS1 com BIOS local `scph5501.bin`;
+- botao de voltar Home no menu do OakBit.
 
-- 50 PokÃ©mon por pÃ¡gina
-- busca por nome ou nÃºmero
-- filtro por tipo
-- cards clicÃ¡veis com animaÃ§Ã£o
-- paginaÃ§Ã£o entre pÃ¡ginas
-- clique no card levando para `pokedex.html?pokemon=...`
-- sprites animados quando disponÃ­veis
+Consoles suportados:
 
-## PokÃ©dex atual
+- GBA
+- GB
+- GBC
+- NES
+- SNES
+- Mega Drive
+- Master System
+- Game Gear
+- N64
+- PS1
 
-A PokÃ©dex estÃ¡ em `pokedex.html`.
+Observacoes tecnicas:
 
-Ela depende de:
+- ROMs, saves e BIOS ficam apenas no navegador do usuario via IndexedDB.
+- O EmulatorJS depende de CDN.
+- O fullscreen usa a UI do projeto.
+- No fullscreen, OakBit usa Pixel como modo seguro; o modelo 3D fica bloqueado.
+- A Pokedex integrada usa `pokedex.html?embed=1` dentro de iframe.
 
-- `app.js`
-- `pokedex.css`
+## OakBit
 
-Funcionalidades relevantes:
+OakBit e o mascote assistente do projeto.
 
-- busca por nome ou nÃºmero
-- filtro por tipo
-- tabs `Dados`, `Stats`, `Moves`, `Forms` e `Lore`
-- sprites animados com prioridade para `black-white animated`, `showdown`, `crystal animated` e fallback estÃ¡tico
-- suporte a modo embutido via `?embed=1`
-- leitura de query string `?pokemon=...` para abrir um PokÃ©mon direto
+Recursos:
 
-ObservaÃ§Ãµes tÃ©cnicas importantes:
+- Menu por categorias: Sessao, Saves e OakBit.
+- Acoes contextuais: Voltar Home, Menu da tela, Tela cheia, Pokedex, Importar save, Exportar save.
+- Tutorial flutuante contextual.
+- Modos: `library`, `emulator`, `pokedex`, `system-alert`.
+- Energia persistente.
+- Memoria contextual da sessao.
+- Skins: `normal`, `shiny`, `tech`, `night` e `secret`.
+- Modelo Pixel e modelo 3D experimental.
+- Restore button quando oculto.
+- Migra para o elemento fullscreen quando necessario.
 
-- o modo `embed` Ã© ativado em `pokedex.html` via classe `pokedex-embed` no `html`
-- `pokedex.css` contÃ©m overrides especÃ­ficos para o modo embutido
-- `app.js` usa `IS_EMBED` para compactar alguns blocos como `Moves`
+Ao mexer no OakBit, verificar:
 
-## PÃ¡gina do emulador atual
+- `mascot.js`
+- `mascot.css`
+- `mascot-3d.js`
+- `home-library.js` se a mudanca aparecer no dashboard
+- `emulator.js` se a mudanca depender do emulador/fullscreen/Pokedex
 
-A pÃ¡gina do emulador fica em `emulator.html`.
+## Pokedex
 
-Ela depende de:
+A Pokedex principal possui:
 
-- `emulator.js`
-- `emulator.css`
+- busca por nome ou numero;
+- filtro por tipo;
+- detalhes, stats, moves, forms e lore;
+- sprites animados quando disponiveis;
+- cries quando a PokeAPI fornece audio;
+- comando de voz quando suportado;
+- modo embed para o emulador.
 
-Funcionalidades relevantes:
+No modo embed, `app.js` envia eventos para o parent com `postMessage`, permitindo OakBit reagir a busca, selecao, cry, voz e erros.
 
-- upload local de ROM `.gba`
-- boot do EmulatorJS via CDN `4.2.3`
-- visual prÃ³prio da pÃ¡gina em volta do player
-- botÃ£o externo de fullscreen da UI
-- biblioteca local de ROMs via `IndexedDB`
-- abrir ROM da biblioteca com um clique
-- card superior de `Retomar agora` com a ROM recente principal
-- tempo jogado persistido para biblioteca e retomada
-- capas locais para ROMs conhecidas e fallback automÃ¡tico para outras ROMs
-- gamepad visual nativo do EmulatorJS no mobile
-- importaÃ§Ã£o de save por fluxo prÃ³prio da pÃ¡gina via seletor de arquivo
-- exportaÃ§Ã£o de save pela aÃ§Ã£o integrada ao EmulatorJS
-- saves importados persistidos localmente e vinculados a ROM
-- lista de saves recentes na aba `SessÃ£o`, com reaplicar e excluir
-- launcher interno reorganizado em `Biblioteca`, `SessÃ£o` e `Controles`
-- PokÃ©dex integrada aberta em painel prÃ³prio, usando um `iframe` da `pokedex.html?embed=1`
-- atalhos da PokÃ©dex integrada:
-  - `P`: abrir ou fechar
-  - `V`: ativar voz
-  - `Esc`: fechar
-- comando de voz restrito a PokÃ©dex integrada:
-  - `abrir pokedex`
-  - `fechar pokedex`
-  - `abrir pokedex e buscar <pokemon>`
-  - `buscar <pokemon> na pokedex`
+## Paginas informativas
 
-ObservaÃ§Ãµes tÃ©cnicas importantes:
-
-- a biblioteca de ROMs Ã© privada por navegador/dispositivo, sem backend
-- o upload deve continuar funcionando mesmo se o `IndexedDB` falhar
-- o fullscreen correto da experiÃªncia e o da nossa UI, nÃ£o o interno do EmulatorJS
-- no mobile, o fullscreen tenta orientar em paisagem quando o navegador permitir
-- no mobile, o projeto usa o gamepad visual nativo do EmulatorJS
-- a PokÃ©dex integrada nÃ£o vive mais como implementaÃ§Ã£o separada; ela reutiliza a prÃ³pria `pokedex.html`
-- o comando de voz depende de `SpeechRecognition` ou `webkitSpeechRecognition`
-- capas locais conhecidas ficam em `assets/rom-covers/`
-- capas automÃ¡ticas dependem de `RAWG_API_KEY` via backend em `server.js`
+- `sobre.html`: visao do projeto.
+- `como-usar.html`: guia atualizado com OakBit, modo foco, dashboard, saves e PS1.
+- `patch-notes.html`: historico com OakBit Assistente, emulador modernizado, dashboard e multi-console.
 
 ## Backend
 
-`server.js` faz duas coisas:
+`server.js`:
 
-1. serve arquivos estÃ¡ticos do projeto
-2. responde `POST /api/narrate`
+1. serve arquivos estaticos;
+2. oferece endpoints auxiliares, incluindo narracao quando configurada.
 
-ObservaÃ§Ãµes:
+ElevenLabs local usa:
 
-- `.env` Ã© carregado manualmente
-- ElevenLabs usa:
-  - `ELEVENLABS_API_KEY`
-  - `ELEVENLABS_VOICE_ID`
-  - `ELEVENLABS_MODEL_ID`
+- `ELEVENLABS_API_KEY`
+- `ELEVENLABS_VOICE_ID`
+- `ELEVENLABS_MODEL_ID`
 
-## ConvenÃ§Ãµes Ãºteis
-
-- Projeto pequeno e centralizado: geralmente vale editar poucos arquivos
-- O projeto nÃ£o usa mais um CSS Ãºnico para todas as telas
-- Cada pÃ¡gina principal carrega seu CSS especÃ­fico alÃ©m do `styles.css`
-- Sempre verificar se a mudanÃ§a afeta `index.html`, `destaques.html`, `pokedex.html` ou `emulator.html`
-- Assets de imagem ficam em `assets/`
-- Antes de trocar imagens da home, confirmar qual asset estÃ¡ realmente em uso no `index.html`
-
-## Arquivos para nunca esquecer
-
-- `index.html`: define quais assets da home estÃ£o realmente sendo usados
-- `destaques.html`: entrada da pÃ¡gina de destaques
-- `pokedex.html`: nÃ£o confundir com a home
-- `emulator.html`: tela do emulador e painel da PokÃ©dex integrada
-- `styles.css`: base compartilhado e utilitÃ¡rios
-- `home.css`: visual da home
-- `highlights.css`: visual da pÃ¡gina de destaques
-- `pokedex.css`: visual da PokÃ©dex, incluindo `embed`
-- `emulator.css`: visual da pÃ¡gina do emulador
-- `app.js`: toda lÃ³gica principal da PokÃ©dex estÃ¡ aqui
-- `destaques.js`: toda lÃ³gica da pÃ¡gina de destaques estÃ¡ aqui
-- `emulator.js`: toda lÃ³gica do emulador, biblioteca local, voz e PokÃ©dex integrada
-- `server.js`: necessÃ¡rio para servir tudo localmente
+No deploy, a narracao pode cair para voz nativa do navegador.
 
 ## Checklist antes de editar
 
-### Se for mexer na home
+### Home/dashboard
 
-- confirmar quais imagens estÃ£o em uso em `index.html`
-- verificar se a mudanÃ§a Ã© sÃ³ na home ou afeta tambÃ©m destaques ou PokÃ©dex
-- revisar as classes `pokemon-*` em `home.css`
-- evitar reaproveitar asset antigo por engano
+- Verificar `index.html`, `home-library.js` e `home.css`.
+- Conferir se mudancas no dashboard precisam atualizar a aba OakBit.
+- Preservar IndexedDB e limpeza/backup.
 
-### Se for mexer na pÃ¡gina de destaques
+### Emulador/ROM
 
-- confirmar se a mudanÃ§a Ã© visual (`destaques.html` e `highlights.css`) ou lÃ³gica (`destaques.js`)
-- revisar busca, filtro por tipo, cards e paginaÃ§Ã£o
-- lembrar que o clique no card deve abrir a PokÃ©dex com query string
-- ao mexer em sprites, verificar fallback animado e fallback estÃ¡tico
+- Verificar `rom.html`, `rom-page.js`, `rom-page.css`, `emulator.js` e `emulator.css`.
+- Preservar boot do EmulatorJS.
+- Preservar fullscreen e Pokedex integrada.
+- Testar OakBit em fullscreen.
+- Conferir controles por console.
 
-### Se for mexer na PokÃ©dex
+### OakBit
 
-- confirmar se a mudanÃ§a Ã© estrutural (`pokedex.html`) ou lÃ³gica (`app.js`)
-- checar impacto em `pokedex.css`
-- preservar busca, filtros e tabs
-- se a mudanÃ§a puder afetar o emulador, verificar tambÃ©m o modo `embed`
+- Verificar menu, grupos e labels em `mascot.js`.
+- Conferir z-index e fullscreen em `mascot.css`.
+- Nao habilitar modelo 3D em fullscreen sem testar canvas.
+- Se mudar estado do OakBit, atualizar getters usados pelo dashboard.
 
-### Se for mexer no emulador
+### Pokedex
 
-- confirmar se a mudanÃ§a Ã© estrutural (`emulator.html`) ou lÃ³gica (`emulator.js`)
-- checar impacto em `emulator.css`
-- preservar boot do EmulatorJS, upload local, capas e biblioteca local
-- preservar a PokÃ©dex integrada via `iframe`
-- lembrar que a biblioteca de ROMs usa `IndexedDB`
-- ao mexer em fullscreen, verificar a tela do emulador e a PokÃ©dex integrada
-- ao mexer em voz, verificar `V`, botÃ£o `Voz` e navegadores sem suporte
-- ao mexer em tempo jogado, verificar biblioteca, `Retomar agora` e persistÃªncia apÃ³s reload
+- Verificar `pokedex.html`, `app.js` e `pokedex.css`.
+- Preservar modo embed.
+- Preservar eventos `postMessage` para o emulador.
 
-### Se for mexer em assets
+### Informativas
 
-- preferir criar novo arquivo em vez de sobrescrever um asset importante sem necessidade
-- registrar no `GPT.md` quando o asset principal da home mudar
-
-## Onde olhar primeiro por tipo de tarefa
-
-### Se a tarefa for visual/home
-
-- `index.html`
-- `home.css`
-- `assets/`
-
-### Se a tarefa for destaques
-
-- `destaques.html`
-- `destaques.js`
-- `highlights.css`
-
-### Se a tarefa for PokÃ©dex
-
-- `pokedex.html`
-- `app.js`
-- `pokedex.css`
-
-### Se a tarefa for emulador
-
-- `emulator.html`
-- `emulator.js`
-- `emulator.css`
-
-### Se a tarefa for servidor ou deploy
-
-- `server.js`
-- `package.json`
-- `README.md`
-- `render.yaml`
+- Se adicionar recurso grande, atualizar `como-usar.html`, `patch-notes.html`, `README.md` e este `GPT.md`.
 
 ## Riscos conhecidos
 
-- MudanÃ§as grandes no topo da home podem desalinhar o hero
-- MudanÃ§as em `app.js` podem afetar vÃ¡rias partes da PokÃ©dex porque a lÃ³gica estÃ¡ concentrada em um Ãºnico arquivo
-- MudanÃ§as em `destaques.js` podem quebrar busca, filtro, paginaÃ§Ã£o e links para a PokÃ©dex
-- MudanÃ§as em `emulator.js` podem afetar ao mesmo tempo boot da ROM, fullscreen, voz, biblioteca local e PokÃ©dex integrada
-- MudanÃ§as em `emulator.js` tambÃ©m podem afetar capas locais, histÃ³rico recente, restauraÃ§Ã£o da ROM ativa e gamepad touch
-- O EmulatorJS depende de CDN; falhas de rede podem parecer bug local mesmo quando o frontend estÃ¡ correto
-- O `IndexedDB` pode falhar ou estar bloqueado no navegador; o upload nÃ£o deve depender exclusivamente dele
-- O reconhecimento de voz varia conforme navegador e permissÃ£o de microfone
-- Ã‰ fÃ¡cil quebrar o modo `embed` da PokÃ©dex se editar apenas a tela principal e esquecer os overrides em `pokedex.css`
+- EmulatorJS depende de CDN.
+- IndexedDB pode ser bloqueado pelo navegador.
+- SpeechRecognition varia por navegador/permissao.
+- O modelo 3D do OakBit depende de Three.js via CDN e nao deve ser usado como requisito para jogar.
+- Mudancas no fullscreen podem afetar OakBit, Pokedex integrada e controles do EmulatorJS ao mesmo tempo.
+- Backups nao incluem ROMs nem BIOS.
 
-## Resumo rÃ¡pido
+## Validacoes uteis
 
-- Home: `index.html` + `home.css` + `assets/`
-- Destaques: `destaques.html` + `destaques.js` + `highlights.css`
-- PokÃ©dex: `pokedex.html` + `app.js` + `pokedex.css`
-- Emulador: `emulator.html` + `emulator.js` + `emulator.css`
-- Servidor: `server.js`
+```powershell
+node --check mascot.js
+node --check mascot-3d.js
+node --check emulator.js
+node --check home-library.js
+```
+
+Checar paginas:
+
+- `http://localhost:5500/`
+- `http://localhost:5500/rom.html?id=fire-red`
+- `http://localhost:5500/como-usar.html`
+- `http://localhost:5500/patch-notes.html`

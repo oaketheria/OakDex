@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ROM - Oak Emulator</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,11 +13,22 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./emulator.css" />
+    <link rel="stylesheet" href="./mascot.css" />
     <link rel="stylesheet" href="./rom-page.css" />
   </head>
   <body class="emulator-page rom-detail-page">
     <div class="emulator-shell rom-page-shell">
-      <header class="rom-page-topbar">
+      <button
+        type="button"
+        class="rom-focus-menu-toggle"
+        id="rom-focus-menu-toggle"
+        aria-expanded="false"
+        aria-controls="rom-page-topbar rom-controls-panel rom-player-tools"
+      >
+        Menu
+      </button>
+
+      <header class="rom-page-topbar" id="rom-page-topbar">
         <a class="rom-back-link" href="./index.html" id="rom-back-link">Voltar para biblioteca</a>
         <div class="rom-page-title">
           <span id="session-resume-kicker">Runtime</span>
@@ -29,10 +41,10 @@
       </header>
 
       <main class="rom-player-layout">
-        <aside class="rom-controls-panel">
+        <aside class="rom-controls-panel" id="rom-controls-panel">
           <section class="rom-side-card">
             <span class="status-label" id="controls-title">Controles</span>
-            <div class="rom-control-list">
+            <div class="rom-control-list" id="rom-control-list">
               <div><span>D-Pad</span><kbd>Setas</kbd></div>
               <div><span>A</span><kbd>Z</kbd></div>
               <div><span>B</span><kbd>X</kbd></div>
@@ -56,7 +68,7 @@
 
         <section class="rom-emulator-column">
           <section class="player-stage rom-player-stage">
-            <header class="player-header">
+            <header class="player-header" id="rom-player-tools">
               <div class="player-header-copy">
                 <div class="player-session-meta">
                   <span class="player-meta-chip" id="rom-runtime-label">Runtime</span>
@@ -135,6 +147,7 @@
             </div>
           </header>
           <div class="emulator-pokedex-embed">
+            <span class="integrated-dex-scan" aria-hidden="true"></span>
             <iframe
               id="emulator-pokedex-frame"
               class="emulator-pokedex-frame"
@@ -168,6 +181,8 @@
       </div>
     </div>
 
+    <script src="./mascot-3d.js" type="module"></script>
+    <script src="./mascot.js" type="module"></script>
     <script src="./rom-page.js" type="module"></script>
     <script src="./emulator.js" type="module"></script>
   </body>

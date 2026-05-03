@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oak Emulador</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,6 +13,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./emulator.css" />
+    <link rel="stylesheet" href="./mascot.css" />
   </head>
   <body class="emulator-page">
     <div class="emulator-shell">
@@ -184,6 +186,7 @@
                   </div>
                 </header>
                 <div class="emulator-pokedex-embed">
+                  <span class="integrated-dex-scan" aria-hidden="true"></span>
                   <iframe
                     id="emulator-pokedex-frame"
                     class="emulator-pokedex-frame"
@@ -357,6 +360,8 @@
       </main>
     </div>
 
+    <script src="./mascot-3d.js" type="module"></script>
+    <script src="./mascot.js" type="module"></script>
     <script src="./emulator.js" type="module"></script>
   </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oak ROM Library</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,8 +13,31 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./home.css" />
+    <link rel="stylesheet" href="./mascot.css" />
   </head>
   <body class="home-page">
+    <div class="boot-screen" id="boot-screen" role="status" aria-live="polite">
+      <div class="boot-screen-lines" aria-hidden="true"></div>
+      <div class="boot-sprites" aria-hidden="true">
+        <span class="boot-sprite boot-sprite-cart"></span>
+        <span class="boot-sprite boot-sprite-star"></span>
+        <span class="boot-sprite boot-sprite-pad"></span>
+        <span class="boot-sprite boot-sprite-mon"></span>
+      </div>
+      <div class="boot-screen-panel">
+        <span class="boot-kicker">Oak Lab boot sequence</span>
+        <h1 class="boot-title" data-text="OakRom">OakRom</h1>
+        <div class="boot-progress" aria-hidden="true">
+          <span></span>
+        </div>
+        <p class="boot-status">Carregando biblioteca local...</p>
+      </div>
+    </div>
+
+    <div class="retro-ambient" aria-hidden="true">
+      <span class="retro-ambient-grid"></span>
+    </div>
+
     <div class="rom-home-shell">
       <header class="rom-home-header">
         <a class="rom-logo" href="./index.html" aria-label="OakRom"></a>
@@ -40,16 +64,18 @@
 
       <main class="rom-home-main">
         <section class="rom-library-hero">
-          <div>
+          <div class="rom-hero-copy">
             <h1 class="rom-hero-logo">OakRom</h1>
             <p id="library-subtitle">Escolha uma capa para abrir a página da ROM.</p>
           </div>
 
           <div class="home-upload-panel">
-            <button class="home-upload-button" id="open-rom-upload" type="button">
-              <span id="upload-label">Adicionar ROM</span>
-            </button>
-            <button class="home-manage-button" id="open-library-dashboard" type="button">Gerenciar Biblioteca</button>
+            <div class="home-upload-actions">
+              <button class="home-upload-button" id="open-rom-upload" type="button">
+                <span id="upload-label">Adicionar ROM</span>
+              </button>
+              <button class="home-manage-button" id="open-library-dashboard" type="button">Gerenciar Biblioteca</button>
+            </div>
             <p class="home-upload-note" id="ps1-bios-note">PS1 requer BIOS scph5501.bin importada na página da ROM.</p>
           </div>
         </section>
@@ -162,6 +188,7 @@
           <button type="button" data-dashboard-tab="saves">Saves</button>
           <button type="button" data-dashboard-tab="bios">BIOS</button>
           <button type="button" data-dashboard-tab="backup">Backup</button>
+          <button type="button" data-dashboard-tab="oakbit">OakBit</button>
           <button type="button" data-dashboard-tab="cleanup">Limpeza</button>
         </nav>
 
@@ -275,6 +302,27 @@
             </section>
           </section>
 
+          <section class="library-dashboard-panel" data-dashboard-panel="oakbit" aria-label="Configuracoes do OakBit">
+            <section class="library-dashboard-oakbit">
+              <div>
+                <span>Mascote</span>
+                <strong>OakBit</strong>
+                <small id="dashboard-oakbit-status">Assistente ativo.</small>
+                <div class="library-dashboard-oakbit-meter" aria-label="Energia do OakBit">
+                  <span id="dashboard-oakbit-energy-bar"></span>
+                </div>
+              </div>
+              <div class="library-dashboard-oakbit-actions">
+                <button type="button" id="dashboard-oakbit-toggle">Ocultar</button>
+                <button type="button" id="dashboard-oakbit-mute">Silenciar</button>
+                <button type="button" id="dashboard-oakbit-skin">Trocar skin</button>
+                <button type="button" id="dashboard-oakbit-model">Modelo Pixel</button>
+                <button type="button" id="dashboard-oakbit-tutorial">Tutorial</button>
+                <button type="button" class="is-danger" id="dashboard-oakbit-reset">Resetar</button>
+              </div>
+            </section>
+          </section>
+
           <section class="library-dashboard-panel" data-dashboard-panel="cleanup" aria-label="Limpeza local">
             <section class="library-dashboard-cleanup">
               <div>
@@ -295,6 +343,8 @@
       </div>
     </aside>
 
+    <script src="./mascot-3d.js" type="module"></script>
+    <script src="./mascot.js" type="module"></script>
     <script src="./home-library.js" type="module"></script>
   </body>
 </html>

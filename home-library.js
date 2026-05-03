@@ -26,6 +26,7 @@ import {
   updateLocalRomMetadata,
 } from "./roms.js";
 
+const bootScreen = document.querySelector("#boot-screen");
 const grid = document.querySelector("#rom-grid");
 const recentSection = document.querySelector("#recent-local-section");
 const recentGrid = document.querySelector("#recent-rom-grid");
@@ -99,6 +100,14 @@ const dashboardBackupExport = document.querySelector("#dashboard-backup-export")
 const dashboardBackupImport = document.querySelector("#dashboard-backup-import");
 const dashboardBackupInput = document.querySelector("#dashboard-backup-input");
 const dashboardBackupStatus = document.querySelector("#dashboard-backup-status");
+const dashboardOakBitStatus = document.querySelector("#dashboard-oakbit-status");
+const dashboardOakBitToggle = document.querySelector("#dashboard-oakbit-toggle");
+const dashboardOakBitMute = document.querySelector("#dashboard-oakbit-mute");
+const dashboardOakBitSkin = document.querySelector("#dashboard-oakbit-skin");
+const dashboardOakBitModel = document.querySelector("#dashboard-oakbit-model");
+const dashboardOakBitTutorial = document.querySelector("#dashboard-oakbit-tutorial");
+const dashboardOakBitEnergyBar = document.querySelector("#dashboard-oakbit-energy-bar");
+const dashboardOakBitReset = document.querySelector("#dashboard-oakbit-reset");
 const githubLink = document.querySelector("#github-link");
 const localeButtons = [...document.querySelectorAll("[data-locale]")];
 
@@ -119,6 +128,46 @@ let activeDashboardTab = "roms";
 let pendingCoverRomId = "";
 let ps1BiosRecord = null;
 let pendingBulkCoverFiles = [];
+let bootCompleteTimer = null;
+
+function oakBitReact(eventName, detail) {
+  window.OakMascot?.react(eventName, detail);
+}
+
+function oakBitSay(message, mood = "idle", duration) {
+  window.OakMascot?.say(message, mood, duration);
+}
+
+window.OakMascot?.setMode?.("library");
+
+function completeBootScreen() {
+  if (!bootScreen || document.body.classList.contains("boot-complete")) {
+    return;
+  }
+
+  window.clearTimeout(bootCompleteTimer);
+  document.body.classList.add("boot-complete");
+  sessionStorage.setItem("oakromBooted", "1");
+  oakBitReact("boot-ready");
+}
+
+function setupBootScreen() {
+  if (!bootScreen) {
+    return;
+  }
+
+  if (sessionStorage.getItem("oakromBooted") === "1") {
+    document.body.classList.add("boot-skipped", "boot-complete");
+    oakBitReact("boot-ready");
+    return;
+  }
+
+  bootCompleteTimer = window.setTimeout(completeBootScreen, 4200);
+  bootScreen.addEventListener("click", completeBootScreen);
+  window.addEventListener("keydown", completeBootScreen, { once: true });
+}
+
+setupBootScreen();
 
 function localCoverForVersion(version) {
   const match = DEFAULT_ROMS.find((rom) => rom.version === version);
@@ -640,8 +689,42 @@ function renderLibraryDashboard() {
   }
   renderDashboardBios();
   renderDashboardSaves();
+  renderDashboardOakBit();
   renderDashboardTabs();
   renderDashboardRomList(dashboardRoms);
+}
+
+function renderDashboardOakBit() {
+  if (!dashboardOakBitStatus || !window.OakMascot) {
+    return;
+  }
+
+  const isHidden = window.OakMascot.isHidden?.() ?? false;
+  const isMuted = window.OakMascot.isMuted?.() ?? false;
+  const skin = window.OakMascot.getSkin?.() || "normal";
+  const model = window.OakMascot.getModelMode?.() || "pixel";
+  const mode = window.OakMascot.getMode?.() || "library";
+  const energy = window.OakMascot.getEnergy?.() ?? 0;
+  const secret = window.OakMascot.isSecretUnlocked?.() ? "desbloqueado" : "bloqueado";
+
+  dashboardOakBitStatus.textContent = `Estado: ${isHidden ? "oculto" : "visivel"} | Voz: ${isMuted ? "silenciada" : "ativa"} | Modelo: ${model === "3d" ? "3D" : "Pixel"} | Modo: ${mode} | Energia: ${energy}% | Skin: ${skin} | Secreto: ${secret}`;
+
+  if (dashboardOakBitEnergyBar) {
+    dashboardOakBitEnergyBar.style.width = `${Math.max(0, Math.min(100, energy))}%`;
+  }
+
+  if (dashboardOakBitToggle) {
+    dashboardOakBitToggle.textContent = isHidden ? "Mostrar" : "Ocultar";
+  }
+  if (dashboardOakBitMute) {
+    dashboardOakBitMute.textContent = isMuted ? "Ativar voz" : "Silenciar";
+  }
+  if (dashboardOakBitSkin) {
+    dashboardOakBitSkin.textContent = `Skin: ${skin}`;
+  }
+  if (dashboardOakBitModel) {
+    dashboardOakBitModel.textContent = `Modelo: ${model === "3d" ? "3D" : "Pixel"}`;
+  }
 }
 
 function renderDashboardBios() {
@@ -665,6 +748,12 @@ function render() {
   renderGrid();
   renderRecentLocalGrid();
   renderLibraryDashboard();
+
+  if (!localRoms.length) {
+    window.setTimeout(() => oakBitReact("empty-library"), 900);
+  } else if (getRecentLocalRoms().length) {
+    window.setTimeout(() => oakBitReact("recent-ready"), 900);
+  }
 }
 
 async function refreshLocalRoms() {
@@ -692,22 +781,26 @@ async function refreshLocalRoms() {
 searchInput.addEventListener("input", () => {
   query = searchInput.value;
   renderGrid();
+  oakBitReact("filter-change");
 });
 
 systemSelect.addEventListener("change", () => {
   system = systemSelect.value;
   renderGrid();
+  oakBitReact("filter-change");
 });
 
 sortSelect.addEventListener("change", () => {
   sortBy = sortSelect.value || "console";
   renderGrid();
+  oakBitReact("filter-change");
 });
 
 sortDirectionButton.addEventListener("click", () => {
   sortDirection = sortDirection === "asc" ? "desc" : "asc";
   renderLocale();
   renderGrid();
+  oakBitReact("filter-change");
 });
 
 clearButton.addEventListener("click", () => {
@@ -773,6 +866,14 @@ function scrollRecent(direction) {
 recentPrev.addEventListener("click", () => scrollRecent(-1));
 recentNext.addEventListener("click", () => scrollRecent(1));
 
+openUploadButton.addEventListener("mouseenter", () => {
+  oakBitReact("upload-hover");
+});
+
+openUploadButton.addEventListener("focus", () => {
+  oakBitReact("upload-hover");
+});
+
 grid.addEventListener("click", (event) => {
   const button = event.target.closest("[data-system-scroll]");
 
@@ -796,6 +897,7 @@ localeButtons.forEach((button) => {
     locale = button.dataset.locale || "pt";
     setLocale(locale);
     render();
+    window.OakMascot?.refreshLocale?.();
   });
 });
 
@@ -885,6 +987,7 @@ libraryDashboard.addEventListener("click", async (event) => {
 
     await deleteLocalRom(deleteButton.dataset.dashboardDelete);
     await refreshLocalRoms();
+    oakBitReact("rom-removed");
   }
 });
 
@@ -904,6 +1007,7 @@ dashboardList.addEventListener("submit", async (event) => {
     supportsPokedex: formData.get("supportsPokedex") === "on",
   });
   await refreshLocalRoms();
+  oakBitReact("metadata-updated");
 });
 
 dashboardSaveList.addEventListener("click", async (event) => {
@@ -923,6 +1027,7 @@ dashboardSaveList.addEventListener("click", async (event) => {
 
   await deleteLocalSave(deleteButton.dataset.dashboardSaveDelete);
   await refreshLocalRoms();
+  oakBitSay("Save removido.", "alert", 2600);
 });
 
 dashboardCoverInput.addEventListener("change", async () => {
@@ -935,6 +1040,8 @@ dashboardCoverInput.addEventListener("change", async () => {
   try {
     await updateLocalRomCover(pendingCoverRomId, coverFile);
     await refreshLocalRoms();
+    oakBitReact("cover-updated");
+    window.OakMascot?.spark?.();
   } finally {
     pendingCoverRomId = "";
     dashboardCoverInput.value = "";
@@ -962,6 +1069,7 @@ dashboardBiosInput.addEventListener("change", async () => {
   await savePs1BiosRecord(file);
   ps1BiosRecord = await getPs1BiosRecord();
   renderDashboardBios();
+  oakBitSay("BIOS PS1 registrada.", "happy", 2800);
   dashboardBiosInput.value = "";
 });
 
@@ -975,6 +1083,7 @@ dashboardBiosDelete.addEventListener("click", async () => {
   await deletePs1BiosRecord();
   ps1BiosRecord = null;
   renderDashboardBios();
+  oakBitReact("cleanup-done");
 });
 
 function setDashboardCleanStatus(messagePt, messageEn) {
@@ -1082,6 +1191,7 @@ dashboardCleanRoms.addEventListener("click", async () => {
   await clearLocalRoms();
   setDashboardCleanStatus("ROMs locais removidas.", "Local ROMs removed.");
   await refreshLocalRoms();
+  oakBitReact("cleanup-done");
 });
 
 dashboardCleanSaves.addEventListener("click", async () => {
@@ -1096,6 +1206,7 @@ dashboardCleanSaves.addEventListener("click", async () => {
   await clearLocalSaves();
   setDashboardCleanStatus("Saves locais removidos.", "Local saves removed.");
   await refreshLocalRoms();
+  oakBitReact("cleanup-done");
 });
 
 dashboardCleanBios.addEventListener("click", async () => {
@@ -1111,6 +1222,7 @@ dashboardCleanBios.addEventListener("click", async () => {
   ps1BiosRecord = null;
   setDashboardCleanStatus("BIOS PS1 removida.", "PS1 BIOS removed.");
   renderDashboardBios();
+  oakBitReact("cleanup-done");
 });
 
 dashboardCleanAll.addEventListener("click", async () => {
@@ -1126,6 +1238,7 @@ dashboardCleanAll.addEventListener("click", async () => {
   ps1BiosRecord = null;
   setDashboardCleanStatus("Biblioteca local limpa.", "Local library cleared.");
   await refreshLocalRoms();
+  oakBitReact("cleanup-done");
 });
 
 dashboardBackupExport.addEventListener("click", async () => {
@@ -1138,6 +1251,7 @@ dashboardBackupExport.addEventListener("click", async () => {
   const dateStamp = new Date().toISOString().slice(0, 10);
   downloadJsonFile(`oakrom-library-${dateStamp}.json`, payload);
   setDashboardBackupStatus("Backup de metadados exportado.", "Metadata backup exported.");
+  oakBitReact("backup-exported");
 });
 
 dashboardBackupImport.addEventListener("click", () => {
@@ -1185,12 +1299,71 @@ dashboardBackupInput.addEventListener("change", async () => {
       `${updatedCount} ROM(s) updated. ${skippedCount} unmatched.`,
     );
     await refreshLocalRoms();
+    oakBitReact("backup-imported");
+    window.OakMascot?.spark?.();
   } catch (error) {
     setDashboardBackupStatus("Backup invalido ou corrompido.", "Invalid or corrupted backup.");
+    oakBitSay("Backup inválido ou corrompido.", "alert", 3200);
   } finally {
     dashboardBackupInput.value = "";
   }
 });
+
+if (dashboardOakBitToggle) {
+  dashboardOakBitToggle.addEventListener("click", () => {
+    if (window.OakMascot?.isHidden?.()) {
+      window.OakMascot.show();
+    } else {
+      window.OakMascot?.hide?.();
+    }
+    renderDashboardOakBit();
+  });
+}
+
+if (dashboardOakBitMute) {
+  dashboardOakBitMute.addEventListener("click", () => {
+    window.OakMascot?.toggleMuted?.();
+    renderDashboardOakBit();
+  });
+}
+
+if (dashboardOakBitSkin) {
+  dashboardOakBitSkin.addEventListener("click", () => {
+    const currentSkin = window.OakMascot?.getSkin?.() || "normal";
+    const skins = window.OakMascot?.isSecretUnlocked?.()
+      ? ["normal", "shiny", "tech", "night", "secret"]
+      : ["normal", "shiny", "tech", "night"];
+    const nextSkin = skins[(skins.indexOf(currentSkin) + 1) % skins.length] || "normal";
+    window.OakMascot?.setSkin?.(nextSkin);
+    window.OakMascot?.spark?.();
+    renderDashboardOakBit();
+  });
+}
+
+if (dashboardOakBitModel) {
+  dashboardOakBitModel.addEventListener("click", () => {
+    window.OakMascot?.setModelMode?.("pixel");
+    renderDashboardOakBit();
+  });
+}
+
+if (dashboardOakBitTutorial) {
+  dashboardOakBitTutorial.addEventListener("click", () => {
+    closeDashboard();
+    window.setTimeout(() => window.OakMascot?.startTutorial?.(), 180);
+  });
+}
+
+if (dashboardOakBitReset) {
+  dashboardOakBitReset.addEventListener("click", () => {
+    const confirmed = window.confirm("Resetar preferencias do OakBit?");
+    if (!confirmed) {
+      return;
+    }
+    window.OakMascot?.resetPreferences?.();
+    renderDashboardOakBit();
+  });
+}
 
 dashboardBulkImport.addEventListener("click", () => {
   dashboardBulkInput.value = "";
@@ -1266,6 +1439,12 @@ dashboardBulkInput.addEventListener("change", async () => {
   pendingBulkCoverFiles = [];
   dashboardBulkCoverInput.value = "";
   await refreshLocalRoms();
+  if (savedCount) {
+    oakBitReact("bulk-imported");
+    window.OakMascot?.spark?.();
+  } else if (skippedCount) {
+    oakBitReact("invalid-file");
+  }
 });
 
 closeUploadButton.addEventListener("click", closeUploadDialog);
@@ -1287,18 +1466,22 @@ uploadForm.addEventListener("submit", async (event) => {
   const [file] = uploadInput.files || [];
   const [coverFile] = coverInput.files || [];
   if (!file) {
+    oakBitSay("Escolha uma ROM para encaixar.", "thinking");
     return;
   }
 
   if (!isSupportedRomFile(file.name)) {
+    oakBitReact("invalid-file");
     window.location.href = `./rom.html?id=upload&name=${encodeURIComponent(file.name)}`;
     return;
   }
 
   try {
     const saved = await saveLocalRom(file, coverFile || null);
+    oakBitReact("rom-imported", { system: saved.system || getSystemLabelByFileName(saved.name) });
     window.location.href = `./rom.html?type=local&id=${encodeURIComponent(saved.id)}`;
   } catch (error) {
+    oakBitReact("invalid-file");
     window.location.href = `./rom.html?id=upload&name=${encodeURIComponent(file.name)}`;
   }
 });

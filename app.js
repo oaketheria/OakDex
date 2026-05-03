@@ -47,6 +47,18 @@ let currentNarrationAudio = null;
 let currentNarrationUtterance = null;
 let browserVoiceList = [];
 
+function notifyOakBit(eventName, detail = {}) {
+  if (!IS_EMBED || !window.parent || window.parent === window) {
+    return;
+  }
+
+  window.parent.postMessage({
+    source: "oakrom-pokedex",
+    eventName,
+    detail,
+  }, window.location.origin);
+}
+
 const typeColors = {
   normal: "#9e9e7a",
   fire: "#f57d31",
@@ -410,6 +422,7 @@ function playPokemonCry(pokemon) {
   const cryUrl = getCryUrl(pokemon);
 
   if (!cryUrl) {
+    notifyOakBit("pokedex-cry-missing", { pokemon: pokemon?.name || "" });
     return;
   }
 
@@ -420,6 +433,7 @@ function playPokemonCry(pokemon) {
 
   currentCryAudio = new Audio(cryUrl);
   currentCryAudio.volume = 0.7;
+  notifyOakBit("pokedex-cry", { pokemon: pokemon?.name || "" });
   currentCryAudio.play().catch(() => {});
 }
 
@@ -1219,6 +1233,7 @@ async function selectPokemon(pokemonId, options = {}) {
   await renderSpotlight();
   await renderDetail(details);
   triggerScanEffect();
+  notifyOakBit("pokedex-selected", { pokemon: details.name, id: details.id });
 
   if (options.playCry) {
     playPokemonCry(details);
@@ -1250,6 +1265,7 @@ async function syncSelectionFromSearch(searchTerm) {
 
   if (!firstMatch) {
     renderFallbackDetail();
+    notifyOakBit("pokedex-not-found", { searchTerm });
     return;
   }
 
@@ -1259,6 +1275,9 @@ async function syncSelectionFromSearch(searchTerm) {
 async function applyFilters() {
   const searchTerm = elements.topSearchInput.value.trim();
   const selectedType = elements.typeSelect.value;
+  if (searchTerm || selectedType) {
+    notifyOakBit("pokedex-search", { searchTerm, selectedType });
+  }
   const allowedTypeIds = selectedType ? await fetchTypePokemonIds(selectedType) : null;
   const resolvedPokemon = await resolvePokemonFromSearch(searchTerm);
 
@@ -1313,10 +1332,12 @@ function bindEvents() {
 
     voiceRecognition.addEventListener("start", () => {
       setVoiceButtonState(true, true);
+      notifyOakBit("voice-listening");
     });
 
     voiceRecognition.addEventListener("end", () => {
       setVoiceButtonState(false, true);
+      notifyOakBit("voice-end");
     });
 
     voiceRecognition.addEventListener("result", async (event) => {
@@ -1327,11 +1348,13 @@ function bindEvents() {
       }
 
       elements.topSearchInput.value = transcript.toLowerCase();
+      notifyOakBit("voice-result", { transcript });
       await applyFilters();
     });
 
     voiceRecognition.addEventListener("error", () => {
       setVoiceButtonState(false, true);
+      notifyOakBit("voice-error");
     });
 
     elements.voiceSearchButton.addEventListener("click", () => {
@@ -1352,6 +1375,7 @@ function bindEvents() {
       state.activeTab = button.dataset.tab;
       stopCurrentNarration();
       renderHudTabs();
+      notifyOakBit("pokedex-tab", { tab: state.activeTab });
 
       if (state.selectedPokemonDetails) {
         await renderDetail(state.selectedPokemonDetails);
@@ -1382,6 +1406,7 @@ function bindEvents() {
     const narrationButton = event.target.closest("[data-narrate-button]");
 
     if (narrationButton && state.selectedPokemonDetails) {
+      notifyOakBit("pokedex-narration", { pokemon: state.selectedPokemonDetails.name });
       await handleLoreNarration(
         state.selectedPokemonDetails.name,
         narrationButton.dataset.flavorText ?? "",

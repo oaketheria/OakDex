@@ -1,0 +1,829 @@
+.oakbit {
+  --oakbit-head: #ffed65;
+  --oakbit-body: #17233d;
+  --oakbit-trim: #43dbff;
+  --oakbit-accent: #ff3f8b;
+  --oakbit-eye: #f8fbff;
+  position: fixed;
+  right: clamp(14px, 2vw, 24px);
+  bottom: clamp(14px, 2vw, 24px);
+  z-index: 2147483647;
+  display: grid;
+  grid-template-columns: minmax(0, 230px) 66px;
+  align-items: end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.oakbit[data-skin="shiny"] {
+  --oakbit-head: #f8fbff;
+  --oakbit-body: #233552;
+  --oakbit-trim: #ffed65;
+  --oakbit-accent: #43dbff;
+  --oakbit-eye: #ff3f8b;
+}
+
+.oakbit[data-skin="tech"] {
+  --oakbit-head: #65ffad;
+  --oakbit-body: #071f1a;
+  --oakbit-trim: #43dbff;
+  --oakbit-accent: #ffed65;
+  --oakbit-eye: #65ffad;
+}
+
+.oakbit[data-skin="night"] {
+  --oakbit-head: #9aa7ff;
+  --oakbit-body: #080b17;
+  --oakbit-trim: #7c5cff;
+  --oakbit-accent: #43dbff;
+  --oakbit-eye: #ffed65;
+}
+
+.oakbit[data-skin="secret"] {
+  --oakbit-head: #ff3f8b;
+  --oakbit-body: #1b1028;
+  --oakbit-trim: #ffed65;
+  --oakbit-accent: #65ffad;
+  --oakbit-eye: #f8fbff;
+}
+
+.oakbit[data-mode="library"] {
+  --oakbit-trim: #43dbff;
+}
+
+.oakbit[data-mode="emulator"] {
+  --oakbit-trim: #65ffad;
+  --oakbit-accent: #ffed65;
+}
+
+.oakbit[data-mode="pokedex"] {
+  --oakbit-trim: #ff3f8b;
+  --oakbit-accent: #43dbff;
+}
+
+.oakbit[data-mode="system-alert"] {
+  --oakbit-trim: #ff9365;
+  --oakbit-accent: #ff3f8b;
+}
+
+.oakbit[data-mode="system-alert"] .oakbit-button {
+  animation: oakbit-alert-pulse 900ms steps(2, end) infinite;
+}
+
+.oakbit[data-mode="pokedex"] .oakbit-button {
+  animation: oakbit-research-pulse 1.8s ease-in-out infinite;
+}
+
+.oakbit.is-hidden {
+  display: none;
+}
+
+.oakbit-restore {
+  position: fixed;
+  right: clamp(14px, 2vw, 24px);
+  bottom: clamp(14px, 2vw, 24px);
+  z-index: 2147483647;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(67, 219, 255, 0.24);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(18, 32, 58, 0.92), rgba(5, 10, 22, 0.94));
+  color: rgba(248, 251, 255, 0.82);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(67, 219, 255, 0.14);
+}
+
+.oakbit-restore[hidden] {
+  display: none;
+}
+
+.oakbit-bubble {
+  justify-self: end;
+  max-width: 240px;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid rgba(67, 219, 255, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(9, 16, 32, 0.92), rgba(3, 7, 18, 0.9));
+  color: rgba(248, 251, 255, 0.88);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.2;
+  box-shadow:
+    0 14px 32px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.oakbit-bubble::after {
+  content: "";
+  position: absolute;
+  right: -7px;
+  bottom: 14px;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid rgba(67, 219, 255, 0.2);
+  border-right: 1px solid rgba(67, 219, 255, 0.2);
+  background: rgba(3, 7, 18, 0.9);
+  transform: rotate(45deg);
+}
+
+.oakbit-hide {
+  position: absolute;
+  right: 58px;
+  bottom: 58px;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(4, 8, 18, 0.86);
+  color: rgba(248, 251, 255, 0.68);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 160ms ease;
+}
+
+.oakbit:hover .oakbit-hide,
+.oakbit:focus-within .oakbit-hide {
+  opacity: 1;
+}
+
+.oakbit-menu {
+  position: absolute;
+  right: 0;
+  bottom: 76px;
+  z-index: 3;
+  display: grid;
+  gap: 8px;
+  min-width: 154px;
+  max-width: 190px;
+  padding: 9px;
+  border: 1px solid rgba(67, 219, 255, 0.2);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(9, 16, 32, 0.94), rgba(3, 7, 18, 0.92));
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: right bottom;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.oakbit-menu-group {
+  display: grid;
+  gap: 5px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.oakbit-menu-group:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.oakbit-menu-group[hidden] {
+  display: none;
+}
+
+.oakbit-menu-group > span {
+  color: color-mix(in srgb, var(--oakbit-trim) 78%, rgba(248, 251, 255, 0.72));
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.oakbit.is-menu-open .oakbit-menu {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.oakbit-menu button {
+  min-height: 29px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(248, 251, 255, 0.86);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.oakbit-menu button:hover,
+.oakbit-menu button:focus-visible {
+  border-color: rgba(255, 237, 101, 0.28);
+  color: #ffed65;
+}
+
+.oakbit-menu button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.oakbit-tour[hidden] {
+  display: none;
+}
+
+.oakbit-tour {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+.oakbit-tour-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(1, 4, 12, 0.46);
+  pointer-events: auto;
+}
+
+.oakbit-tour-spotlight {
+  position: absolute;
+  border: 2px solid color-mix(in srgb, var(--oakbit-trim, #43dbff) 76%, transparent);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 9999px rgba(1, 4, 12, 0.28),
+    0 0 28px color-mix(in srgb, var(--oakbit-trim, #43dbff) 34%, transparent);
+  transition:
+    left 180ms ease,
+    top 180ms ease,
+    width 180ms ease,
+    height 180ms ease;
+}
+
+.oakbit-tour-card {
+  position: absolute;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(67, 219, 255, 0.24);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, rgba(9, 16, 32, 0.96), rgba(3, 7, 18, 0.95));
+  color: rgba(248, 251, 255, 0.9);
+  font-family: "Rajdhani", sans-serif;
+  box-shadow:
+    0 20px 44px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  pointer-events: auto;
+}
+
+.oakbit-tour-kicker {
+  color: #ffed65;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.oakbit-tour-card h3,
+.oakbit-tour-card p {
+  margin: 0;
+}
+
+.oakbit-tour-card h3 {
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.oakbit-tour-card p {
+  color: rgba(248, 251, 255, 0.72);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.oakbit-tour-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+.oakbit-tour-actions button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 251, 255, 0.88);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.oakbit-tour-actions button:last-child {
+  border-color: rgba(255, 237, 101, 0.32);
+  color: #ffed65;
+}
+
+.oakbit-tour-actions button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.oakbit.is-speaking .oakbit-bubble {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.oakbit-button {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--oakbit-trim) 54%, transparent);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 16%, color-mix(in srgb, var(--oakbit-head) 22%, transparent), transparent 0 36%),
+    linear-gradient(180deg, rgba(18, 32, 58, 0.96), rgba(5, 10, 22, 0.98));
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow:
+    0 0 0 2px rgba(255, 237, 101, 0.08),
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 24px color-mix(in srgb, var(--oakbit-trim) 18%, transparent);
+}
+
+.oakbit-energy {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  bottom: 7px;
+  height: 4px;
+  border: 1px solid rgba(248, 251, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+
+.oakbit-energy span {
+  display: block;
+  width: var(--oakbit-energy, 42%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--oakbit-accent), var(--oakbit-trim), var(--oakbit-head));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--oakbit-trim) 48%, transparent);
+  transition: width 260ms ease;
+}
+
+.oakbit[data-energy="low"] .oakbit-energy span {
+  background: linear-gradient(90deg, #ff3f8b, #ff9365);
+}
+
+.oakbit[data-energy="high"] .oakbit-button {
+  box-shadow:
+    0 0 0 2px rgba(255, 237, 101, 0.12),
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 30px color-mix(in srgb, var(--oakbit-trim) 30%, transparent);
+}
+
+.oakbit.is-muted .oakbit-button::before {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ff3f8b;
+  box-shadow: 0 0 10px rgba(255, 63, 139, 0.64);
+}
+
+.oakbit::after {
+  content: "";
+  position: absolute;
+  right: 26px;
+  bottom: 64px;
+  width: 8px;
+  height: 8px;
+  background: #ffed65;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow:
+    0 -10px 0 #ffed65,
+    0 10px 0 #ffed65,
+    -10px 0 0 #ffed65,
+    10px 0 0 #ffed65,
+    -18px 0 0 #43dbff,
+    18px 0 0 #43dbff,
+    0 -18px 0 #ff3f8b,
+    0 18px 0 #ff3f8b;
+}
+
+.oakbit.is-sparking::after {
+  animation: oakbit-spark 720ms steps(3, end);
+}
+
+.oakbit-sprite {
+  position: relative;
+  display: block;
+  width: 38px;
+  height: 38px;
+  margin: 14px auto 0;
+  border: 3px solid var(--oakbit-trim);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, var(--oakbit-head) 0 28%, var(--oakbit-body) 28% 100%);
+  image-rendering: pixelated;
+  transform-origin: center bottom;
+  box-shadow:
+    inset 0 0 0 3px rgba(4, 8, 18, 0.72),
+    0 7px 0 color-mix(in srgb, var(--oakbit-accent) 48%, transparent);
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--oakbit-head) 42%, transparent));
+  animation: oakbit-idle 2400ms steps(2, end) infinite;
+}
+
+.oakbit-3d-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.oakbit[data-model="3d"] .oakbit-sprite {
+  display: none;
+}
+
+.oakbit[data-model="3d"] .oakbit-3d-canvas {
+  display: block;
+  background: transparent;
+}
+
+.oakbit-sprite::before,
+.oakbit-sprite::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  width: 8px;
+  height: 8px;
+  background: var(--oakbit-trim);
+  box-shadow: 0 -7px 0 var(--oakbit-head);
+}
+
+.oakbit-sprite::before {
+  left: 5px;
+}
+
+.oakbit-sprite::after {
+  right: 5px;
+}
+
+.oakbit-eye {
+  position: absolute;
+  top: 18px;
+  width: 6px;
+  height: 6px;
+  background: var(--oakbit-eye);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--oakbit-eye) 64%, transparent);
+}
+
+.oakbit-eye-left {
+  left: 9px;
+}
+
+.oakbit-eye-right {
+  right: 9px;
+}
+
+.oakbit-mouth {
+  position: absolute;
+  left: 13px;
+  bottom: 7px;
+  width: 12px;
+  height: 4px;
+  background: var(--oakbit-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--oakbit-accent) 45%, transparent);
+}
+
+.oakbit[data-mood="happy"] .oakbit-sprite {
+  animation: oakbit-happy 620ms steps(2, end) infinite;
+}
+
+.oakbit[data-mood="thinking"] .oakbit-sprite {
+  animation: oakbit-thinking 920ms steps(2, end) infinite;
+}
+
+.oakbit[data-mood="alert"] .oakbit-button {
+  border-color: rgba(255, 63, 139, 0.58);
+  box-shadow:
+    0 0 0 2px rgba(255, 63, 139, 0.16),
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(255, 63, 139, 0.24);
+}
+
+.oakbit[data-effect="error"] .oakbit-button {
+  animation: oakbit-error-shake 360ms steps(2, end) 2;
+}
+
+.oakbit[data-effect="scan"] .oakbit-sprite::before {
+  box-shadow:
+    0 -7px 0 var(--oakbit-head),
+    0 34px 0 color-mix(in srgb, var(--oakbit-trim) 72%, transparent);
+  animation: oakbit-scan 900ms steps(4, end) infinite;
+}
+
+.oakbit[data-effect="speaking"] .oakbit-mouth,
+.oakbit[data-effect="listening"] .oakbit-mouth {
+  height: 8px;
+  animation: oakbit-mouth-talk 320ms steps(2, end) infinite;
+}
+
+.oakbit[data-effect="listening"] .oakbit-button {
+  border-color: rgba(255, 237, 101, 0.54);
+}
+
+.oakbit[data-effect="listening"] .oakbit-button::after,
+.oakbit[data-effect="sound"] .oakbit-button::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: 2px solid rgba(67, 219, 255, 0.42);
+  border-radius: 16px;
+  pointer-events: none;
+  animation: oakbit-sound-wave 900ms ease-out infinite;
+}
+
+.oakbit[data-effect="sound"] .oakbit-button::before {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: 20px;
+  width: 6px;
+  height: 20px;
+  border-right: 3px solid #ffed65;
+  border-radius: 999px;
+  pointer-events: none;
+  animation: oakbit-sound-note 680ms steps(2, end) infinite;
+}
+
+.oakbit[data-effect="fullscreen"] .oakbit-button {
+  animation: oakbit-fullscreen-burst 700ms ease-out 2;
+}
+
+.oakbit[data-effect="fullscreen"] .oakbit-button::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border: 2px solid color-mix(in srgb, var(--oakbit-head) 58%, transparent);
+  border-radius: 18px;
+  pointer-events: none;
+  animation: oakbit-expand-ring 700ms ease-out 2;
+}
+
+.oakbit[data-effect="pokedex-scan"] .oakbit-button {
+  border-color: rgba(255, 63, 139, 0.56);
+}
+
+.oakbit[data-effect="pokedex-scan"] .oakbit-sprite::before {
+  left: -2px;
+  right: -2px;
+  top: 10px;
+  width: auto;
+  height: 4px;
+  background: color-mix(in srgb, var(--oakbit-trim) 78%, transparent);
+  box-shadow:
+    0 8px 0 color-mix(in srgb, var(--oakbit-trim) 42%, transparent),
+    0 18px 0 color-mix(in srgb, var(--oakbit-accent) 38%, transparent);
+  animation: oakbit-pokedex-scan 760ms steps(4, end) infinite;
+}
+
+.oakbit[data-effect="transfer"] .oakbit-button::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--oakbit-trim) 0 6px,
+      transparent 6px 10px,
+      var(--oakbit-head) 10px 14px,
+      transparent 14px 18px
+    );
+  pointer-events: none;
+  animation: oakbit-transfer 520ms steps(4, end) infinite;
+}
+
+.oakbit[data-mood="sleepy"] .oakbit-sprite {
+  opacity: 0.72;
+  animation: oakbit-sleepy 1600ms steps(2, end) infinite;
+}
+
+.oakbit[data-mood="sleepy"] .oakbit-eye {
+  height: 2px;
+  transform: translateY(2px);
+}
+
+@keyframes oakbit-idle {
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes oakbit-happy {
+  50% {
+    transform: translateY(-5px) scale(1.04);
+  }
+}
+
+@keyframes oakbit-thinking {
+  50% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes oakbit-sleepy {
+  50% {
+    transform: translateY(2px);
+  }
+}
+
+@keyframes oakbit-mouth-talk {
+  50% {
+    height: 3px;
+    transform: translateY(2px);
+  }
+}
+
+@keyframes oakbit-error-shake {
+  25% {
+    transform: translateX(-3px);
+  }
+
+  75% {
+    transform: translateX(3px);
+  }
+}
+
+@keyframes oakbit-scan {
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@keyframes oakbit-sound-wave {
+  from {
+    opacity: 0.82;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.22);
+  }
+}
+
+@keyframes oakbit-sound-note {
+  50% {
+    transform: translateX(4px);
+    opacity: 0.42;
+  }
+}
+
+@keyframes oakbit-fullscreen-burst {
+  50% {
+    transform: scale(1.08);
+    filter: brightness(1.18);
+  }
+}
+
+@keyframes oakbit-expand-ring {
+  from {
+    opacity: 0.8;
+    transform: scale(0.86);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.34);
+  }
+}
+
+@keyframes oakbit-pokedex-scan {
+  0% {
+    transform: translateY(-8px);
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(20px);
+    opacity: 0.45;
+  }
+}
+
+@keyframes oakbit-transfer {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 18px 0;
+  }
+}
+
+@keyframes oakbit-spark {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.6);
+  }
+
+  35% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(1.18);
+  }
+}
+
+@keyframes oakbit-alert-pulse {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.22) saturate(1.22);
+  }
+}
+
+@keyframes oakbit-research-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(255, 237, 101, 0.08),
+      0 16px 34px rgba(0, 0, 0, 0.34),
+      0 0 24px color-mix(in srgb, var(--oakbit-trim) 18%, transparent);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 63, 139, 0.12),
+      0 16px 34px rgba(0, 0, 0, 0.34),
+      0 0 34px color-mix(in srgb, var(--oakbit-trim) 34%, transparent);
+  }
+}
+
+@media (max-width: 680px) {
+  .oakbit {
+    grid-template-columns: minmax(0, 1fr) 52px;
+    left: 12px;
+    right: 12px;
+  }
+
+  .oakbit-button {
+    width: 52px;
+    height: 52px;
+  }
+
+  .oakbit-bubble {
+    max-width: none;
+    font-size: 0.84rem;
+  }
+}

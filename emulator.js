@@ -45,6 +45,8 @@ const integratedDexVoiceButton = document.querySelector("#integrated-dex-voice")
 const saveImportInput = document.querySelector("#save-import-input");
 const biosImportInput = document.querySelector("#bios-import-input");
 const biosImportLabel = document.querySelector("#bios-import-label");
+const controlsTitle = document.querySelector("#controls-title");
+const controlList = document.querySelector("#rom-control-list");
 const playSpace = document.querySelector("#play-space");
 const pokedexToggle = document.querySelector("#pokedex-toggle");
 const pokedexClose = document.querySelector("#pokedex-close");
@@ -54,6 +56,7 @@ const launcherTabs = [...document.querySelectorAll(".launcher-tab")];
 const launcherPanels = [...document.querySelectorAll(".launcher-panel")];
 const pokedexOriginalParent = pokedexPanel?.parentElement || null;
 const pokedexOriginalNextSibling = pokedexPanel?.nextSibling || null;
+const ANIMEJS_ESM_URL = "https://cdn.jsdelivr.net/npm/animejs/+esm";
 
 let activeRomUrl = "";
 let activeBiosUrl = "";
@@ -72,6 +75,7 @@ let romLibraryFilter = "all";
 let runtimeResizeInterval = null;
 let activeSessionStartedAt = 0;
 let integratedDexVoiceRecognition = null;
+let animeModulePromise = null;
 
 const IntegratedDexSpeechRecognitionApi =
   window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -89,6 +93,24 @@ const DEFAULT_ROM_LINKS_STORAGE_KEY = "oakDefaultRomLinks";
 const RECENT_ROMS_LIMIT = 3;
 const ROM_LIBRARY_PAGE_SIZE = 6;
 
+function oakBitReact(eventName, detail) {
+  window.OakMascot?.react(eventName, detail);
+}
+
+function oakBitSay(message, mood = "idle", duration) {
+  window.OakMascot?.say(message, mood, duration);
+}
+
+function oakBitSetContext(context) {
+  window.OakMascot?.setContext?.(context);
+}
+
+window.OakMascot?.setMode?.("emulator");
+
+function syncOakBitFullscreenHost() {
+  window.OakMascot?.syncFullscreenHost?.();
+}
+
 const EMULATOR_SYSTEMS = [
   { label: "GBA", name: "Game Boy Advance", core: "gba", extensions: ["gba"] },
   { label: "GB", name: "Game Boy", core: "gb", extensions: ["gb"] },
@@ -101,6 +123,76 @@ const EMULATOR_SYSTEMS = [
   { label: "N64", name: "Nintendo 64", core: "n64", extensions: ["n64", "z64", "v64"] },
   { label: "PS1", name: "PlayStation 1", core: "psx", extensions: ["chd", "pbp", "iso", "bin"], biosId: "ps1-scph5501" },
 ];
+
+const CONTROL_PRESETS = {
+  gba: [
+    ["D-Pad", "Setas"],
+    ["A", "Z"],
+    ["B", "X"],
+    ["L", "Q"],
+    ["R", "W"],
+    ["Start", "Enter"],
+    ["Select", "Shift"],
+  ],
+  gb: [
+    ["D-Pad", "Setas"],
+    ["A", "Z"],
+    ["B", "X"],
+    ["Start", "Enter"],
+    ["Select", "Shift"],
+  ],
+  nes: [
+    ["D-Pad", "Setas"],
+    ["A", "Z"],
+    ["B", "X"],
+    ["Start", "Enter"],
+    ["Select", "Shift"],
+  ],
+  snes: [
+    ["D-Pad", "Setas"],
+    ["A / B", "Z / X"],
+    ["X / Y", "S / A"],
+    ["L / R", "Q / W"],
+    ["Start", "Enter"],
+    ["Select", "Shift"],
+  ],
+  segaMD: [
+    ["D-Pad", "Setas"],
+    ["A / B / C", "A / S / D"],
+    ["X / Y / Z", "Q / W / E"],
+    ["Start", "Enter"],
+    ["Mode", "Shift"],
+  ],
+  segaMS: [
+    ["D-Pad", "Setas"],
+    ["1", "Z"],
+    ["2", "X"],
+    ["Start/Pause", "Enter"],
+  ],
+  segaGG: [
+    ["D-Pad", "Setas"],
+    ["1", "Z"],
+    ["2", "X"],
+    ["Start", "Enter"],
+  ],
+  n64: [
+    ["Stick", "Setas"],
+    ["A / B", "Z / X"],
+    ["Z", "A"],
+    ["L / R", "Q / W"],
+    ["C-Buttons", "I J K L"],
+    ["Start", "Enter"],
+  ],
+  psx: [
+    ["D-Pad", "Setas"],
+    ["X / O", "Z / X"],
+    ["Square / Triangle", "A / S"],
+    ["L1 / R1", "Q / W"],
+    ["L2 / R2", "E / R"],
+    ["Start", "Enter"],
+    ["Select", "Shift"],
+  ],
+};
 
 function getRomExtension(fileName) {
   return String(fileName || "").split(".").pop()?.toLowerCase() || "";
@@ -117,6 +209,21 @@ function getRomSystem(entryOrFile) {
     return EMULATOR_SYSTEMS.find((system) => system.label === entryOrFile.system) || getSystemByFileName(name) || EMULATOR_SYSTEMS[0];
   }
   return getSystemByFileName(name) || EMULATOR_SYSTEMS[0];
+}
+
+function renderControlPreset(system) {
+  if (!controlList) {
+    return;
+  }
+
+  const preset = CONTROL_PRESETS[system?.core] || CONTROL_PRESETS.gba;
+  if (controlsTitle) {
+    controlsTitle.textContent = `Controles - ${system?.label || "ROM"}`;
+  }
+
+  controlList.innerHTML = preset
+    .map(([label, key]) => `<div><span>${label}</span><kbd>${key}</kbd></div>`)
+    .join("");
 }
 
 function getSupportedRomExtensionsLabel() {
@@ -142,7 +249,9 @@ function getRouteDefaultRomId() {
     return decodeURIComponent(pathParts[romIndex + 1]);
   }
 
-  return "";
+  const params = new URLSearchParams(window.location.search);
+  const queryId = params.get("id") || "";
+  return queryId && queryId !== "upload" ? queryId : "";
 }
 
 function loadDefaultRomLinks() {
@@ -171,6 +280,31 @@ function saveDefaultRomLink(defaultRomId, localRomId) {
 function getLinkedDefaultRomId(defaultRomId) {
   const links = loadDefaultRomLinks();
   return links[defaultRomId] || "";
+}
+
+function getDefaultRomVersion(defaultRomId) {
+  const versions = {
+    emerald: "emerald",
+    "fire-red": "fire red",
+    "leaf-green": "leaf green",
+    ruby: "ruby",
+    sapphire: "sapphire",
+  };
+
+  return versions[defaultRomId] || "";
+}
+
+function findSavedRomForDefault(defaultRomId) {
+  const version = getDefaultRomVersion(defaultRomId);
+  if (!version) {
+    return null;
+  }
+
+  const normalizedVersion = normalizeRomSearchQuery(version);
+  return romLibrary.find((entry) => {
+    const title = normalizeRomSearchQuery(entry.displayTitle || entry.name || "");
+    return title.includes(normalizedVersion) || normalizedVersion.includes(title);
+  }) || null;
 }
 
 const LOCAL_ROM_COVER_MAP = {
@@ -896,6 +1030,10 @@ function setPokedexAvailable(available) {
   activeSupportsPokedex = Boolean(available);
   document.body.classList.toggle("has-pokedex-support", activeSupportsPokedex);
 
+  if (activeSupportsPokedex) {
+    oakBitReact("pokedex-available");
+  }
+
   if (pokedexToggle) {
     pokedexToggle.hidden = !activeSupportsPokedex;
     pokedexToggle.disabled = !activeSupportsPokedex;
@@ -1460,7 +1598,14 @@ async function launchLibraryRom(romId) {
   }
 
   activeRomId = entry.id;
-  setPokedexAvailable(getSupportsPokedex(entry));
+  const supportsPokedex = getSupportsPokedex(entry);
+  const system = getRomSystem(entry);
+  oakBitSetContext({
+    title: getRomDisplayTitle(entry),
+    system: system.label,
+    supportsPokedex,
+  });
+  setPokedexAvailable(supportsPokedex);
   activeSessionStartedAt = Date.now();
   saveLastRomSelection(entry.id);
   pushRecentRom({
@@ -1493,6 +1638,8 @@ async function launchLibraryRom(romId) {
 }
 
 function setPokedexOpen(open) {
+  const wasOpen = document.body.classList.contains("is-pokedex-open");
+
   if (open && !activeSupportsPokedex) {
     showRuntimeHint("A Pokedex integrada aparece apenas em jogos Pokemon.");
     return;
@@ -1531,6 +1678,79 @@ function setPokedexOpen(open) {
 
   if (open) {
     playIntegratedDexOpenSound();
+    playIntegratedDexOpenAnimation();
+    oakBitReact("pokedex-open");
+  } else if (wasOpen) {
+    window.OakMascot?.setMode?.("emulator");
+    oakBitSay("Voltando ao jogo.", "idle", 2600);
+  }
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+}
+
+function loadAnimeModule() {
+  if (!animeModulePromise) {
+    animeModulePromise = import(ANIMEJS_ESM_URL).catch(() => null);
+  }
+
+  return animeModulePromise;
+}
+
+function playPokedexFallbackAnimation() {
+  document.body.classList.add("is-pokedex-opening");
+  window.setTimeout(() => {
+    document.body.classList.remove("is-pokedex-opening");
+  }, 320);
+}
+
+async function playIntegratedDexOpenAnimation() {
+  if (!pokedexPanel || prefersReducedMotion()) {
+    return;
+  }
+
+  const anime = await loadAnimeModule();
+  const animate = anime?.animate;
+  const stagger = anime?.stagger;
+
+  if (typeof animate !== "function") {
+    playPokedexFallbackAnimation();
+    return;
+  }
+
+  const shell = pokedexPanel.querySelector(".emulator-pokedex-shell");
+  const header = pokedexPanel.querySelector(".emulator-pokedex-header");
+  const embed = pokedexPanel.querySelector(".emulator-pokedex-embed");
+  const scan = pokedexPanel.querySelector(".integrated-dex-scan");
+  const items = [header, embed].filter(Boolean);
+
+  animate(shell, {
+    opacity: [0, 1],
+    x: [28, 0],
+    scale: [0.985, 1],
+    duration: 360,
+    ease: "outCubic",
+  });
+
+  if (items.length) {
+    animate(items, {
+      opacity: [0, 1],
+      y: [12, 0],
+      delay: typeof stagger === "function" ? stagger(70, { start: 90 }) : 90,
+      duration: 300,
+      ease: "outCubic",
+    });
+  }
+
+  if (scan) {
+    animate(scan, {
+      opacity: [{ to: 1, duration: 80 }, { to: 0, duration: 180 }],
+      y: ["-90%", "560%"],
+      duration: 620,
+      delay: 140,
+      ease: "inOutQuad",
+    });
   }
 }
 
@@ -1869,6 +2089,7 @@ function importSaveFileIntoEmulator(file) {
 
   if (!isSupportedSave) {
     showRuntimeHint("Escolha um arquivo de save valido (.sav, .srm, .state ou .slot).");
+    oakBitReact("save-error");
     return false;
   }
 
@@ -1886,8 +2107,11 @@ function importSaveFileIntoEmulator(file) {
     });
 
     showRuntimeHint("Save enviado para o emulador.");
+    oakBitReact("save-imported");
+    window.OakMascot?.spark?.();
     return true;
   } catch (error) {
+    oakBitReact("save-error");
     return false;
   }
 }
@@ -2037,6 +2261,14 @@ function getNativeFullscreenControl(runtimeHost = getEmulatorHost()) {
 }
 
 function showRuntimeError(message) {
+  if (/bios/i.test(message)) {
+    oakBitReact("ps1-bios-needed");
+  } else if (/core/i.test(message)) {
+    oakBitReact("emulator-core-error");
+  } else {
+    oakBitSay("Esse cartucho não encaixa aqui.", "alert");
+  }
+
   document.body.classList.remove("has-rom");
   resetRuntimeState();
   emulatorRuntime.classList.remove("is-visible");
@@ -2259,6 +2491,7 @@ function getNativeEmulatorMenuControl(runtimeHost = getEmulatorHost()) {
 }
 
 function openNativeEmulatorMenu() {
+  oakBitReact("core-menu");
   const runtimeHost = getEmulatorHost();
   const nativeControl = getNativeEmulatorMenuControl(runtimeHost);
 
@@ -2372,6 +2605,12 @@ async function bootEmulator(file) {
     return;
   }
 
+  const system = getRomSystem(file);
+  oakBitSetContext({
+    title: getRomDisplayName(file),
+    system: system.label,
+    supportsPokedex: getSupportsPokedex(file),
+  });
   clearExistingRuntime();
   clearActiveRomUrl();
   setPokedexAvailable(getSupportsPokedex(file));
@@ -2387,6 +2626,7 @@ async function bootEmulator(file) {
   emulatorError.hidden = true;
   romStatus.textContent = "Inicializando core";
   hudMode.textContent = "Carregando core";
+  oakBitReact("emulator-loading");
   setEmulationReady(false);
   syncSessionSummary();
 
@@ -2401,13 +2641,14 @@ async function bootEmulator(file) {
     return;
   }
 
-  const system = getRomSystem(file);
+  renderControlPreset(system);
   const biosId = getBiosIdForSystem(system);
 
   if (biosId) {
     const biosRecord = await getBiosRecord(biosId);
 
     if (!biosRecord?.file) {
+      oakBitReact("ps1-bios-needed");
       showRuntimeError("PS1 precisa da BIOS scph5501.bin. Importe sua BIOS legalmente obtida antes de iniciar esta ROM.");
       return;
     }
@@ -2455,6 +2696,7 @@ async function bootEmulator(file) {
     romStatus.textContent = "Emulador em execucao";
     hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
+    oakBitReact("emulator-ready");
     activeSessionStartedAt = Date.now();
     if (screenBadge) {
       setSessionBadgeText("Sessao ativa");
@@ -2482,6 +2724,7 @@ async function bootEmulator(file) {
       romStatus.textContent = "Core carregado";
       hudMode.textContent = "Iniciando ROM";
       setEmulationReady(true);
+      oakBitSay("Core carregado. Iniciando ROM.", "thinking");
       if (screenBadge) {
         setSessionBadgeText("Inicializacao iniciada");
       }
@@ -2573,11 +2816,34 @@ if (dockFullscreen && emulatorRuntime) {
 
 document.addEventListener("fullscreenchange", () => {
   syncPokedexFullscreenHost();
+  syncOakBitFullscreenHost();
+  if (document.fullscreenElement) {
+    oakBitSay("Tela cheia ativada. Bom jogo.", "happy", 2800);
+  }
   if (!document.fullscreenElement && document.body.classList.contains("is-pokedex-open")) {
     setPokedexOpen(false);
   }
   syncDockState();
   window.setTimeout(() => syncRuntimeViewport(), 60);
+});
+
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) {
+    return;
+  }
+
+  const data = event.data || {};
+  if (data.source !== "oakrom-pokedex" || !data.eventName) {
+    return;
+  }
+
+  oakBitReact(data.eventName, data.detail || {});
+  if (data.eventName === "pokedex-cry") {
+    window.OakMascot?.spark?.();
+  }
+  if (data.eventName === "voice-end" || data.eventName === "voice-error") {
+    window.OakMascot?.listen?.(false);
+  }
 });
 
 window.addEventListener("orientationchange", () => {
@@ -2609,6 +2875,7 @@ if (saveImportInput) {
 
       if (!actionSucceeded && !openEmulatorHiddenFileInput("import-save")) {
         showRuntimeHint("Nao consegui importar esse save agora.");
+        oakBitReact("save-error");
       }
     } else {
       saveSessionMeta({
@@ -2669,6 +2936,8 @@ if (sessionExportSaveButton) {
     );
 
     if (ok) {
+      oakBitReact("save-exported");
+      window.OakMascot?.spark?.();
       saveSessionMeta({
         lastSaveAction: `Save exportado de ${formatRomTitle(romFileName?.textContent || "ROM atual")}`,
         lastSaveAt: Date.now(),
@@ -2682,6 +2951,7 @@ if (sessionImportSaveButton) {
   sessionImportSaveButton.addEventListener("click", () => {
     if (!document.body.classList.contains("has-rom")) {
       showRuntimeHint("Carregue uma ROM antes de importar um save.");
+      oakBitSay("Carregue uma ROM antes de importar.", "alert", 2800);
       return;
     }
 
@@ -2699,8 +2969,10 @@ if (sessionSaveList) {
         await deleteStoredSave(deleteButton.dataset.deleteSave);
         await renderStoredSaves();
         showRuntimeHint("Save removido da sessao local.");
+        oakBitReact("save-removed");
       } catch (error) {
         showRuntimeHint("Nao consegui excluir esse save local.");
+        oakBitReact("save-error");
       }
       return;
     }
@@ -2712,12 +2984,14 @@ if (sessionSaveList) {
     const entry = await getStoredSave(loadButton.dataset.loadSave);
     if (!entry?.file) {
       showRuntimeHint("Nao consegui abrir esse save salvo localmente.");
+      oakBitReact("save-error");
       return;
     }
 
     const imported = importSaveFileIntoEmulator(entry.file);
     if (!imported) {
       showRuntimeHint("Nao consegui carregar esse save no emulador.");
+      oakBitReact("save-error");
       return;
     }
 
@@ -2725,6 +2999,8 @@ if (sessionSaveList) {
       lastSaveAction: `Save reaplicado: ${entry.name}`,
       lastSaveAt: Date.now(),
     });
+    oakBitReact("save-loaded");
+    window.OakMascot?.spark?.();
     syncSessionInsights();
   });
 }
@@ -2778,19 +3054,23 @@ if (integratedDexVoiceButton) {
 
     integratedDexVoiceRecognition.addEventListener("start", () => {
       setIntegratedDexVoiceButtonState(true, true);
+      oakBitReact("voice-listening");
     });
 
     integratedDexVoiceRecognition.addEventListener("end", () => {
       setIntegratedDexVoiceButtonState(false, true);
+      window.OakMascot?.listen?.(false);
     });
 
     integratedDexVoiceRecognition.addEventListener("result", (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript?.trim() ?? "";
+      oakBitSay("Comando recebido.", "happy", 2200);
       handleIntegratedDexVoiceCommand(transcript);
     });
 
     integratedDexVoiceRecognition.addEventListener("error", () => {
       setIntegratedDexVoiceButtonState(false, true);
+      window.OakMascot?.listen?.(false);
     });
 
     integratedDexVoiceButton.addEventListener("click", () => {
@@ -2848,6 +3128,8 @@ if (romLibraryList) {
         });
         await loadRomLibrary();
         syncSessionInsights();
+        oakBitReact("favorite");
+        window.OakMascot?.spark?.();
       } catch (error) {
         showRuntimeHint("Nao consegui atualizar essa favorita.");
       }
@@ -2875,6 +3157,7 @@ if (recentRomList) {
 
     try {
       await launchLibraryRom(launchButton.dataset.romLaunch);
+      oakBitReact("session-restored");
     } catch (error) {
       showRuntimeError("Nao consegui retomar essa ROM do historico local.");
     }
@@ -2891,6 +3174,7 @@ if (sessionResumeHero) {
 
     try {
       await launchLibraryRom(launchButton.dataset.romLaunch);
+      oakBitReact("session-restored");
     } catch (error) {
       showRuntimeError("Nao consegui retomar essa ROM do topo da sessao.");
     }
@@ -2905,6 +3189,7 @@ if (clearLastRomButton) {
     renderRomLibrary();
     renderRecentRoms();
     romStatus.textContent = "Historico limpo";
+    oakBitReact("history-cleared");
     syncSessionSummary();
   });
 }
@@ -2981,7 +3266,15 @@ setPokedexAvailable(false);
 syncDockState();
 await loadRomLibrary();
 const routeDefaultRomId = window.OAK_DEFAULT_ROM_ID || getRouteDefaultRomId();
-const autoBootRomId = window.OAK_AUTO_BOOT_ROM_ID || getRouteLocalRomId() || getLinkedDefaultRomId(routeDefaultRomId);
+if (routeDefaultRomId) {
+  renderControlPreset(getRomSystem({ name: `${routeDefaultRomId}.gba` }));
+}
+const linkedDefaultRomId = getLinkedDefaultRomId(routeDefaultRomId);
+const fallbackDefaultRom = !linkedDefaultRomId ? findSavedRomForDefault(routeDefaultRomId) : null;
+if (fallbackDefaultRom?.id) {
+  saveDefaultRomLink(routeDefaultRomId, fallbackDefaultRom.id);
+}
+const autoBootRomId = window.OAK_AUTO_BOOT_ROM_ID || getRouteLocalRomId() || linkedDefaultRomId || fallbackDefaultRom?.id || "";
 if (autoBootRomId) {
   try {
     await launchLibraryRom(autoBootRomId);

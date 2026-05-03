@@ -24,6 +24,8 @@ const fullscreenButton = document.querySelector("#dock-fullscreen");
 const pokedexButton = document.querySelector("#pokedex-toggle");
 const ps1BiosAlert = document.querySelector("#ps1-bios-alert");
 const biosImportLabel = document.querySelector("#bios-import-label");
+const focusMenuToggle = document.querySelector("#rom-focus-menu-toggle");
+const focusMenuStorageKey = "oakromRomFocusMenu";
 
 const locale = getLocale();
 setLocale(locale);
@@ -130,6 +132,33 @@ function applyText(rom) {
 
 const rom = await resolveRom();
 applyText(rom || DEFAULT_ROMS[0]);
+
+function applyFocusMenuState(isOpen) {
+  document.body.classList.toggle("is-rom-menu-open", isOpen);
+  document.body.classList.toggle("is-rom-focus-mode", !isOpen);
+
+  if (focusMenuToggle) {
+    focusMenuToggle.setAttribute("aria-expanded", String(isOpen));
+    focusMenuToggle.textContent = isOpen
+      ? (locale === "pt" ? "Ocultar menu" : "Hide menu")
+      : "Menu";
+  }
+
+  window.OakMascot?.refreshLocale?.();
+}
+
+if (focusMenuToggle) {
+  const storedFocusMenuState = localStorage.getItem(focusMenuStorageKey);
+  const startsOpen = storedFocusMenuState === "open";
+
+  applyFocusMenuState(startsOpen);
+
+  focusMenuToggle.addEventListener("click", () => {
+    const nextOpenState = !document.body.classList.contains("is-rom-menu-open");
+    localStorage.setItem(focusMenuStorageKey, nextOpenState ? "open" : "closed");
+    applyFocusMenuState(nextOpenState);
+  });
+}
 
 if (rom?.type === "local") {
   window.OAK_AUTO_BOOT_ROM_ID = rom.id;

@@ -341,9 +341,9 @@ body.emulator-page {
 .session-hud {
   display: block;
   margin-bottom: 18px;
-  padding: 14px 18px;
+  padding: 14px;
   border: 1px solid rgba(148, 205, 255, 0.14);
-  border-radius: 20px;
+  border-radius: 18px;
   background:
     radial-gradient(circle at top right, rgba(78, 242, 194, 0.08), transparent 24%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
@@ -355,9 +355,9 @@ body.emulator-page {
 
 .session-hud-main {
   display: grid;
-  grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.15fr) minmax(260px, 0.8fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(260px, 0.78fr) minmax(260px, 0.82fr);
   align-items: stretch;
-  gap: 14px;
+  gap: 12px;
 }
 
 .session-hud-panel {
@@ -365,9 +365,9 @@ body.emulator-page {
   align-content: start;
   gap: 10px;
   min-width: 0;
-  padding: 16px 18px;
+  padding: 14px 16px;
   border: 1px solid rgba(160, 212, 255, 0.1);
-  border-radius: 18px;
+  border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
     rgba(8, 14, 28, 0.48);
@@ -645,6 +645,13 @@ body.emulator-page {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 205, 255, 0.12);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(7, 12, 25, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .player-header-copy {
@@ -2143,7 +2150,13 @@ body.emulator-page {
   align-items: center;
   gap: 16px;
   margin-bottom: 12px;
-  padding: 0 2px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 205, 255, 0.12);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.014)),
+    rgba(7, 12, 25, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .player-header h2,
@@ -2633,7 +2646,7 @@ body.emulator-page {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-.emulator-page.is-pokedex-open .emulator-pokedex-shell {
+.emulator-page.is-pokedex-opening .emulator-pokedex-shell {
   animation: pokedex-panel-in 280ms ease both;
 }
 
@@ -2703,6 +2716,7 @@ body.emulator-page {
 }
 
 .emulator-pokedex-embed {
+  position: relative;
   min-height: 0;
   height: 100%;
   border-radius: 24px;
@@ -2712,6 +2726,23 @@ body.emulator-page {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 24px 52px rgba(2, 8, 22, 0.24);
+}
+
+.integrated-dex-scan {
+  position: absolute;
+  top: -18%;
+  left: -12%;
+  right: -12%;
+  height: 22%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-90%) skewY(-4deg);
+  background:
+    linear-gradient(180deg, transparent, rgba(109, 255, 220, 0.22), transparent),
+    linear-gradient(90deg, transparent, rgba(199, 247, 255, 0.28), transparent);
+  filter: blur(0.2px);
+  mix-blend-mode: screen;
 }
 
 .emulator-pokedex-frame {

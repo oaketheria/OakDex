@@ -1,6 +1,7 @@
 .rom-detail-page {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background:
     radial-gradient(circle at 18% 12%, rgba(255, 237, 101, 0.14), transparent 24%),
     radial-gradient(circle at 86% 18%, rgba(0, 96, 255, 0.16), transparent 26%),
@@ -21,7 +22,7 @@
   max-width: none;
   min-height: 100dvh;
   margin: 0;
-  padding: 16px;
+  padding: 18px;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
@@ -65,18 +66,63 @@
   z-index: 1;
 }
 
+.rom-focus-menu-toggle {
+  position: fixed;
+  top: 72px;
+  left: 18px;
+  z-index: 80;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  min-width: 84px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 237, 101, 0.28);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 237, 101, 0.16), rgba(255, 237, 101, 0.05)),
+    rgba(7, 10, 20, 0.82);
+  color: #fff7b3;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(255, 237, 101, 0.1);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.rom-focus-menu-toggle:hover,
+.rom-focus-menu-toggle:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 237, 101, 0.58);
+  outline: none;
+}
+
 .rom-page-topbar {
   display: grid;
-  grid-template-columns: minmax(160px, 0.8fr) minmax(0, 1.4fr) minmax(180px, 0.8fr);
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.36fr) minmax(220px, 0.72fr);
   align-items: center;
-  gap: 14px;
-  width: min(1800px, 100%);
-  margin: 0 auto 14px;
-  padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(14px);
+  gap: 18px;
+  width: min(1540px, 100%);
+  margin: 0 auto 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(169, 218, 255, 0.14);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(17, 26, 44, 0.78), rgba(5, 9, 18, 0.7)),
+    rgba(0, 0, 0, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 44px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(18px);
 }
 
 .rom-back-link {
@@ -156,7 +202,7 @@
   overflow: hidden;
   color: #ffed65;
   font-family: "Orbitron", sans-serif;
-  font-size: clamp(1.2rem, 3vw, 2rem);
+  font-size: clamp(1.32rem, 2.4vw, 2.3rem);
   line-height: 1.1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -176,30 +222,37 @@
 
 .rom-player-layout {
   display: grid;
-  grid-template-columns: 270px minmax(0, 1fr);
-  gap: 16px;
-  width: min(1800px, 100%);
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 18px;
+  width: min(1540px, 100%);
   margin: 0 auto;
+  align-items: start;
 }
 
 .rom-controls-panel {
   display: grid;
   align-content: start;
-  gap: 14px;
+  gap: 12px;
+  position: sticky;
+  top: 18px;
 }
 
 .rom-side-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.36);
+  border: 1px solid rgba(169, 218, 255, 0.12);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(17, 26, 44, 0.72), rgba(5, 9, 18, 0.66)),
+    rgba(0, 0, 0, 0.28);
   padding: 14px;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
 }
 
 .rom-control-list {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   margin-top: 12px;
 }
 
@@ -208,11 +261,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 38px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid rgba(169, 218, 255, 0.09);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
 }
 
 .rom-control-list span,
@@ -221,11 +274,13 @@
 }
 
 .rom-control-list kbd {
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.12);
+  min-width: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.11);
   padding: 4px 8px;
   color: #fff;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: center;
 }
 
 .rom-side-actions {
@@ -240,45 +295,180 @@
 }
 
 .rom-player-stage {
-  min-height: calc(100dvh - 112px);
+  min-height: calc(100dvh - 124px);
+  gap: 14px;
 }
 
 .rom-upload-strip {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(150px, 1fr) auto minmax(140px, 0.75fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(169, 218, 255, 0.11);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(17, 26, 44, 0.58), rgba(5, 9, 18, 0.48)),
+    rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
 }
 
 .rom-upload-strip .hud-upload-native-input {
-  max-width: 260px;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .rom-upload-strip #hud-mode {
+  justify-self: end;
+  min-height: 32px;
+  max-width: 210px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 237, 101, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 237, 101, 0.06);
   color: rgba(245, 247, 255, 0.58);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rom-detail-page .emulator-runtime,
 .rom-detail-page .emulator-loading,
 .rom-detail-page .emulator-error {
-  min-height: min(72dvh, 760px);
+  min-height: min(68dvh, 720px);
+}
+
+.rom-detail-page .player-header {
+  padding: 12px 14px;
+  border: 1px solid rgba(169, 218, 255, 0.12);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(17, 26, 44, 0.62), rgba(5, 9, 18, 0.5)),
+    rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.rom-detail-page .player-header-actions {
+  max-width: none;
+}
+
+.rom-detail-page .runtime-stage {
+  display: grid;
+  justify-items: center;
+}
+
+.rom-detail-page .emulator-runtime {
+  width: min(1080px, 100%);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(169, 218, 255, 0.1),
+    0 26px 70px rgba(0, 0, 0, 0.5);
 }
 
 .rom-detail-page .screen-center-copy {
   top: 50%;
+  width: min(360px, calc(100% - 32px));
+  padding: 18px;
+  border: 1px solid rgba(169, 218, 255, 0.14);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(17, 26, 44, 0.78), rgba(5, 9, 18, 0.68)),
+    rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(14px);
+}
+
+.rom-detail-page.is-rom-focus-mode .rom-page-topbar,
+.rom-detail-page.is-rom-focus-mode .rom-controls-panel,
+.rom-detail-page.is-rom-focus-mode .player-header,
+.rom-detail-page.is-rom-focus-mode .rom-upload-strip {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.rom-detail-page.is-rom-focus-mode .rom-page-topbar {
+  max-height: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  transform: translateY(-12px);
+}
+
+.rom-detail-page.is-rom-focus-mode .rom-player-layout {
+  grid-template-columns: minmax(0, 1fr);
+  width: min(1220px, 100%);
+}
+
+.rom-detail-page.is-rom-focus-mode .rom-controls-panel {
+  position: fixed;
+  left: 18px;
+  top: 126px;
+  width: min(280px, calc(100vw - 36px));
+  transform: translateX(-120%);
+}
+
+.rom-detail-page.is-rom-focus-mode .rom-player-stage {
+  min-height: calc(100dvh - 36px);
+}
+
+.rom-detail-page.is-rom-focus-mode .player-header,
+.rom-detail-page.is-rom-focus-mode .rom-upload-strip {
+  max-height: 0;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  overflow: hidden;
+  transform: translateY(-8px);
+}
+
+.rom-detail-page.is-rom-focus-mode .emulator-runtime,
+.rom-detail-page.is-rom-focus-mode .emulator-loading,
+.rom-detail-page.is-rom-focus-mode .emulator-error {
+  width: min(1180px, 100%);
+  min-height: min(82dvh, 780px);
+}
+
+.rom-detail-page.is-rom-menu-open .rom-page-topbar,
+.rom-detail-page.is-rom-menu-open .rom-controls-panel,
+.rom-detail-page.is-rom-menu-open .player-header,
+.rom-detail-page.is-rom-menu-open .rom-upload-strip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.rom-page-topbar,
+.rom-controls-panel,
+.player-header,
+.rom-upload-strip,
+.rom-player-layout,
+.rom-player-stage,
+.rom-detail-page .emulator-runtime {
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease,
+    max-height 220ms ease,
+    margin 220ms ease,
+    padding 220ms ease,
+    width 220ms ease,
+    min-height 220ms ease;
 }
 
 @media (max-width: 1100px) {
-  .rom-detail-page {
-    overflow: auto;
-  }
-
   .rom-page-topbar,
   .rom-player-layout {
     grid-template-columns: 1fr;
+  }
+
+  .rom-controls-panel {
+    position: static;
+  }
+
+  .rom-focus-menu-toggle {
+    top: 64px;
+    left: 12px;
   }
 
   .rom-page-title,
@@ -297,6 +487,17 @@
   .rom-player-stage {
     min-height: auto;
   }
+
+  .rom-upload-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rom-upload-strip #hud-mode,
+  .rom-upload-strip .ps1-bios-alert {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+    max-width: none;
+  }
 }
 
 @media (max-width: 640px) {
@@ -306,10 +507,16 @@
 
   .rom-upload-strip {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .rom-upload-strip .hud-upload-native-input {
     max-width: 100%;
+  }
+
+  .rom-detail-page.is-rom-focus-mode .emulator-runtime,
+  .rom-detail-page.is-rom-focus-mode .emulator-loading,
+  .rom-detail-page.is-rom-focus-mode .emulator-error {
+    min-height: min(70dvh, 620px);
   }
 }
