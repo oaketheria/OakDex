@@ -575,6 +575,22 @@ async function translateTextToPortuguese(text) {
   return translationCache.get(cleanedText);
 }
 
+function requestParentNarration(pokemonName, text) {
+  if (!IS_EMBED || !window.parent || window.parent === window) {
+    return false;
+  }
+
+  window.parent.postMessage({
+    source: "oakrom-pokedex",
+    eventName: "pokedex-narrate-lore",
+    detail: {
+      pokemon: pokemonName,
+      text: normalizeNarrationText(text),
+    },
+  }, window.location.origin);
+  return true;
+}
+
 function setNarrationButtonState(status, label = "") {
   const narrationButton = elements.detailCard.querySelector("[data-narrate-button]");
   elements.mainLens?.classList.remove("is-narrating", "is-speaking");
@@ -704,6 +720,12 @@ async function handleLoreNarration(pokemonName, englishFlavorText) {
 
   try {
     const translatedText = await translateTextToPortuguese(englishFlavorText);
+
+    if (requestParentNarration(pokemonName, translatedText)) {
+      setNarrationButtonState("playing", "Narrando");
+      window.setTimeout(() => setNarrationButtonState("idle"), Math.max(2400, translatedText.length * 70));
+      return;
+    }
 
     if (!isLocalNarrationMode()) {
       await speakWithBrowserVoice(translatedText, cacheKey);
