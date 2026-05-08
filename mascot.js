@@ -12,6 +12,7 @@ const OAKBIT_ENERGY_KEY = "oakbitEnergy";
 const OAKBIT_CONTEXT_KEY = "oakbitContext";
 const OAKBIT_TUTORIAL_DONE_KEY = "oakbitTutorialDone";
 const LOCALE_KEY = "oak-rom-locale";
+const OAKBIT_DISABLED_IN_DUO = new URLSearchParams(window.location.search).get("duo") === "1";
 
 const REPEAT_WINDOW_MS = 5200;
 const EVENT_REPEAT_WINDOW_MS = 1800;
@@ -22,7 +23,7 @@ const DEFAULT_LINES = {
     idle: "OakBit online.",
     happy: "Biblioteca pronta.",
     thinking: "Escaneando biblioteca...",
-    alert: "Atencao ao modulo.",
+    alert: "Atenção ao módulo.",
     sleepy: "Modo descanso ativado.",
   },
   en: {
@@ -43,43 +44,43 @@ const MESSAGE_PRIORITY = {
 
 const EVENT_MESSAGES = {
   "boot-ready": { mood: "happy", priority: "info", pt: "Biblioteca pronta.", en: "Library ready." },
-  "upload-hover": { mood: "happy", priority: "info", pt: "Tenho espaco para mais uma aventura.", en: "I have room for another adventure." },
-  "empty-library": { mood: "thinking", priority: "info", pt: "Sua biblioteca local esta vazia. Vamos adicionar uma ROM?", en: "Your local library is empty. Add a ROM?" },
-  "recent-ready": { mood: "happy", priority: "info", pt: "Seu ultimo jogo esta te esperando.", en: "Your last game is waiting." },
+  "upload-hover": { mood: "happy", priority: "info", pt: "Tenho espaço para mais uma aventura.", en: "I have room for another adventure." },
+  "empty-library": { mood: "thinking", priority: "info", pt: "Sua biblioteca local está vazia. Vamos adicionar uma ROM?", en: "Your local library is empty. Add a ROM?" },
+  "recent-ready": { mood: "happy", priority: "info", pt: "Seu último jogo está te esperando.", en: "Your last game is waiting." },
   "filter-change": { mood: "thinking", priority: "info", pt: "Filtro ajustado. Escaneando capas.", en: "Filter adjusted. Scanning covers." },
   "rom-imported": { mood: "happy", priority: "action", pt: ({ system }) => `${system || "ROM"} identificado.`, en: ({ system }) => `${system || "ROM"} identified.` },
-  "ps1-bios-needed": { mood: "alert", priority: "error", pt: "PS1 precisa de BIOS para ligar esse modulo.", en: "PS1 needs a BIOS to power this module." },
-  "invalid-file": { mood: "alert", priority: "error", pt: "Esse cartucho nao encaixa aqui.", en: "This cartridge does not fit here." },
+  "ps1-bios-needed": { mood: "alert", priority: "error", pt: "PS1 precisa de BIOS para ligar esse módulo.", en: "PS1 needs a BIOS to power this module." },
+  "invalid-file": { mood: "alert", priority: "error", pt: "Esse cartucho não encaixa aqui.", en: "This cartridge does not fit here." },
   "emulator-loading": { mood: "thinking", priority: "action", pt: "Conectando cabos...", en: "Connecting cables..." },
   "emulator-ready": { mood: "happy", priority: "action", pt: "Sistema online.", en: "System online." },
-  "emulator-core-error": { mood: "alert", priority: "error", pt: "Core nao respondeu.", en: "Core did not respond." },
-  "pokedex-available": { mood: "happy", priority: "info", pt: "Pokedex disponivel.", en: "Pokedex available." },
+  "emulator-core-error": { mood: "alert", priority: "error", pt: "Core não respondeu.", en: "Core did not respond." },
+  "pokedex-available": { mood: "happy", priority: "info", pt: "Pokédex disponível.", en: "Pokedex available." },
   "pokedex-open": { mood: "thinking", priority: "action", pt: "Modo pesquisa ativado.", en: "Research mode enabled." },
   "pokedex-search": { mood: "thinking", priority: "info", pt: "Escaneando dados.", en: "Scanning data." },
   "pokedex-selected": { mood: "happy", priority: "info", pt: ({ pokemon }) => pokemon ? `${pokemon} localizado.` : "Registro localizado.", en: ({ pokemon }) => pokemon ? `${pokemon} located.` : "Record located." },
   "pokedex-not-found": { mood: "alert", priority: "error", pt: "Nada nos arquivos.", en: "Nothing in the files." },
   "pokedex-cry": { mood: "happy", priority: "action", pt: "Sinal sonoro detectado.", en: "Audio signal detected." },
-  "pokedex-cry-missing": { mood: "alert", priority: "error", pt: "Sem audio registrado para esse alvo.", en: "No audio registered for this target." },
+  "pokedex-cry-missing": { mood: "alert", priority: "error", pt: "Sem áudio registrado para esse alvo.", en: "No audio registered for this target." },
   "pokedex-tab": { mood: "thinking", priority: "info", pt: "Mudando painel de dados.", en: "Switching data panel." },
   "pokedex-narration": { mood: "happy", priority: "action", pt: "Narrando registro.", en: "Narrating record." },
   "voice-listening": { mood: "thinking", priority: "action", pt: "Estou ouvindo.", en: "Listening." },
   "voice-result": { mood: "happy", priority: "action", pt: "Comando de voz recebido.", en: "Voice command received." },
-  "voice-error": { mood: "alert", priority: "error", pt: "Nao consegui ouvir o comando.", en: "I could not hear the command." },
+  "voice-error": { mood: "alert", priority: "error", pt: "Não consegui ouvir o comando.", en: "I could not hear the command." },
   "rom-removed": { mood: "alert", priority: "action", pt: "Cartucho removido da estante.", en: "Cartridge removed from the shelf." },
   "cover-updated": { mood: "happy", priority: "action", pt: "Nova capa registrada.", en: "New cover registered." },
   "metadata-updated": { mood: "happy", priority: "action", pt: "Ficha da ROM atualizada.", en: "ROM file updated." },
   "backup-exported": { mood: "happy", priority: "action", pt: "Backup de metadados pronto.", en: "Metadata backup ready." },
   "backup-imported": { mood: "happy", priority: "action", pt: "Biblioteca restaurada.", en: "Library restored." },
-  "cleanup-done": { mood: "alert", priority: "action", pt: "Limpeza concluida.", en: "Cleanup complete." },
+  "cleanup-done": { mood: "alert", priority: "action", pt: "Limpeza concluída.", en: "Cleanup complete." },
   "bulk-imported": { mood: "happy", priority: "action", pt: "Lote catalogado.", en: "Batch cataloged." },
   "save-imported": { mood: "happy", priority: "action", pt: "Save enviado para o core.", en: "Save sent to the core." },
   "save-exported": { mood: "happy", priority: "action", pt: "Save protegido.", en: "Save protected." },
   "save-loaded": { mood: "happy", priority: "action", pt: "Save reaplicado.", en: "Save reapplied." },
   "save-removed": { mood: "alert", priority: "action", pt: "Save removido.", en: "Save removed." },
-  "save-error": { mood: "alert", priority: "error", pt: "Esse save nao encaixou.", en: "This save did not fit." },
-  "session-restored": { mood: "happy", priority: "action", pt: "Sessao restaurada.", en: "Session restored." },
+  "save-error": { mood: "alert", priority: "error", pt: "Esse save não encaixou.", en: "This save did not fit." },
+  "session-restored": { mood: "happy", priority: "action", pt: "Sessão restaurada.", en: "Session restored." },
   "core-menu": { mood: "thinking", priority: "info", pt: "Menu do core aberto.", en: "Core menu opened." },
-  "history-cleared": { mood: "alert", priority: "action", pt: "Historico limpo.", en: "History cleared." },
+  "history-cleared": { mood: "alert", priority: "action", pt: "Histórico limpo.", en: "History cleared." },
   favorite: { mood: "happy", priority: "action", pt: "Favorito registrado.", en: "Favorite registered." },
 };
 
@@ -264,13 +265,13 @@ function getContextLine(kind = "ready") {
 
   if (locale === "pt") {
     if (kind === "loading") {
-      return title ? `Preparando ${title}.` : "Preparando modulo.";
+      return title ? `Preparando ${title}.` : "Preparando módulo.";
     }
     if (kind === "restored") {
-      return title ? `${title} voltou para a bancada.` : "Sessao retomada.";
+      return title ? `${title} voltou para a bancada.` : "Sessão retomada.";
     }
     if (kind === "pokedex" && title) {
-      return `Pokedex pronta para ${title}.`;
+      return `Pokédex pronta para ${title}.`;
     }
     return title ? `${title} online${system ? ` no ${system}` : ""}.` : "Sistema online.";
   }
@@ -620,7 +621,7 @@ function setModelMode(nextMode = "pixel") {
     localStorage.setItem(OAKBIT_MODEL_KEY, modelMode);
     root?.setAttribute("data-model", modelMode);
     updateMenuLabels();
-    say(getLocale() === "pt" ? "Modelo 3D indisponivel agora." : "3D model unavailable right now.", "alert", 2800, "error");
+    say(getLocale() === "pt" ? "Modelo 3D indisponível agora." : "3D model unavailable right now.", "alert", 2800, "error");
     return Promise.resolve();
   }
 
@@ -637,7 +638,7 @@ function setModelMode(nextMode = "pixel") {
       root?.setAttribute("data-model", modelMode);
       window.OakBit3D?.stop?.();
       updateMenuLabels();
-      say(getLocale() === "pt" ? "Modelo 3D indisponivel agora." : "3D model unavailable right now.", "alert", 2800, "error");
+      say(getLocale() === "pt" ? "Modelo 3D indisponível agora." : "3D model unavailable right now.", "alert", 2800, "error");
     });
 }
 
@@ -657,8 +658,9 @@ function getRomFocusToggle() {
 function getSessionAction(action) {
   const selectors = {
     home: "#rom-back-link, .rom-back-link, .emulator-brand",
-    fullscreen: "#dock-fullscreen",
+    fullscreen: "#dock-fullscreen, #oakduo-fullscreen",
     pokedex: "#pokedex-toggle",
+    "pokedex-voice": "#integrated-dex-voice",
     "save-import": "#session-import-save",
     "save-export": "#session-export-save",
   };
@@ -667,7 +669,7 @@ function getSessionAction(action) {
 }
 
 function hasSessionActions() {
-  return Boolean(getSessionAction("home") || getSessionAction("fullscreen") || getSessionAction("pokedex") || getSessionAction("save-import") || getSessionAction("save-export"));
+  return Boolean(getSessionAction("home") || getSessionAction("fullscreen") || getSessionAction("pokedex") || getSessionAction("pokedex-voice") || getSessionAction("save-import") || getSessionAction("save-export"));
 }
 
 function getTutorialSteps() {
@@ -700,19 +702,27 @@ function getTutorialSteps() {
     }
   };
 
-  if (document.body.classList.contains("home-page")) {
-    add(".rom-library-hero", "Home", "Aqui voce escolhe uma capa para abrir a pagina da ROM.", "Home", "Choose a cover here to open a ROM page.");
+  if (document.body.classList.contains("oakduo-page")) {
+    add(".oakduo-room-card", "1. Convide o outro jogador", "Clique em Copiar convite e envie o link. A outra pessoa abre a mesma sala no navegador dela.", "1. Invite the Other Player", "Click Copy invite and send the link. The other person opens the same room in their browser.");
+    add("[data-player-panel='1'] .oakduo-actions", "2. Prepare o Jogador 1", "Clique em Escolher ROM no lado esquerdo. Depois use Assumir controle quando quiser que o teclado controle este emulador.", "2. Prepare Player 1", "Click Choose ROM on the left side. Then use Take control when you want the keyboard to control this emulator.");
+    add("[data-player-panel='2'] .oakduo-actions", "3. Prepare o Jogador 2", "Repita no lado direito se quiser outra ROM ou outra sessão. O botão Assumir controle troca o foco entre os dois emuladores.", "3. Prepare Player 2", "Repeat on the right side if you want another ROM or another session. Take control switches focus between the two emulators.");
+    add("#oakduo-create-offer", "4. Comece a conexão", "Quem vai iniciar clica em Criar oferta. Quando o código aparecer em Seu código, copie e envie para a outra pessoa.", "4. Start the Connection", "The person starting clicks Create offer. When the code appears in Your code, copy it and send it to the other person.");
+    add("#oakduo-accept-offer", "5. Gere a resposta", "No outro navegador, cole a oferta em Recebido e clique em Gerar resposta. Copie o novo código gerado e envie de volta.", "5. Generate the Answer", "In the other browser, paste the offer in Received and click Generate answer. Copy the new generated code and send it back.");
+    add("#oakduo-apply-answer", "6. Conclua e transmita", "No navegador que criou a oferta, cole a resposta em Recebido e clique em Concluir conexão. Depois use Transmitir este lado no emulador que quer compartilhar.", "6. Finish and Stream", "In the browser that created the offer, paste the answer in Received and click Finish connection. Then use Stream this side on the emulator you want to share.");
+    add(".oakduo-stage", "7. Pokédex em tela cheia", "P abre ou fecha a Pokédex integrada. V ativa o comando de voz: diga abrir pokédex, fechar pokédex ou buscar pikachu na pokédex.", "7. Fullscreen Pokedex", "P opens or closes the integrated Pokedex. V starts voice commands: say open pokedex, close pokedex, or search pikachu in pokedex.");
+  } else if (document.body.classList.contains("home-page")) {
+    add(".rom-library-hero", "Home", "Aqui você escolhe uma capa para abrir a página da ROM.", "Home", "Choose a cover here to open a ROM page.");
     add(".home-upload-panel", "Adicionar ROM", "Use este painel para salvar ROMs locais neste navegador.", "Add ROM", "Use this panel to save local ROMs in this browser.");
-    add("#open-library-dashboard", "Gerenciar biblioteca", "Aqui ficam ROMs locais, saves, BIOS, backups e preferencias do OakBit.", "Manage library", "Local ROMs, saves, BIOS, backups, and OakBit settings live here.");
-    add(".library-toolbar-panel", "Filtros", "Busca, sistema, ordenacao e resultados ficam nesta barra compacta.", "Filters", "Search, system, sorting, and results live in this compact bar.");
-    add("#rom-grid", "Biblioteca", "As ROMs salvas e padrao aparecem aqui, organizadas por sistema.", "Library", "Saved and default ROMs appear here, organized by system.");
+    add("#open-library-dashboard", "Gerenciar biblioteca", "Aqui ficam ROMs locais, saves, BIOS, backups e preferências do OakBit.", "Manage library", "Local ROMs, saves, BIOS, backups, and OakBit settings live here.");
+    add(".library-toolbar-panel", "Filtros", "Busca, sistema, ordenação e resultados ficam nesta barra compacta.", "Filters", "Search, system, sorting, and results live in this compact bar.");
+    add("#rom-grid", "Biblioteca", "As ROMs salvas e padrão aparecem aqui, organizadas por sistema.", "Library", "Saved and default ROMs appear here, organized by system.");
   } else {
     add(".rom-page-title", "ROM atual", "Este bloco mostra a ROM aberta e acompanha o novo topo compacto do emulador.", "Current ROM", "This block shows the open ROM and follows the compact emulator header.");
-    add(".rom-page-status", "Status da sessao", "Aqui ficam o estado do emulador e a origem da ROM carregada.", "Session status", "This shows emulator state and where the loaded ROM came from.");
-    add(".rom-player-stage, .player-stage", "Emulador", "Esta e a area principal do jogo. O modo foco deixa tudo mais limpo.", "Emulator", "This is the main game area. Focus mode keeps the screen clean.");
-    add(".player-session-meta", "Sessao", "Esses chips mostram runtime e estado da sessao alinhados com a tela do jogo.", "Session", "These chips show runtime and session state aligned with the game screen.");
-    add(".rom-upload-strip", "ROM local", "Upload e status ficam agrupados acima do player sem ocupar a largura inteira da pagina.", "Local ROM", "Upload and status are grouped above the player without spanning the whole page.");
-    add("#rom-focus-menu-toggle", "Painéis", "O OakBit usa este controle para alternar entre paineis visiveis e foco no jogo.", "Panels", "OakBit uses this control to switch between visible panels and game focus.");
+    add(".rom-page-status", "Status da sessão", "Aqui ficam o estado do emulador e a origem da ROM carregada.", "Session status", "This shows emulator state and where the loaded ROM came from.");
+    add(".rom-player-stage, .player-stage", "Emulador", "Esta é a área principal do jogo. O modo foco deixa tudo mais limpo.", "Emulator", "This is the main game area. Focus mode keeps the screen clean.");
+    add(".player-session-meta", "Sessão", "Esses chips mostram runtime e estado da sessão alinhados com a tela do jogo.", "Session", "These chips show runtime and session state aligned with the game screen.");
+    add(".rom-upload-strip", "ROM local", "Upload e status ficam agrupados acima do player sem ocupar a largura inteira da página.", "Local ROM", "Upload and status are grouped above the player without spanning the whole page.");
+    add("#rom-focus-menu-toggle", "Painéis", "O OakBit usa este controle para alternar entre painéis visíveis e foco no jogo.", "Panels", "OakBit uses this control to switch between visible panels and game focus.");
     add(".rom-controls-panel", "Controles", "Este painel muda conforme o console detectado pela ROM.", "Controls", "This panel changes based on the console detected from the ROM.");
     add("#session-export-save", "Saves", "Importe ou exporte saves locais por estes comandos.", "Saves", "Import or export local saves from these commands.");
   }
@@ -720,7 +730,9 @@ function getTutorialSteps() {
   steps.push({
     selector: ".oakbit-button",
     title: pt ? "OakBit" : "OakBit",
-    copy: pt ? "Tela cheia e Pokedex ficam aqui no mascote, junto com saves, tutorial, skins e opcoes da sessao." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options.",
+    copy: pt
+      ? (document.body.classList.contains("oakduo-page") ? "No OakDuo eu fico fora dos emuladores para ajudar com sala, controle e conexão." : "Tela cheia e Pokédex ficam aqui no mascote, junto com saves, tutorial, skins e opções da sessão.")
+      : (document.body.classList.contains("oakduo-page") ? "In OakDuo I stay outside the emulators to help with room, control, and connection." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options."),
   });
 
   return steps;
@@ -854,7 +866,7 @@ function triggerSessionAction(action) {
     ? {
         home: "Voltando para a Home.",
         fullscreen: "Controle de tela enviado.",
-        pokedex: "Abrindo modulo de pesquisa.",
+        pokedex: "Abrindo módulo de pesquisa.",
         "save-import": "Selecione o save.",
         "save-export": "Exportando save.",
       }
@@ -875,8 +887,8 @@ function updateMenuLabels() {
 
   const locale = getLocale();
   const labels = locale === "pt"
-    ? { mute: "Silenciar", unmute: "Ativar voz", mood: "Humor", hide: "Ocultar", model: "Modelo", home: "Voltar Home", screenMenu: "Mostrar painéis", focus: "Foco no jogo", fullscreen: "Tela cheia", pokedex: "Abrir Pokedex", saveImport: "Importar save", saveExport: "Exportar save" }
-    : { mute: "Mute", unmute: "Enable voice", mood: "Mood", hide: "Hide", model: "Model", home: "Back Home", screenMenu: "Show panels", focus: "Game focus", fullscreen: "Fullscreen", pokedex: "Open Pokedex", saveImport: "Import save", saveExport: "Export save" };
+    ? { mute: "Silenciar", unmute: "Ativar voz", mood: "Humor", hide: "Ocultar", model: "Modelo", home: "Voltar Home", screenMenu: "Mostrar painéis", focus: "Foco no jogo", fullscreen: "Tela cheia", pokedex: "Abrir Pokédex", pokedexVoice: "Voz da Pokédex", saveImport: "Importar save", saveExport: "Exportar save" }
+    : { mute: "Mute", unmute: "Enable voice", mood: "Mood", hide: "Hide", model: "Model", home: "Back Home", screenMenu: "Show panels", focus: "Game focus", fullscreen: "Fullscreen", pokedex: "Open Pokedex", pokedexVoice: "Pokedex voice", saveImport: "Import save", saveExport: "Export save" };
 
   const muteButton = root.querySelector("[data-oakbit-action='mute']");
   const modelButton = root.querySelector("[data-oakbit-action='model']");
@@ -888,6 +900,7 @@ function updateMenuLabels() {
   const homeButton = root.querySelector("[data-oakbit-action='home']");
   const fullscreenButton = root.querySelector("[data-oakbit-action='fullscreen']");
   const pokedexButton = root.querySelector("[data-oakbit-action='pokedex']");
+  const pokedexVoiceButton = root.querySelector("[data-oakbit-action='pokedex-voice']");
   const saveImportButton = root.querySelector("[data-oakbit-action='save-import']");
   const saveExportButton = root.querySelector("[data-oakbit-action='save-export']");
 
@@ -909,6 +922,10 @@ function updateMenuLabels() {
   if (pokedexButton) {
     pokedexButton.hidden = !getSessionAction("pokedex");
     pokedexButton.textContent = labels.pokedex;
+  }
+  if (pokedexVoiceButton) {
+    pokedexVoiceButton.hidden = !getSessionAction("pokedex-voice");
+    pokedexVoiceButton.textContent = labels.pokedexVoice;
   }
   if (saveImportButton) {
     saveImportButton.hidden = !getSessionAction("save-import");
@@ -1006,11 +1023,12 @@ function mount() {
     <button class="oakbit-hide" type="button" aria-label="Ocultar OakBit" title="Ocultar OakBit">x</button>
     <div class="oakbit-menu" aria-label="Controles do OakBit">
       <div class="oakbit-menu-group oakbit-menu-group-session">
-        <span>Sessao</span>
+        <span>Sessão</span>
         <button type="button" data-oakbit-action="home" hidden>Voltar Home</button>
         <button type="button" data-oakbit-action="rom-focus" hidden>Menu da tela</button>
         <button type="button" data-oakbit-action="fullscreen" hidden>Tela cheia</button>
-        <button type="button" data-oakbit-action="pokedex" hidden>Pokedex</button>
+        <button type="button" data-oakbit-action="pokedex" hidden>Pokédex</button>
+        <button type="button" data-oakbit-action="pokedex-voice" hidden>Voz da Pokédex</button>
       </div>
       <div class="oakbit-menu-group oakbit-menu-group-saves">
         <span>Saves</span>
@@ -1084,7 +1102,7 @@ function mount() {
       return;
     }
 
-    if (["home", "fullscreen", "pokedex", "save-import", "save-export"].includes(action)) {
+    if (["home", "fullscreen", "pokedex", "pokedex-voice", "save-import", "save-export"].includes(action)) {
       triggerSessionAction(action);
       return;
     }
@@ -1175,70 +1193,72 @@ function syncFullscreenHost() {
   }
 }
 
-mount();
-document.addEventListener("fullscreenchange", syncFullscreenHost);
-document.addEventListener("click", (event) => {
-  if (!root?.classList.contains("is-menu-open")) {
-    return;
-  }
-
-  if (!root.contains(event.target)) {
-    setMenuOpen(false);
-  }
-});
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    if (tutorialOverlay && !tutorialOverlay.hidden) {
-      stopTutorial(false);
+if (!OAKBIT_DISABLED_IN_DUO) {
+  mount();
+  document.addEventListener("fullscreenchange", syncFullscreenHost);
+  document.addEventListener("click", (event) => {
+    if (!root?.classList.contains("is-menu-open")) {
+      return;
     }
-    setMenuOpen(false);
-    konamiIndex = 0;
-    return;
-  }
 
-  const expectedKey = KONAMI_CODE[konamiIndex];
-  const pressedKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-
-  if (pressedKey === expectedKey) {
-    konamiIndex += 1;
-    if (konamiIndex === KONAMI_CODE.length) {
+    if (!root.contains(event.target)) {
+      setMenuOpen(false);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      if (tutorialOverlay && !tutorialOverlay.hidden) {
+        stopTutorial(false);
+      }
+      setMenuOpen(false);
       konamiIndex = 0;
-      unlockSecretSkin();
+      return;
     }
-    return;
-  }
 
-  konamiIndex = pressedKey === KONAMI_CODE[0] ? 1 : 0;
-});
-window.addEventListener("resize", positionTutorial);
-window.addEventListener("scroll", positionTutorial, true);
+    const expectedKey = KONAMI_CODE[konamiIndex];
+    const pressedKey = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
-window.OakMascot = {
-  say,
-  react,
-  setMood,
-  hide,
-  show,
-  toggle,
-  spark,
-  listen,
-  setMuted,
-  toggleMuted,
-  setSkin,
-  setModelMode,
-  toggleModelMode,
-  addEnergy,
-  setContext,
-  setMode,
-  getSkin,
-  getModelMode,
-  getMode,
-  getEnergy,
-  isHidden,
-  isMuted,
-  isSecretUnlocked,
-  resetPreferences,
-  startTutorial,
-  refreshLocale: updateMenuLabels,
-  syncFullscreenHost,
-};
+    if (pressedKey === expectedKey) {
+      konamiIndex += 1;
+      if (konamiIndex === KONAMI_CODE.length) {
+        konamiIndex = 0;
+        unlockSecretSkin();
+      }
+      return;
+    }
+
+    konamiIndex = pressedKey === KONAMI_CODE[0] ? 1 : 0;
+  });
+  window.addEventListener("resize", positionTutorial);
+  window.addEventListener("scroll", positionTutorial, true);
+
+  window.OakMascot = {
+    say,
+    react,
+    setMood,
+    hide,
+    show,
+    toggle,
+    spark,
+    listen,
+    setMuted,
+    toggleMuted,
+    setSkin,
+    setModelMode,
+    toggleModelMode,
+    addEnergy,
+    setContext,
+    setMode,
+    getSkin,
+    getModelMode,
+    getMode,
+    getEnergy,
+    isHidden,
+    isMuted,
+    isSecretUnlocked,
+    resetPreferences,
+    startTutorial,
+    refreshLocale: updateMenuLabels,
+    syncFullscreenHost,
+  };
+}

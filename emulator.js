@@ -57,6 +57,9 @@ const launcherPanels = [...document.querySelectorAll(".launcher-panel")];
 const pokedexOriginalParent = pokedexPanel?.parentElement || null;
 const pokedexOriginalNextSibling = pokedexPanel?.nextSibling || null;
 const ANIMEJS_ESM_URL = "https://cdn.jsdelivr.net/npm/animejs/+esm";
+const routeParams = new URLSearchParams(window.location.search);
+const isDuoMode = routeParams.get("duo") === "1";
+const duoPlayerId = routeParams.get("player") === "2" ? "2" : "1";
 
 let activeRomUrl = "";
 let activeBiosUrl = "";
@@ -107,6 +110,32 @@ function oakBitSetContext(context) {
 }
 
 window.OakMascot?.setMode?.("emulator");
+
+if (isDuoMode) {
+  document.body.classList.add("is-duo-embed", `is-duo-player-${duoPlayerId}`);
+  if (sessionTitle) {
+    sessionTitle.textContent = `Jogador ${duoPlayerId}`;
+  }
+  if (sessionResumeKicker) {
+    sessionResumeKicker.textContent = "OakDuo";
+  }
+  if (sessionResumeDetail) {
+    sessionResumeDetail.textContent = "Escolha uma ROM para este lado da tela dupla.";
+  }
+}
+
+function postDuoStatus(status, detail = {}) {
+  if (!isDuoMode || window.parent === window) {
+    return;
+  }
+
+  window.parent.postMessage({
+    source: "oakduo-emulator",
+    player: duoPlayerId,
+    status,
+    detail,
+  }, window.location.origin);
+}
 
 function syncOakBitFullscreenHost() {
   window.OakMascot?.syncFullscreenHost?.();
@@ -2302,6 +2331,7 @@ function showRuntimeError(message) {
   romStatus.textContent = "Falha ao iniciar";
   hudMode.textContent = "Falha no boot";
   setEmulationReady(false);
+  postDuoStatus("error", { message });
   syncSessionSummary();
 }
 
@@ -2641,6 +2671,10 @@ async function bootEmulator(file) {
   const runtimeHost = getEmulatorHost();
 
   document.body.classList.add("has-rom", "is-loading-rom");
+  postDuoStatus("loading", {
+    romName: getRomDisplayName(file),
+    system: system.label,
+  });
   emulatorRuntime.classList.remove("is-visible");
   if (emulatorNativeMenu) {
     emulatorNativeMenu.hidden = true;
@@ -2685,7 +2719,7 @@ async function bootEmulator(file) {
   window.EJS_player = "#emulatorjs-player";
   window.EJS_core = system.core;
   window.EJS_pathtodata = EMULATORJS_DATA_PATH;
-  window.EJS_gameName = getRomDisplayName(file);
+  window.EJS_gameName = isDuoMode ? `${getRomDisplayName(file)} - OakDuo P${duoPlayerId}` : getRomDisplayName(file);
   window.EJS_gameUrl = activeRomUrl;
   window.EJS_startOnLoaded = true;
   window.EJS_threads = false;
@@ -2719,6 +2753,10 @@ async function bootEmulator(file) {
     romStatus.textContent = "Emulador em execucao";
     hudMode.textContent = "ROM em execucao";
     setEmulationReady(true);
+    postDuoStatus("running", {
+      romName: getRomDisplayName(file),
+      system: system.label,
+    });
     oakBitReact("emulator-ready");
     activeSessionStartedAt = Date.now();
     if (screenBadge) {
@@ -2747,6 +2785,10 @@ async function bootEmulator(file) {
       romStatus.textContent = "Core carregado";
       hudMode.textContent = "Iniciando ROM";
       setEmulationReady(true);
+      postDuoStatus("booting", {
+        romName: getRomDisplayName(file),
+        system: system.label,
+      });
       oakBitSay("Core carregado. Iniciando ROM.", "thinking");
       if (screenBadge) {
         setSessionBadgeText("Inicializacao iniciada");
@@ -2775,6 +2817,7 @@ if (romInput && romStatus && romFileName) {
       romStatus.textContent = "Sem ROM carregada";
       romFileName.textContent = "Nenhum arquivo selecionado";
       hudMode.textContent = "Aguardando ROM";
+      postDuoStatus("ready");
       setBiosImportVisible(null);
       if (screenBadge) {
         setSessionBadgeText("Pronto para iniciar");
@@ -2794,6 +2837,10 @@ if (romInput && romStatus && romFileName) {
     romStatus.textContent = "ROM pronta para integrar";
     romFileName.textContent = file.name;
     hudMode.textContent = "ROM carregada localmente";
+    postDuoStatus("selected", {
+      romName: file.name,
+      system: getRomSystem(file).label,
+    });
     if (screenBadge) {
       setSessionBadgeText("ROM carregada");
     }
@@ -2872,6 +2919,24 @@ window.addEventListener("message", (event) => {
   }
 
   const data = event.data || {};
+  if (isDuoMode && data.source === "oakduo-shell") {
+    if (data.player && data.player !== duoPlayerId) {
+      return;
+    }
+
+    if (data.action === "open-rom") {
+      romInput?.click();
+      postDuoStatus("choosing");
+    }
+
+    if (data.action === "focus") {
+      window.focus();
+      postDuoStatus("focused");
+    }
+
+    return;
+  }
+
   if (data.source !== "oakrom-pokedex" || !data.eventName) {
     return;
   }
@@ -3304,6 +3369,7 @@ syncLauncherTabs();
 setPokedexAvailable(false);
 syncDockState();
 await loadRomLibrary();
+postDuoStatus("ready");
 const routeDefaultRomId = window.OAK_DEFAULT_ROM_ID || getRouteDefaultRomId();
 if (routeDefaultRomId) {
   renderControlPreset(getRomSystem({ name: `${routeDefaultRomId}.gba` }));

@@ -1,0 +1,1157 @@
+body.oakduo-page {
+  --oakduo-bg: url("./assets/game-over-arcade-bg.png");
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    linear-gradient(180deg, rgba(4, 5, 12, 0.52), rgba(4, 5, 12, 0.88)),
+    var(--oakduo-bg) center / cover fixed no-repeat,
+    #05070b;
+  color: #f5f7ff;
+}
+
+body.oakduo-page .oakbit {
+  right: clamp(16px, 2vw, 28px);
+  bottom: clamp(18px, 2.5vw, 34px);
+}
+
+body.oakduo-page .oakbit-bubble {
+  max-width: 260px;
+}
+
+.oakduo-assist-action {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.oakduo-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, rgba(2, 5, 14, 0.08), rgba(2, 5, 14, 0.42));
+  opacity: 0.7;
+}
+
+.oakduo-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1500px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 10px 0 24px;
+}
+
+.oakduo-topbar,
+.oakduo-hero,
+.oakduo-player,
+.oakduo-session-strip,
+.oakduo-webrtc {
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.84), rgba(4, 8, 18, 0.76)),
+    rgba(2, 5, 14, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 46px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-topbar {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 18px;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.oakduo-brand,
+.oakduo-nav,
+.oakduo-actions,
+.oakduo-room-actions,
+.oakduo-webrtc-actions,
+.oakduo-box-actions {
+  display: flex;
+  align-items: center;
+}
+
+.oakduo-brand {
+  gap: 8px;
+  min-height: 50px;
+  padding: 7px 10px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.84), rgba(4, 8, 18, 0.76)),
+    rgba(2, 5, 14, 0.54);
+  color: inherit;
+  text-decoration: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 46px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-brand-mark {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #f5f7ff;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, #f5f7ff 0 17%, transparent 18%),
+    linear-gradient(#d93545 0 48%, #111827 49% 52%, #f4eadc 53%);
+  box-shadow: 0 0 22px rgba(255, 237, 101, 0.22);
+}
+
+.oakduo-kicker,
+.oakduo-player-kicker {
+  display: block;
+  color: #aeb7ff;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.oakduo-brand strong,
+.oakduo-player h2,
+.oakduo-webrtc h2 {
+  font-family: "Orbitron", sans-serif;
+  letter-spacing: 0;
+}
+
+.oakduo-brand strong {
+  display: block;
+  font-size: 0.98rem;
+}
+
+.oakduo-nav {
+  flex-wrap: wrap;
+  justify-content: center;
+  justify-self: center;
+  gap: 6px;
+  min-height: 50px;
+  padding: 7px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.84), rgba(4, 8, 18, 0.76)),
+    rgba(2, 5, 14, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 46px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-nav a,
+.oakduo-actions button,
+.oakduo-room-actions button,
+.oakduo-webrtc-actions button,
+.oakduo-box-actions button {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  overflow: hidden;
+  border: 1px solid rgba(174, 183, 255, 0.22);
+  border-radius: 7px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(120, 255, 226, 0.06), rgba(255, 237, 101, 0.22), rgba(255, 255, 255, 0.12)) border-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(19, 25, 48, 0.96), rgba(7, 10, 24, 0.94));
+  background-clip: border-box, padding-box, padding-box;
+  color: rgba(245, 247, 255, 0.9);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36),
+    0 8px 18px rgba(0, 0, 0, 0.26);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    filter 180ms ease;
+}
+
+.oakduo-nav a::before,
+.oakduo-actions button::before,
+.oakduo-room-actions button::before,
+.oakduo-webrtc-actions button::before,
+.oakduo-box-actions button::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: 5px;
+  background:
+    linear-gradient(110deg, transparent 0 18%, rgba(255, 255, 255, 0.14) 38%, transparent 58%),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.14), transparent 58%);
+  opacity: 0;
+  transform: translateX(-22%);
+  transition:
+    opacity 220ms ease,
+    transform 360ms ease;
+}
+
+.oakduo-nav a::after,
+.oakduo-actions button::after,
+.oakduo-room-actions button::after,
+.oakduo-webrtc-actions button::after,
+.oakduo-box-actions button::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -2;
+  border-radius: 9px;
+  background:
+    conic-gradient(
+      from 0deg,
+      rgba(255, 255, 255, 0),
+      rgba(185, 255, 242, 0.76),
+      rgba(255, 237, 101, 0.55),
+      rgba(148, 179, 255, 0.5),
+      rgba(255, 255, 255, 0)
+    );
+  opacity: 0.22;
+  filter: blur(7px) saturate(1.35);
+  transform: scale(0.98);
+  transition:
+    opacity 220ms ease,
+    filter 220ms ease,
+    transform 220ms ease;
+}
+
+.oakduo-nav a:hover,
+.oakduo-actions button:hover,
+.oakduo-room-actions button:hover,
+.oakduo-webrtc-actions button:hover,
+.oakduo-box-actions button:hover,
+.oakduo-nav a:focus-visible,
+.oakduo-actions button:focus-visible,
+.oakduo-room-actions button:focus-visible,
+.oakduo-webrtc-actions button:focus-visible,
+.oakduo-box-actions button:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(255, 237, 101, 0.56);
+  color: #fff3a7;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.36),
+    0 0 0 3px rgba(255, 237, 101, 0.09),
+    0 12px 24px rgba(0, 0, 0, 0.36);
+  outline: none;
+}
+
+.oakduo-nav a:hover::before,
+.oakduo-actions button:hover::before,
+.oakduo-room-actions button:hover::before,
+.oakduo-webrtc-actions button:hover::before,
+.oakduo-box-actions button:hover::before,
+.oakduo-nav a:focus-visible::before,
+.oakduo-actions button:focus-visible::before,
+.oakduo-room-actions button:focus-visible::before,
+.oakduo-webrtc-actions button:focus-visible::before,
+.oakduo-box-actions button:focus-visible::before {
+  opacity: 1;
+  transform: translateX(20%);
+}
+
+.oakduo-nav a:hover::after,
+.oakduo-actions button:hover::after,
+.oakduo-room-actions button:hover::after,
+.oakduo-webrtc-actions button:hover::after,
+.oakduo-box-actions button:hover::after,
+.oakduo-nav a:focus-visible::after,
+.oakduo-actions button:focus-visible::after,
+.oakduo-room-actions button:focus-visible::after,
+.oakduo-webrtc-actions button:focus-visible::after,
+.oakduo-box-actions button:focus-visible::after {
+  opacity: 0.62;
+  filter: blur(9px) saturate(1.7);
+  transform: scale(1.03);
+}
+
+.oakduo-nav a:active,
+.oakduo-actions button:active,
+.oakduo-room-actions button:active,
+.oakduo-webrtc-actions button:active,
+.oakduo-box-actions button:active {
+  transform: translateY(0) scale(0.985);
+  filter: brightness(0.95);
+}
+
+.oakduo-main {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.oakduo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.oakduo-hero-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-self: start;
+  width: fit-content;
+  max-width: min(520px, 100%);
+  padding: 7px 9px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.84), rgba(4, 8, 18, 0.76)),
+    rgba(2, 5, 14, 0.54);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 46px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-hero-copy .oakduo-kicker {
+  min-width: max-content;
+  padding-right: 10px;
+  border-right: 1px solid rgba(174, 183, 255, 0.18);
+  font-size: 0.7rem;
+}
+
+.oakduo-hero p,
+.oakduo-room-card p {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.72);
+  line-height: 1.38;
+}
+
+.oakduo-hero p {
+  max-width: 260px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.oakduo-room-card {
+  display: grid;
+  grid-template-columns: max-content max-content max-content;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 6px;
+  justify-self: end;
+  width: fit-content;
+  max-width: min(100%, 760px);
+  min-height: 48px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255, 237, 101, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(14, 18, 35, 0.84), rgba(6, 9, 22, 0.72)),
+    rgba(9, 13, 28, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 26px rgba(0, 0, 0, 0.24);
+}
+
+.oakduo-room-card p {
+  display: none;
+}
+
+.oakduo-room-card span {
+  color: #ffed65;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.oakduo-room-card > strong {
+  color: rgba(245, 247, 255, 0.92);
+  font-size: 0.84rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.oakduo-room-card span strong {
+  font-family: "Orbitron", sans-serif;
+}
+
+.oakduo-room-actions {
+  display: grid;
+  grid-template-columns: repeat(3, max-content);
+  margin-left: auto;
+  gap: 7px;
+}
+
+.oakduo-room-actions button {
+  min-height: 31px;
+  padding-inline: 10px;
+  font-size: 0.68rem;
+}
+
+.oakduo-room-actions button:first-child,
+.oakduo-actions button[data-oakduo-action="stream"],
+#oakduo-accept-offer,
+#oakduo-copy-signal {
+  border-color: rgba(255, 237, 101, 0.38);
+  background:
+    linear-gradient(180deg, rgba(255, 237, 101, 0.2), rgba(255, 185, 80, 0.08)),
+    linear-gradient(180deg, rgba(32, 29, 14, 0.98), rgba(14, 12, 8, 0.94));
+  color: #fff4a9;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 9px 20px rgba(255, 185, 80, 0.09),
+    0 8px 18px rgba(0, 0, 0, 0.24);
+}
+
+#oakduo-new-room {
+  border-color: rgba(67, 219, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(67, 219, 255, 0.13), rgba(63, 125, 255, 0.06)),
+    linear-gradient(180deg, rgba(8, 24, 42, 0.96), rgba(4, 10, 24, 0.92));
+  color: #cdefff;
+}
+
+.oakduo-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.oakduo-player {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 12px;
+}
+
+.oakduo-player.is-active {
+  border-color: rgba(36, 230, 170, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(36, 230, 170, 0.16),
+    0 18px 48px rgba(0, 0, 0, 0.36);
+}
+
+.oakduo-player-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.oakduo-player h2 {
+  margin: 2px 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.oakduo-rom-meta {
+  max-width: min(42vw, 520px);
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: rgba(245, 247, 255, 0.58);
+  font-size: 0.84rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oakduo-status,
+#oakduo-peer-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(36, 230, 170, 0.3);
+  border-radius: 999px;
+  background: rgba(36, 230, 170, 0.1);
+  color: #9dffd9;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.oakduo-frame-wrap {
+  position: relative;
+  min-height: 440px;
+  overflow: hidden;
+  border: 1px solid rgba(174, 183, 255, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    #000;
+  background-size: 24px 24px;
+}
+
+.oakduo-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  border: 0;
+  background: #000;
+}
+
+.oakduo-remote-player-video {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: none;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  object-fit: contain;
+}
+
+.oakduo-player.is-remote-streaming .oakduo-remote-player-video {
+  display: block;
+}
+
+.oakduo-player.is-remote-streaming .oakduo-frame {
+  opacity: 0.12;
+}
+
+.oakduo-actions {
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.oakduo-actions button[data-oakduo-action="focus"] {
+  border-color: rgba(36, 230, 170, 0.62);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 42%),
+    linear-gradient(180deg, #27f0b5, #0e9b77);
+  color: #02110d;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(36, 230, 170, 0.12),
+    0 10px 24px rgba(36, 230, 170, 0.18);
+}
+
+.oakduo-session-strip {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 8px 0;
+  overflow: hidden;
+  text-align: center;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.oakduo-session-strip strong {
+  display: none;
+}
+
+.oakduo-session-strip span:not(.oakduo-session-dot) {
+  display: none;
+}
+
+.oakduo-session-dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #24e6aa;
+  box-shadow: 0 0 18px rgba(36, 230, 170, 0.72);
+}
+
+.oakduo-session-dot::before,
+.oakduo-session-dot::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 1px;
+  height: 240px;
+  background: linear-gradient(180deg, transparent, rgba(36, 230, 170, 0.5), transparent);
+  transform: translateX(-50%);
+}
+
+.oakduo-session-dot::before {
+  bottom: calc(100% + 12px);
+}
+
+.oakduo-session-dot::after {
+  top: calc(100% + 12px);
+}
+
+.oakduo-webrtc {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "head actions"
+    "signals signals";
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.oakduo-webrtc-head {
+  grid-area: head;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 6px 8px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.82), rgba(4, 8, 18, 0.72)),
+    rgba(2, 5, 14, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-webrtc h2 {
+  margin: 2px 0 0;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+#oakduo-peer-status {
+  border-color: rgba(67, 219, 255, 0.3);
+  background: rgba(67, 219, 255, 0.08);
+  color: #cdefff;
+}
+
+.oakduo-webrtc-grid {
+  grid-area: signals;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.oakduo-signal-box {
+  display: grid;
+  grid-template-rows: auto minmax(40px, auto) auto;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.78), rgba(4, 8, 18, 0.68)),
+    rgba(2, 5, 14, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-signal-box span {
+  color: #aeb7ff;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.oakduo-signal-box .oakduo-box-actions {
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.oakduo-signal-box textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 70px;
+  resize: vertical;
+  border: 1px solid rgba(174, 183, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(2, 5, 14, 0.74);
+  color: #f5f7ff;
+  font: 0.8rem/1.42 Consolas, "Courier New", monospace;
+  padding: 10px;
+  outline: none;
+}
+
+.oakduo-signal-box textarea:focus {
+  border-color: rgba(255, 237, 101, 0.38);
+  box-shadow: 0 0 0 3px rgba(255, 237, 101, 0.08);
+}
+
+.oakduo-webrtc-actions {
+  grid-area: actions;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  justify-self: end;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 6px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.78), rgba(4, 8, 18, 0.68)),
+    rgba(2, 5, 14, 0.46);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 10px 24px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.oakduo-signal-box .oakduo-box-actions button,
+.oakduo-webrtc-actions button {
+  min-height: 30px;
+  padding-inline: 10px;
+  font-size: 0.68rem;
+}
+
+.oakduo-pokedex {
+  position: fixed;
+  top: 54px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 40;
+  width: min(980px, calc(100vw - 36px));
+  max-width: calc(100vw - 36px);
+  transform: translateX(calc(100% + 24px));
+  pointer-events: none;
+  transition: transform 260ms ease;
+}
+
+.oakduo-page.is-pokedex-open .oakduo-pokedex {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.oakduo-pokedex::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(174, 183, 255, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(8, 14, 30, 0.92), rgba(3, 7, 18, 0.9)),
+    rgba(2, 5, 14, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 28px 80px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(18px);
+}
+
+.oakduo-pokedex-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 8px;
+  height: 100%;
+  padding: 10px;
+}
+
+.oakduo-pokedex-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.oakduo-pokedex-header h3 {
+  margin: 2px 0 0;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.oakduo-pokedex-header-actions,
+.oakduo-dex-shortcuts {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.oakduo-dex-shortcuts {
+  color: rgba(245, 247, 255, 0.68);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.oakduo-dex-shortcuts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.oakduo-dex-shortcuts kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 20px;
+  padding: 0 6px;
+  border: 1px solid rgba(174, 183, 255, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f7ff;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+}
+
+.oakduo-pokedex-close {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(174, 183, 255, 0.2);
+  border-radius: 7px;
+  background: rgba(9, 13, 28, 0.82);
+  color: rgba(245, 247, 255, 0.88);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.oakduo-pokedex-embed {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(4, 10, 22, 0.72);
+}
+
+.oakduo-dex-scan {
+  position: absolute;
+  top: -18%;
+  left: -12%;
+  right: -12%;
+  z-index: 2;
+  height: 22%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-90%) skewY(-4deg);
+  background:
+    linear-gradient(180deg, transparent, rgba(109, 255, 220, 0.22), transparent),
+    linear-gradient(90deg, transparent, rgba(199, 247, 255, 0.28), transparent);
+  mix-blend-mode: screen;
+}
+
+.oakduo-page.is-pokedex-opening .oakduo-dex-scan {
+  animation: oakduo-dex-scan 620ms ease 120ms both;
+}
+
+.oakduo-pokedex-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #8b1621;
+}
+
+@keyframes oakduo-dex-scan {
+  0% {
+    opacity: 0;
+    transform: translateY(-90%) skewY(-4deg);
+  }
+
+  14% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(560%) skewY(-4deg);
+  }
+}
+
+#oakduo-create-offer {
+  border-color: rgba(36, 230, 170, 0.48);
+  background:
+    linear-gradient(180deg, rgba(36, 230, 170, 0.22), rgba(16, 145, 112, 0.12)),
+    linear-gradient(180deg, rgba(10, 36, 31, 0.98), rgba(4, 17, 14, 0.94));
+  color: #a8ffd9;
+}
+
+#oakduo-apply-answer {
+  border-color: rgba(67, 219, 255, 0.38);
+  background:
+    linear-gradient(180deg, rgba(67, 219, 255, 0.16), rgba(63, 125, 255, 0.08)),
+    linear-gradient(180deg, rgba(8, 24, 42, 0.98), rgba(4, 10, 24, 0.94));
+  color: #cdefff;
+}
+
+#oakduo-stop-screen {
+  border-color: rgba(174, 183, 255, 0.28);
+  color: #eef1ff;
+}
+
+#oakduo-disconnect-peer {
+  border-color: rgba(255, 95, 110, 0.4);
+  background:
+    linear-gradient(180deg, rgba(255, 95, 110, 0.12), rgba(255, 95, 110, 0.04)),
+    linear-gradient(180deg, rgba(38, 13, 22, 0.98), rgba(18, 8, 14, 0.94));
+  color: #ffb0b8;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .oakduo-nav a::after,
+  .oakduo-actions button::after,
+  .oakduo-room-actions button::after,
+  .oakduo-webrtc-actions button::after,
+  .oakduo-box-actions button::after {
+    animation: oakduo-liquid-metal 4200ms linear infinite;
+  }
+
+  .oakduo-actions button[data-oakduo-action="focus"],
+  #oakduo-create-offer {
+    animation: oakduo-button-pulse 2400ms ease-in-out infinite;
+  }
+}
+
+@keyframes oakduo-liquid-metal {
+  0% {
+    transform: scale(0.98) rotate(0deg);
+  }
+
+  50% {
+    transform: scale(1.02) rotate(180deg);
+  }
+
+  100% {
+    transform: scale(0.98) rotate(360deg);
+  }
+}
+
+@keyframes oakduo-button-pulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+      0 8px 18px rgba(0, 0, 0, 0.24);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.24),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+      0 0 0 3px rgba(36, 230, 170, 0.08),
+      0 12px 26px rgba(36, 230, 170, 0.18);
+  }
+}
+
+@media (max-width: 1180px) {
+  .oakduo-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-session-strip {
+    min-height: 18px;
+    flex-direction: row;
+    padding: 0 8px;
+  }
+
+  .oakduo-session-strip strong {
+    display: none;
+  }
+
+  .oakduo-session-dot::before,
+  .oakduo-session-dot::after {
+    top: 50%;
+    width: 42vw;
+    height: 1px;
+    transform: translateY(-50%);
+  }
+
+  .oakduo-session-dot::before {
+    right: calc(100% + 12px);
+    bottom: auto;
+    left: auto;
+  }
+
+  .oakduo-session-dot::after {
+    top: 50%;
+    left: calc(100% + 12px);
+  }
+}
+
+@media (max-width: 780px) {
+  body.oakduo-page {
+    background:
+      linear-gradient(180deg, rgba(4, 5, 12, 0.6), rgba(4, 5, 12, 0.9)),
+      var(--oakduo-bg) center / cover scroll no-repeat,
+      #05070b;
+  }
+
+  .oakduo-shell {
+    width: min(100% - 20px, 1500px);
+    padding-top: 8px;
+  }
+
+  .oakduo-topbar,
+  .oakduo-hero,
+  .oakduo-webrtc-head {
+    align-items: flex-start;
+  }
+
+  .oakduo-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-hero,
+  .oakduo-webrtc-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-webrtc {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "head"
+      "signals"
+      "actions";
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .oakduo-webrtc-head {
+    width: 100%;
+  }
+
+  .oakduo-webrtc-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .oakduo-nav {
+    justify-content: flex-start;
+    justify-self: stretch;
+  }
+
+  .oakduo-hero {
+    padding: 0;
+  }
+
+  .oakduo-brand,
+  .oakduo-nav,
+  .oakduo-hero-copy {
+    width: 100%;
+  }
+
+  .oakduo-hero-copy {
+    flex-wrap: wrap;
+  }
+
+  .oakduo-hero-copy .oakduo-kicker {
+    width: 100%;
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .oakduo-hero p {
+    white-space: normal;
+  }
+
+  .oakduo-room-card {
+    grid-template-columns: 1fr;
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+  }
+
+  .oakduo-room-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .oakduo-frame,
+  .oakduo-frame-wrap {
+    min-height: 330px;
+  }
+
+  .oakduo-rom-meta {
+    max-width: 68vw;
+  }
+}
+
+@media (max-width: 560px) {
+  .oakduo-actions,
+  .oakduo-room-actions,
+  .oakduo-webrtc-actions,
+  .oakduo-box-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .oakduo-room-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-webrtc-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-actions button,
+  .oakduo-room-actions button,
+  .oakduo-webrtc-actions button,
+  .oakduo-box-actions button {
+    width: 100%;
+  }
+}

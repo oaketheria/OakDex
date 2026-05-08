@@ -44,10 +44,38 @@
         <section class="info-page-hero">
           <span>Changelog</span>
           <h1>Patch Notes</h1>
-          <p>Histórico das atualizações recentes do OakRom, incluindo OakBit, Home, página da ROM, tela do emulador, Pokédex integrada, Oak Challenge e melhorias da biblioteca.</p>
+          <p>Histórico das atualizações recentes do OakRom, incluindo OakDuo, OakBit, Home, página da ROM, tela do emulador, Pokédex integrada, Oak Challenge e melhorias da biblioteca.</p>
         </section>
 
         <section class="patch-notes-timeline" aria-label="Histórico de atualizações">
+          <article class="patch-note-card">
+            <div class="patch-note-meta">
+              <span>v1.3.0</span>
+              <strong>OakDuo Assistido</strong>
+            </div>
+            <div class="patch-note-content">
+              <h2>OakDuo mais organizado, com OakBit e Pokédex integrada</h2>
+              <p>O OakDuo recebeu ajustes de interface, novos atalhos e melhorias de sincronização para deixar a experiência em dupla mais clara.</p>
+              <ul>
+                <li>Adicionado OakBit único no canto da página OakDuo, fora dos dois iframes dos emuladores.</li>
+                <li>Atualizado o tutorial do OakBit com passos práticos para convite, escolha de ROM, conexão manual, resposta e transmissão.</li>
+                <li>Adicionada Pokédex integrada ao OakDuo em tela cheia.</li>
+                <li>Adicionados atalhos da Pokédex no OakDuo: <kbd>P</kbd> abre/fecha, <kbd>V</kbd> ativa voz e <kbd>Esc</kbd> fecha.</li>
+                <li>Adicionado comando por voz da Pokédex no OakDuo, com suporte a abrir, fechar e buscar Pokémon.</li>
+                <li>Adicionado som e animação ao abrir a Pokédex integrada no OakDuo.</li>
+                <li>Corrigido o atalho <kbd>P</kbd> para fechar a Pokédex mesmo quando o foco está dentro do iframe da Pokédex.</li>
+                <li>Adicionado botão Nova sala para gerar outro código, atualizar a URL, limpar sinais antigos e desconectar a sessão anterior.</li>
+                <li>Corrigida a opção de tela cheia do OakBit na página OakDuo.</li>
+                <li>Sincronizado o nome da ROM remota para que o lado assistindo também veja a ROM carregada.</li>
+                <li>Reduzida a coluna central entre os emuladores, removendo informações duplicadas.</li>
+                <li>Reorganizada a conexão manual para reduzir cards grandes, espaços vazios e botões excessivos.</li>
+                <li>Centralizada a navegação superior da página OakDuo.</li>
+                <li>Adicionado efeito de metal líquido nos botões da página OakDuo.</li>
+                <li>Corrigidos textos em português, acentos e rótulos visíveis na área do OakDuo e do OakBit.</li>
+              </ul>
+            </div>
+          </article>
+
           <article class="patch-note-card">
             <div class="patch-note-meta">
               <span>v1.2.0</span>
@@ -79,10 +107,10 @@
               <strong>Oak Challenge</strong>
             </div>
             <div class="patch-note-content">
-              <h2>Overlay OBS para Nuzlocke e Hackroms</h2>
+              <h2>Overlay OBS para Nuzlocke e hackroms</h2>
               <p>Oak Challenge ganhou uma experiência dedicada para streamers jogarem ROMs de Pokémon com HUD, time, box, rotas, Pokédex integrada e OakBit.</p>
               <ul>
-                <li>Adicionada página Oak Challenge para runs de Nuzlocke, Hardcore e Hackroms.</li>
+                <li>Adicionada página Oak Challenge para runs de Nuzlocke, Hardcore e hackroms.</li>
                 <li>Adicionado overlay OBS com emulador próprio, HUD de run, badges, mortes, level cap e time na tela.</li>
                 <li>Adicionado limite de 6 Pokémon no time, com envio automático dos excedentes para a box.</li>
                 <li>Adicionado gerenciamento de time e box com sprites, tipos, fraquezas, vantagens e troca de Pokémon pelo overlay.</li>
@@ -92,8 +120,6 @@
                 <li>Atualizada a narração de lore da Pokédex integrada para funcionar dentro do overlay.</li>
                 <li>OakBit agora aparece no overlay OBS, abre a Pokédex integrada e ensina atalhos do Oak Challenge.</li>
                 <li>Adicionado tutorial flutuante do OakBit para explicar runs, time, emulador, overlay e controles de streamer.</li>
-                <li>Atualizado o ícone do Oak Challenge para usar o visual do OakBit.</li>
-                <li>Melhorado o tema visual dos formulários, selects, cards e painéis para reduzir elementos cinza padrão do navegador.</li>
               </ul>
             </div>
           </article>
@@ -179,7 +205,7 @@
               <p>O emulador foi expandido para consoles além do GBA, mantendo arquivos sensíveis no navegador do usuário.</p>
               <ul>
                 <li>Adicionado suporte a GB, GBC, NES, SNES, Mega Drive, Master System, Game Gear, N64 e PS1.</li>
-                <li>Adicionado fluxo local para importar BIOS PS1 scph5501.bin.</li>
+                <li>Adicionado fluxo local para importar BIOS PS1 `scph5501.bin`.</li>
                 <li>Atualizados filtros por sistema e ordenação da biblioteca.</li>
                 <li>Adicionadas proteções para evitar BIOS e ROMs comerciais no repositório.</li>
               </ul>

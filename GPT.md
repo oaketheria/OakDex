@@ -1,6 +1,6 @@
 # GPT.md
 
-## Visão geral
+## Visão Geral
 
 OakRom é um projeto web vanilla com servidor Node.js simples. Ele combina:
 
@@ -10,7 +10,8 @@ OakRom é um projeto web vanilla com servidor Node.js simples. Ele combina:
 - Emulador via EmulatorJS.
 - Página dedicada de ROM.
 - Pokédex integrada ao emulador.
-- Mascote OakBit com menu, tutorial e comportamento contextual.
+- OakDuo com dois emuladores lado a lado e conexão manual WebRTC.
+- Mascote OakBit com menu, tutorial, atalhos e comportamento contextual.
 - Oak Challenge para runs Pokémon/Nuzlocke/Hackroms com overlay OBS.
 
 Não há React, Vue, bundler ou build step.
@@ -25,7 +26,7 @@ Não há React, Vue, bundler ou build step.
 - EmulatorJS via CDN
 - Three.js via CDN apenas para teste do modelo 3D do OakBit
 
-## Como rodar
+## Como Rodar
 
 ```powershell
 cd "C:\Users\os_ap\Documents\New project"
@@ -37,7 +38,7 @@ Servidor padrão:
 - `http://127.0.0.1:5500`
 - `http://localhost:5500`
 
-## Estrutura importante
+## Estrutura Importante
 
 - `index.html`: Home, biblioteca e dashboard.
 - `home-library.js`: lógica da Home, ROMs locais, dashboard, backups e integração com OakBit.
@@ -48,20 +49,23 @@ Servidor padrão:
 - `emulator.html`: tela completa do emulador antigo/launcher.
 - `emulator.js`: boot do EmulatorJS, biblioteca local, fullscreen, saves, Pokédex integrada e eventos do OakBit.
 - `emulator.css`: layout do emulador e Pokédex integrada.
+- `oakduo.html`: tela OakDuo com dois emuladores, sala, conexão manual, OakBit e Pokédex integrada.
+- `oakduo.js`: lógica de sala, troca de controle, WebRTC, transmissão, nova sala, Pokédex integrada e sincronização de ROM remota.
+- `oakduo.css`: layout do OakDuo, botões, separador central, conexão manual e overlay da Pokédex.
 - `oak-challenge.html`: página de runs Pokémon, modo streamer, emulador Challenge e overlay OBS.
 - `oak-challenge.js`: lógica de runs, time/box, PokeAPI, rotas, overlay OBS, EmulatorJS direto no overlay e Pokédex integrada.
 - `oak-challenge.css`: layout do Oak Challenge, HUD de streamer, overlay OBS, painéis e tutorial.
 - `pokedex.html`: Pokédex principal e modo embed.
-- `app.js`: lógica da Pokédex, busca, voz, cries e postMessage para o emulador.
+- `app.js`: lógica da Pokédex, busca, voz, cries e `postMessage`.
 - `pokedex.css`: visual da Pokédex e overrides do modo embed.
-- `mascot.js`: OakBit, menu, tutorial, energia, modos, skins e eventos.
+- `mascot.js`: OakBit, menu, tutorial, energia, modos, skins, eventos e ações contextuais.
 - `mascot.css`: visual do OakBit e tutorial flutuante.
 - `mascot-3d.js`: teste 3D procedural com Three.js.
 - `roms.js`: utilitários compartilhados de ROMs, sistemas, IndexedDB, saves e BIOS.
 - `info-pages.js`: textos dinâmicos e tradução BR/US das páginas informativas.
 - `server.js`: servidor estático e endpoints auxiliares.
 
-## Regra obrigatória antes de GitHub
+## Regra Obrigatória Antes de GitHub
 
 Sempre que o usuário pedir commit, push ou publicação no GitHub, ler e seguir `GITHUB_CHECKLIST.md` antes de executar `git add`, `git commit` ou `git push`.
 
@@ -81,30 +85,32 @@ Conferir:
 git status --short --ignored
 ```
 
-## Home e biblioteca
+## OakDuo
 
-A Home atual possui:
+OakDuo fica em `oakduo.html` e usa dois `emulator.html?duo=1&player=<n>` dentro de iframes.
 
-- intro retro exibida uma vez por sessão;
-- fundo arcade neon em imagem, sem o overlay antigo de Pac-Man/grid;
-- área de adicionar ROM;
-- jogados recentes;
-- biblioteca por console;
-- capas padronizadas;
-- filtros, busca e ordenação;
-- barra de filtros reorganizada para melhor leitura em desktop;
-- dashboard local.
+Funcionalidades:
 
-O dashboard possui abas:
+- Dois emuladores lado a lado.
+- Cada emulador tem ações próprias: escolher ROM, assumir controle e transmitir este lado.
+- Separador central fino, sem informações duplicadas.
+- Card de sala com código, jogador no controle, nova sala, copiar convite e tela cheia.
+- Botão `Nova sala` gera outro código, atualiza a URL, limpa códigos WebRTC antigos e desconecta a sessão anterior.
+- Conexão manual por WebRTC usando oferta, resposta e conclusão de conexão.
+- Transmissão do lado escolhido por `captureStream`.
+- Sincronização do status e nome da ROM remota entre navegadores.
+- OakBit único no canto da página, fora dos iframes.
+- OakBit controla tela cheia, Pokédex integrada e voz da Pokédex.
+- Pokédex integrada abre em tela cheia com `P`, fecha com `P` ou `Esc`, e usa `V` para voz.
+- O atalho `P` também funciona quando o foco está dentro do iframe da Pokédex.
+- Abertura da Pokédex tem som curto e animação.
 
-- ROMs
-- Saves
-- BIOS
-- Backup
-- OakBit
-- Limpeza
+Observações técnicas:
 
-A aba OakBit mostra estado, voz, modelo, modo, energia, skin e skin secreta. Também permite ocultar, silenciar, trocar skin, forçar Pixel, abrir tutorial e resetar preferências.
+- O código da sala é visual e usado no convite; não é uma sala persistida em servidor.
+- A conexão real depende dos códigos WebRTC manuais.
+- Se a conexão cair, normalmente é preciso refazer oferta, resposta e conclusão.
+- `mascot.js` não monta OakBit dentro dos iframes `duo=1`; o OakBit fica apenas na página OakDuo.
 
 ## Emulador e ROM
 
@@ -112,15 +118,15 @@ A página dedicada da ROM (`rom.html`) é o fluxo principal atual para jogar.
 
 Funcionalidades:
 
-- topo e ações em blocos compactos para evitar barras vazias grandes;
-- menu da tela controlado pelo OakBit;
-- fullscreen;
-- Pokédex integrada;
-- controles atualizados por console/core;
-- retomada automática de ROM local depois do F5 quando existe vínculo salvo;
-- importação/exportação de saves;
-- PS1 com BIOS local `scph5501.bin`; botões/inputs de BIOS devem ficar ocultos em ROMs que não sejam PS1;
-- botão de voltar Home no menu do OakBit.
+- Topo e ações em blocos compactos para evitar barras vazias grandes.
+- Menu da tela controlado pelo OakBit.
+- Fullscreen.
+- Pokédex integrada.
+- Controles atualizados por console/core.
+- Retomada automática de ROM local depois do F5 quando existe vínculo salvo.
+- Importação/exportação de saves.
+- PS1 com BIOS local `scph5501.bin`; botões/inputs de BIOS devem ficar ocultos em ROMs que não sejam PS1.
+- Botão de voltar Home no menu do OakBit.
 
 Consoles suportados:
 
@@ -139,20 +145,19 @@ Observações técnicas:
 
 - ROMs, saves e BIOS ficam apenas no navegador do usuário via IndexedDB.
 - O EmulatorJS depende de CDN.
-- O fullscreen usa a UI do projeto.
+- O fullscreen usa a interface do projeto.
 - No fullscreen, OakBit usa Pixel como modo seguro; o modelo 3D fica bloqueado.
 - A Pokédex integrada usa `pokedex.html?embed=1` dentro de iframe.
 
 ## Oak Challenge
 
-Oak Challenge é a área dedicada a runs Pokémon, especialmente Nuzlocke, Hardcore e Hackroms.
+Oak Challenge é a área dedicada a runs Pokémon, especialmente Nuzlocke, Hardcore e hackroms.
 
 Funcionalidades principais:
 
 - Runs com templates: `custom`, `emerald`, `fireRed`, `radicalRed`, `unbound`.
 - Time com limite de `MAX_TEAM_SIZE = 6`; excedentes devem ir para `box`.
-- Cadastro/edição de Pokémon via PokeAPI, preenchendo sprite, tipos e habilidade.
-- Box visível na aba Time, com sprite e ações para mover entre time e box.
+- Cadastro/edição de Pokémon via PokeAPI.
 - Dashboard com encontros, cemitério, badges, notas e timeline.
 - Fraquezas e vantagens calculadas por tipo.
 - Rotas por template para marcar encontros pendentes/capturados.
@@ -161,26 +166,14 @@ Funcionalidades principais:
 Overlay OBS:
 
 - URL: `oak-challenge.html?obs=1&run=<id>`.
-- Usa EmulatorJS diretamente no DOM principal do overlay para preservar menus nativos e configuração de controle.
+- Usa EmulatorJS diretamente no DOM principal do overlay.
 - Evitar chamar `render()` ou recriar `.streamer-scene` quando o emulador estiver ativo no OBS.
 - Para salvar mudanças no OBS, usar `commitRunChange(run, { refreshTeam })` em vez de `upsertRun(run)`.
 - Para atualizar sprites sem reiniciar o emulador, usar `refreshObsTeamOverlay(run)`.
-- Ações como adicionar Pokémon, mover box/time, morte, reset de layout e troca por box não devem recriar `#obs-emulator-player`.
-- Sprites do time usam `layout.x`, `layout.y` e `layout.zoom`; há drag livre, zoom individual e reset geral.
+- Sprites do time usam `layout.x`, `layout.y` e `layout.zoom`.
 - Pokédex integrada abre no overlay via `pokedex.html?embed=1` e atalho `P`.
-- Narração da lore no overlay é feita por `postMessage` da Pokédex embed para o Oak Challenge, que executa `speechSynthesis` no documento pai.
+- Narração da lore no overlay é feita por `postMessage` da Pokédex embed para o Oak Challenge.
 - OakBit aparece no overlay, abre a Pokédex integrada e possui tutorial rápido específico.
-- Fullscreen no overlay pode ser bloqueado pelo navegador; não depender do fullscreen nativo do EmulatorJS para a UI do Oak Challenge.
-- A tela nativa de configuração de controle do EmulatorJS usa `.ejs_control_body input[type="text"]`; no Oak Challenge há override específico para melhorar contraste desses campos no OBS. Evitar CSS amplo dentro do player.
-
-Ao mexer no Oak Challenge, verificar:
-
-- `oak-challenge.html`
-- `oak-challenge.js`
-- `oak-challenge.css`
-- `pokedex.css` se afetar modo embed
-- `app.js` se afetar eventos/narração da Pokédex integrada
-- `mascot.js`/`mascot.css` se afetar OakBit
 
 ## OakBit
 
@@ -189,26 +182,26 @@ OakBit é o mascote assistente do projeto.
 Recursos:
 
 - Menu por categorias: Sessão, Saves e OakBit.
-- Ações contextuais: Voltar Home, Menu da tela, Tela cheia, Pokédex, Importar save, Exportar save.
+- Ações contextuais: Voltar Home, Menu da tela, Tela cheia, Pokédex, Voz da Pokédex, Importar save e Exportar save.
 - Tutorial flutuante contextual.
-- Tutorial da página da ROM deve apontar para blocos visíveis; botões de tela cheia/Pokédex podem existir como DOM oculto e serem acionados pelo OakBit.
-- Tutorial flutuante específico no Oak Challenge acionado pelo menu do OakBit.
+- Tutorial específico para OakDuo com passos reais de convite, ROMs, conexão, transmissão e Pokédex.
+- Tutorial específico no Oak Challenge.
 - Modos: `library`, `emulator`, `pokedex`, `system-alert`.
 - Energia persistente.
 - Memória contextual da sessão.
 - Skins: `normal`, `shiny`, `tech`, `night` e `secret`.
 - Modelo Pixel e modelo 3D experimental.
-- Restore button quando oculto.
+- Botão de restauração quando oculto.
 - Migra para o elemento fullscreen quando necessário.
-- No Oak Challenge OBS, deve permanecer disponível sem bloquear o emulador.
 
 Ao mexer no OakBit, verificar:
 
 - `mascot.js`
 - `mascot.css`
 - `mascot-3d.js`
+- `oakduo.js` se envolver tela cheia, Pokédex ou voz no OakDuo
+- `emulator.js` se envolver emulador/fullscreen/Pokédex
 - `home-library.js` se a mudança aparecer no dashboard
-- `emulator.js` se a mudança depender do emulador/fullscreen/Pokédex
 
 ## Pokédex
 
@@ -218,19 +211,17 @@ A Pokédex principal possui:
 - filtro por tipo;
 - detalhes, stats, moves, forms e lore;
 - sprites animados quando disponíveis;
-- cries quando a PokeAPI fornece audio;
+- cries quando a PokeAPI fornece áudio;
 - comando de voz quando suportado;
-- modo embed para o emulador.
+- modo embed para emulador, OakDuo e Oak Challenge.
 
 No modo embed, `app.js` envia eventos para o parent com `postMessage`, permitindo OakBit reagir a busca, seleção, cry, voz e erros.
 
-No Oak Challenge, a Pokédex embed também envia `pokedex-narrate-lore` para o parent para a narração rodar fora do iframe.
-
-## Páginas informativas
+## Páginas Informativas
 
 - `sobre.html`: visão do projeto.
-- `como-usar.html`: guia atualizado com OakBit, modo foco, dashboard, saves e PS1.
-- `patch-notes.html`: histórico com Oak Challenge, OakBit Assistente, emulador modernizado, dashboard e multi-console.
+- `como-usar.html`: guia atualizado.
+- `patch-notes.html`: histórico com OakDuo, Oak Challenge, OakBit, emulador, dashboard e multi-console.
 
 ## Backend
 
@@ -247,7 +238,7 @@ ElevenLabs local usa:
 
 No deploy, a narração pode cair para voz nativa do navegador.
 
-## Checklist antes de editar
+## Checklist Antes de Editar
 
 ### Home/dashboard
 
@@ -262,8 +253,16 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - Preservar fullscreen e Pokédex integrada.
 - Testar OakBit em fullscreen.
 - Conferir controles por console.
-- Conferir que a importação de BIOS PS1 não aparece em GBA/GB/GBC/NES/SNES/N64/Mega Drive/Master System/Game Gear.
-- Conferir que sair do fullscreen não deixa scroll residual perceptível.
+- Conferir que a importação de BIOS PS1 não aparece em sistemas que não sejam PS1.
+
+### OakDuo
+
+- Verificar `oakduo.html`, `oakduo.js`, `oakduo.css` e `mascot.js`.
+- Preservar os iframes `emulator.html?duo=1&player=1/2`.
+- Não montar OakBit dentro dos iframes duo.
+- Conferir tela cheia, OakBit, Pokédex integrada, `P`, `V`, `Esc` e voz.
+- Conferir sincronização do nome da ROM remota.
+- Conferir que `Nova sala` limpa sinais antigos.
 
 ### Oak Challenge
 
@@ -273,41 +272,31 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - Depois de mudar time/layout no OBS, usar `refreshObsTeamOverlay`.
 - Manter limite de 6 Pokémon no time.
 - Preservar atalho `P` para Pokédex integrada.
-- Testar que a narração da lore funciona no iframe embed.
-- Conferir que o painel de rotas e o reset de sprites não reiniciam o emulador.
-
-### OakBit
-
-- Verificar menu, grupos e labels em `mascot.js`.
-- Conferir z-index e fullscreen em `mascot.css`.
-- Não habilitar modelo 3D em fullscreen sem testar canvas.
-- Se mudar estado do OakBit, atualizar getters usados pelo dashboard.
 
 ### Pokédex
 
 - Verificar `pokedex.html`, `app.js` e `pokedex.css`.
 - Preservar modo embed.
-- Preservar eventos `postMessage` para o emulador.
+- Preservar eventos `postMessage`.
 
 ### Informativas
 
 - Se adicionar recurso grande, atualizar `como-usar.html`, `patch-notes.html`, `README.md` e este `GPT.md`.
 
-## Riscos conhecidos
+## Riscos Conhecidos
 
 - EmulatorJS depende de CDN.
 - IndexedDB pode ser bloqueado pelo navegador.
 - SpeechRecognition varia por navegador/permissão.
-- O modelo 3D do OakBit depende de Three.js via CDN e não deve ser usado como requisito para jogar.
+- O modelo 3D do OakBit depende de Three.js via CDN e não deve ser requisito para jogar.
 - Mudanças no fullscreen podem afetar OakBit, Pokédex integrada e controles do EmulatorJS ao mesmo tempo.
 - No overlay OBS, re-renderizar a cena inteira pode derrubar o EmulatorJS.
-- Menus nativos do EmulatorJS podem quebrar com CSS amplo aplicado dentro de `.obs-emulator-player`; preferir classes específicas como `.oak-obs-native-toolbar`.
-- Para a tela nativa de controles do EmulatorJS, preferir seletor específico `.ejs_control_body input[type="text"]`.
 - Backups não incluem ROMs nem BIOS.
 
-## Validações úteis
+## Validações Úteis
 
 ```powershell
+node --check oakduo.js
 node --check mascot.js
 node --check mascot-3d.js
 node --check emulator.js
@@ -320,6 +309,7 @@ Checar páginas:
 
 - `http://localhost:5500/`
 - `http://localhost:5500/rom.html?id=fire-red`
+- `http://localhost:5500/oakduo.html`
 - `http://localhost:5500/oak-challenge.html`
 - `http://localhost:5500/oak-challenge.html?obs=1`
 - `http://localhost:5500/pokedex.html?embed=1`

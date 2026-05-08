@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OakDuo - OakRom</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./mascot.css" />
+    <link rel="stylesheet" href="./oakduo.css" />
+  </head>
+  <body class="oakduo-page">
+    <div class="oakduo-shell">
+      <header class="oakduo-topbar">
+        <a class="oakduo-brand" href="./index.html" aria-label="Voltar para Home">
+          <span class="oakduo-brand-mark" aria-hidden="true"></span>
+          <span>
+            <span class="oakduo-kicker">OakRom</span>
+            <strong>OakDuo</strong>
+          </span>
+        </a>
+
+        <nav class="oakduo-nav" aria-label="Navegação principal">
+          <a href="./index.html">Home</a>
+          <a href="./emulator.html">Emulador</a>
+          <a href="./oak-challenge.html">Oak Challenge</a>
+        </nav>
+      </header>
+
+      <main class="oakduo-main">
+        <section class="oakduo-hero" aria-label="Resumo do OakDuo">
+          <div class="oakduo-hero-copy">
+            <span class="oakduo-kicker">Modo dupla grátis</span>
+            <p>Dois emuladores lado a lado</p>
+          </div>
+
+          <div class="oakduo-room-card" aria-label="Resumo da sala">
+            <span>Sala <strong id="oakduo-room-code">OAK-247</strong></span>
+            <strong id="oakduo-active-player">Jogador 1 no controle</strong>
+            <p>Abra o convite no outro navegador e conecte pela sala manual.</p>
+            <div class="oakduo-room-actions">
+              <button type="button" id="oakduo-new-room">Nova sala</button>
+              <button type="button" id="oakduo-copy-invite">Copiar convite</button>
+              <button type="button" id="oakduo-fullscreen">Tela cheia</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="oakduo-stage" id="oakduo-stage" aria-label="OakDuo em tela dupla">
+          <article class="oakduo-player is-active" data-player-panel="1">
+            <header class="oakduo-player-head">
+              <div>
+                <span class="oakduo-player-kicker">Lado esquerdo</span>
+                <h2>Jogador 1</h2>
+                <p class="oakduo-rom-meta" data-player-rom="1">Nenhuma ROM carregada</p>
+              </div>
+              <span class="oakduo-status" data-player-status="1">Pronto</span>
+            </header>
+
+            <div class="oakduo-frame-wrap">
+              <iframe
+                id="oakduo-frame-1"
+                class="oakduo-frame"
+                title="Emulador do Jogador 1"
+                src="./emulator.html?duo=1&player=1"
+                allow="fullscreen; gamepad"
+              ></iframe>
+              <video class="oakduo-remote-player-video" data-remote-player="1" autoplay playsinline></video>
+            </div>
+
+            <div class="oakduo-actions" aria-label="Ações do Jogador 1">
+              <button type="button" data-oakduo-action="rom" data-player="1">Escolher ROM</button>
+              <button type="button" data-oakduo-action="focus" data-player="1">Assumir controle</button>
+              <button type="button" data-oakduo-action="stream" data-player="1">Transmitir este lado</button>
+            </div>
+          </article>
+
+          <aside class="oakduo-session-strip" aria-label="Sessão OakDuo">
+            <span class="oakduo-session-dot" aria-hidden="true"></span>
+            <strong id="oakduo-strip-code">OAK-247</strong>
+            <span>Local</span>
+            <span>Gratis</span>
+          </aside>
+
+          <article class="oakduo-player" data-player-panel="2">
+            <header class="oakduo-player-head">
+              <div>
+                <span class="oakduo-player-kicker">Lado direito</span>
+                <h2>Jogador 2</h2>
+                <p class="oakduo-rom-meta" data-player-rom="2">Nenhuma ROM carregada</p>
+              </div>
+              <span class="oakduo-status" data-player-status="2">Pronto</span>
+            </header>
+
+            <div class="oakduo-frame-wrap">
+              <iframe
+                id="oakduo-frame-2"
+                class="oakduo-frame"
+                title="Emulador do Jogador 2"
+                src="./emulator.html?duo=1&player=2"
+                allow="fullscreen; gamepad"
+              ></iframe>
+              <video class="oakduo-remote-player-video" data-remote-player="2" autoplay playsinline></video>
+            </div>
+
+            <div class="oakduo-actions" aria-label="Ações do Jogador 2">
+              <button type="button" data-oakduo-action="rom" data-player="2">Escolher ROM</button>
+              <button type="button" data-oakduo-action="focus" data-player="2">Assumir controle</button>
+              <button type="button" data-oakduo-action="stream" data-player="2">Transmitir este lado</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="oakduo-webrtc" aria-label="Conexão manual grátis">
+          <div class="oakduo-webrtc-head">
+            <div>
+              <span class="oakduo-kicker">Online grátis</span>
+              <h2>Conexão manual</h2>
+            </div>
+            <strong id="oakduo-peer-status">Desconectado</strong>
+          </div>
+
+          <div class="oakduo-webrtc-grid">
+            <label class="oakduo-signal-box">
+              <span>Seu código</span>
+              <textarea id="oakduo-local-signal" readonly placeholder="Código gerado"></textarea>
+              <span class="oakduo-box-actions">
+                <button type="button" id="oakduo-create-offer">Criar oferta</button>
+                <button type="button" id="oakduo-accept-offer">Gerar resposta</button>
+                <button type="button" id="oakduo-copy-signal">Copiar código</button>
+              </span>
+            </label>
+
+            <label class="oakduo-signal-box">
+              <span>Recebido</span>
+              <textarea id="oakduo-remote-signal" placeholder="Cole o código"></textarea>
+              <span class="oakduo-box-actions">
+                <button type="button" id="oakduo-apply-answer">Concluir conexão</button>
+              </span>
+            </label>
+          </div>
+
+          <div class="oakduo-webrtc-actions">
+            <button type="button" id="oakduo-stop-screen">Parar transmissão</button>
+            <button type="button" id="oakduo-disconnect-peer">Desconectar</button>
+          </div>
+
+        </section>
+      </main>
+
+      <button type="button" id="pokedex-toggle" class="oakduo-assist-action" aria-expanded="false" aria-controls="oakduo-pokedex-panel">
+        Pokédex
+      </button>
+      <button type="button" id="integrated-dex-voice" class="oakduo-assist-action">
+        Voz
+      </button>
+
+      <aside class="oakduo-pokedex" id="oakduo-pokedex-panel" aria-hidden="true">
+        <div class="oakduo-pokedex-shell">
+          <header class="oakduo-pokedex-header">
+            <div>
+              <span class="oakduo-kicker">Pokédex integrada</span>
+              <h3>Pesquisa em jogo</h3>
+            </div>
+
+            <div class="oakduo-pokedex-header-actions">
+              <div class="oakduo-dex-shortcuts" aria-label="Atalhos da Pokédex integrada">
+                <span><kbd>P</kbd> abre/fecha</span>
+                <span><kbd>V</kbd> voz</span>
+                <span><kbd>Esc</kbd> fecha</span>
+              </div>
+
+              <button type="button" class="oakduo-pokedex-close" id="pokedex-close" aria-label="Fechar Pokédex">
+                Fechar
+              </button>
+            </div>
+          </header>
+
+          <div class="oakduo-pokedex-embed">
+            <span class="oakduo-dex-scan" aria-hidden="true"></span>
+            <iframe
+              id="oakduo-pokedex-frame"
+              class="oakduo-pokedex-frame"
+              title="Pokédex integrada"
+              src="./pokedex.html?embed=1"
+              loading="lazy"
+              tabindex="-1"
+            ></iframe>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <script src="./mascot-3d.js" type="module"></script>
+    <script src="./mascot.js" type="module"></script>
+    <script src="./oakduo.js" type="module"></script>
+  </body>
+</html>
