@@ -246,6 +246,7 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-nav a:hover,
+.oakduo-nav a.is-active,
 .oakduo-actions button:hover,
 .oakduo-room-actions button:hover,
 .oakduo-webrtc-actions button:hover,
@@ -267,6 +268,7 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-nav a:hover::before,
+.oakduo-nav a.is-active::before,
 .oakduo-actions button:hover::before,
 .oakduo-room-actions button:hover::before,
 .oakduo-webrtc-actions button:hover::before,
@@ -281,6 +283,7 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-nav a:hover::after,
+.oakduo-nav a.is-active::after,
 .oakduo-actions button:hover::after,
 .oakduo-room-actions button:hover::after,
 .oakduo-webrtc-actions button:hover::after,
