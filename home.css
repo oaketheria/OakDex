@@ -215,7 +215,7 @@ body.home-page {
 .boot-kicker,
 .boot-status {
   margin: 0;
-  font-family: "Rajdhani", sans-serif;
+  font-family: var(--font-tech);
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -231,7 +231,7 @@ body.home-page {
   position: relative;
   margin: 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(3rem, 14vw, 6.8rem);
   line-height: 0.9;
   letter-spacing: 0;
@@ -554,7 +554,7 @@ body.home-page {
 .rom-logo span {
   display: block;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(1.8rem, 4vw, 3.1rem);
   letter-spacing: 0;
   line-height: 1;
@@ -584,8 +584,8 @@ body.home-page {
   padding: 0 12px;
   border-radius: 999px;
   color: rgba(245, 247, 255, 0.72);
-  font-family: "Rajdhani", sans-serif;
-  font-size: 0.9rem;
+  font-family: var(--font-retro);
+  font-size: 0.64rem;
   font-weight: 800;
   text-decoration: none;
   transition:
@@ -707,7 +707,7 @@ body.home-page {
 .rom-hero-logo {
   margin: 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(4.1rem, 9vw, 7.2rem);
   line-height: 0.86;
   letter-spacing: 0;
@@ -1114,7 +1114,7 @@ body.home-page {
 .library-dashboard-header h2 {
   margin: 3px 0 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: 2.2rem;
 }
 
@@ -1261,7 +1261,7 @@ body.home-page {
 
 .library-dashboard-save-group header span {
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: 1.45rem;
   letter-spacing: 0;
   text-transform: none;
@@ -1520,7 +1520,7 @@ body.home-page {
 
 .library-dashboard-rom-group header span {
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: 1.45rem;
 }
 
@@ -1798,7 +1798,7 @@ body.home-page {
 .rom-upload-form-head h2 {
   margin: 4px 0 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: 2.1rem;
 }
 
@@ -2067,7 +2067,7 @@ body.home-page {
 .recent-local-heading h2 {
   margin: 4px 0 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(1.8rem, 4vw, 3rem);
   letter-spacing: 0;
   text-shadow: 0 0 18px rgba(255, 237, 101, 0.36);
@@ -2157,7 +2157,7 @@ body.home-page {
 
 .library-system-heading span {
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(1.35rem, 3vw, 2.25rem);
   line-height: 0.9;
   text-shadow: 0 0 16px rgba(255, 237, 101, 0.42);
@@ -2374,7 +2374,7 @@ body.home-page {
 .info-page-hero h1 {
   margin: 0;
   color: #ffed65;
-  font-family: "BoldsPixels", "Orbitron", sans-serif;
+  font-family: var(--font-retro);
   font-size: clamp(3rem, 8vw, 6.4rem);
   line-height: 0.9;
   text-shadow:
@@ -2412,7 +2412,8 @@ body.home-page {
 .info-page-steps h2 {
   margin: 0 0 10px;
   color: #ffed65;
-  font-family: "Orbitron", sans-serif;
+  font-family: var(--font-retro);
+  line-height: 1.35;
   font-size: 1.1rem;
 }
 
@@ -2525,8 +2526,9 @@ body.home-page {
 .patch-note-content h2 {
   margin: 0;
   color: #ffed65;
-  font-family: "Orbitron", sans-serif;
-  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+  font-family: var(--font-retro);
+  font-size: clamp(0.95rem, 1.7vw, 1.25rem);
+  line-height: 1.45;
 }
 
 .patch-note-content p {
