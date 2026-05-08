@@ -24,6 +24,7 @@ const fullscreenButton = document.querySelector("#dock-fullscreen");
 const pokedexButton = document.querySelector("#pokedex-toggle");
 const ps1BiosAlert = document.querySelector("#ps1-bios-alert");
 const biosImportLabel = document.querySelector("#bios-import-label");
+const biosImportInput = document.querySelector("#bios-import-input");
 const focusMenuToggle = document.querySelector("#rom-focus-menu-toggle");
 const focusMenuStorageKey = "oakromRomFocusMenu";
 
@@ -126,7 +127,14 @@ function applyText(rom) {
   }
 
   if (biosImportLabel) {
+    biosImportLabel.hidden = !isPs1;
     biosImportLabel.classList.toggle("is-attention", isPs1);
+  }
+
+  if (biosImportInput) {
+    biosImportInput.hidden = !isPs1;
+    biosImportInput.disabled = !isPs1;
+    biosImportInput.tabIndex = isPs1 ? 0 : -1;
   }
 }
 

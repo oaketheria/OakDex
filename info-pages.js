@@ -4,7 +4,7 @@ const content = {
   "/sobre.html": {
     pt: {
       title: "Sobre o Projeto - OakRom",
-      nav: ["Home", "Sobre o Projeto", "Como Usar", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "Sobre o Projeto", "Como Usar", "Patch Notes"],
       heroKicker: "OakRom",
       heroTitle: "Sobre o Projeto",
       heroCopy: "Uma biblioteca local de ROMs com emulador no navegador, Pokédex integrada e uma interface inspirada em arcades.",
@@ -17,7 +17,7 @@ const content = {
     },
     en: {
       title: "About the Project - OakRom",
-      nav: ["Home", "About", "How to Use", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "About the Project", "How to Use", "Patch Notes"],
       heroKicker: "OakRom",
       heroTitle: "About the Project",
       heroCopy: "A local ROM library with browser emulation, an integrated Pokedex, and an arcade-inspired interface.",
@@ -32,7 +32,7 @@ const content = {
   "/como-usar.html": {
     pt: {
       title: "Como Usar - OakRom",
-      nav: ["Home", "Sobre o Projeto", "Como Usar", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "Sobre o Projeto", "Como Usar", "Patch Notes"],
       heroKicker: "Guia rápido",
       heroTitle: "Como Usar",
       heroCopy: "Adicione suas ROMs, organize por console, abra a página do jogo e use fullscreen para jogar com mais conforto.",
@@ -45,7 +45,7 @@ const content = {
     },
     en: {
       title: "How to Use - OakRom",
-      nav: ["Home", "About", "How to Use", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "About the Project", "How to Use", "Patch Notes"],
       heroKicker: "Quick guide",
       heroTitle: "How to Use",
       heroCopy: "Add your ROMs, organize them by console, open the game page, and use fullscreen for a better play experience.",
@@ -60,7 +60,7 @@ const content = {
   "/patch-notes.html": {
     pt: {
       title: "Patch Notes - OakRom",
-      nav: ["Home", "Sobre o Projeto", "Como Usar", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "Sobre o Projeto", "Como Usar", "Patch Notes"],
       heroKicker: "Changelog",
       heroTitle: "Patch Notes",
       heroCopy: "Histórico das atualizações do OakRom, com versões, melhorias adicionadas e correções importantes do projeto.",
@@ -68,7 +68,7 @@ const content = {
     },
     en: {
       title: "Patch Notes - OakRom",
-      nav: ["Home", "About", "How to Use", "Patch Notes"],
+      nav: ["Home", "Oak Challenge", "About the Project", "How to Use", "Patch Notes"],
       heroKicker: "Changelog",
       heroTitle: "Patch Notes",
       heroCopy: "OakRom update history with versions, added improvements, and important project fixes.",

@@ -624,6 +624,45 @@
   animation: oakbit-pokedex-scan 760ms steps(4, end) infinite;
 }
 
+.rom-detail-page .oakbit {
+  right: clamp(10px, 1.4vw, 18px);
+  bottom: clamp(10px, 1.4vw, 18px);
+  grid-template-columns: minmax(0, 210px) 58px;
+  gap: 8px;
+}
+
+.rom-detail-page .oakbit-button {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+}
+
+.rom-detail-page .oakbit-sprite {
+  width: 34px;
+  height: 34px;
+  margin-top: 12px;
+}
+
+.rom-detail-page .oakbit-bubble {
+  max-width: 210px;
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 0.84rem;
+}
+
+.rom-detail-page .oakbit-hide {
+  right: 50px;
+  bottom: 50px;
+}
+
+.rom-detail-page .oakbit-menu {
+  bottom: 68px;
+}
+
+.rom-detail-page.is-rom-focus-mode .oakbit {
+  bottom: clamp(14px, 2vw, 24px);
+}
+
 .oakbit[data-effect="transfer"] .oakbit-button::after {
   content: "";
   position: absolute;

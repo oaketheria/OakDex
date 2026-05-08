@@ -1,6 +1,6 @@
 # OakRom
 
-Projeto web em HTML, CSS e JavaScript vanilla que combina biblioteca local de ROMs, emulador via EmulatorJS, Pokedex principal e Pokedex integrada ao jogo.
+Projeto web em HTML, CSS e JavaScript vanilla que combina biblioteca local de ROMs, emulador via EmulatorJS, Pokédex principal e Pokédex integrada ao jogo.
 
 ## Como executar
 
@@ -20,40 +20,41 @@ Depois abra:
 
 ## Principais recursos
 
-- Home com biblioteca de ROMs, capas padronizadas e jogados recentes.
+- Home com nova imagem de fundo arcade neon, biblioteca de ROMs, capas padronizadas e jogados recentes.
 - Upload local de ROMs salvo no navegador via IndexedDB.
 - Suporte a GBA, GB, GBC, NES, SNES, Mega Drive, Master System, Game Gear, N64 e PS1.
-- BIOS PS1 `scph5501.bin` importada pelo usuario e mantida apenas no navegador.
-- Pagina dedicada da ROM em `rom.html`, com modo foco e layout moderno.
-- Retomada automatica de ROM local vinculada a capa depois do F5.
-- Controles exibidos conforme o console/core detectado.
+- BIOS PS1 `scph5501.bin` importada pelo usuário e mantida apenas no navegador. O botão de BIOS aparece apenas em páginas PS1.
+- Página dedicada da ROM em `rom.html`, com fundo novo, topo em blocos compactos e layout moderno.
+- Retomada automática de ROM local vinculada à capa depois do F5.
+- Controles exibidos conforme o console/core detectado, com área lateral de tutorial/saves mais limpa.
 - Saves locais com importar, exportar, reaplicar e remover.
 - Dashboard local com abas: ROMs, Saves, BIOS, Backup, OakBit e Limpeza.
-- Backup de metadados e capas em JSON. O backup nao inclui ROMs nem BIOS.
-- Pokedex principal com busca, filtros, detalhes, sprites e modo embed.
-- Pokedex integrada no emulador via `pokedex.html?embed=1`.
-- Oak Challenge para runs Pokemon, hackroms e Nuzlocke com aba Jogar, importacao direta de ROM local, emulador proprio via EmulatorJS, overlay OBS transparente via `oak-challenge.html?obs=1`, badges visuais, painel de rotas por template, sprites arrastaveis com chao, zoom individual e reset de posicao, HUD da run, templates, ROM local vinculada, time com busca na PokeAPI, box automatica apos 6 Pokemon, troca entre time/box no overlay, encontros, badges, level caps, cemiterio, notas, linha do tempo, fraquezas/vantagens do time e backup JSON.
-- Pokedex integrada tambem no overlay OBS do Oak Challenge, com atalho `P`, painel responsivo e narracao de lore pelo documento principal.
-- Comando de voz na Pokedex integrada, quando o navegador suporta SpeechRecognition.
-- Atalhos da Pokedex integrada: `P`, `V` e `Esc`.
-- Favicon proprio em `assets/favicon.svg`.
+- Backup de metadados e capas em JSON. O backup não inclui ROMs nem BIOS.
+- Pokédex principal com busca, filtros, detalhes, sprites e modo embed.
+- Pokédex integrada no emulador via `pokedex.html?embed=1`.
+- Oak Challenge para runs Pokémon, hackroms e Nuzlocke com aba Jogar, importação direta de ROM local, emulador próprio via EmulatorJS, overlay OBS transparente via `oak-challenge.html?obs=1`, badges visuais, painel de rotas por template, sprites arrastáveis com chão, zoom individual e reset de posição, HUD da run, templates, ROM local vinculada, time com busca na PokeAPI, box automática após 6 Pokémon, troca entre time/box no overlay, encontros, badges, level caps, cemitério, notas, linha do tempo, fraquezas/vantagens do time e backup JSON.
+- Overlay OBS do Oak Challenge com ajuste de contraste nos campos de texto da tela nativa de configuração de controles do EmulatorJS.
+- Pokédex integrada também no overlay OBS do Oak Challenge, com atalho `P`, painel responsivo e narração de lore pelo documento principal.
+- Comando de voz na Pokédex integrada, quando o navegador suporta SpeechRecognition.
+- Atalhos da Pokédex integrada: `P`, `V` e `Esc`.
+- Favicon próprio em `assets/favicon.svg`.
 
 ## OakBit
 
-OakBit e o mascote assistente do projeto.
+OakBit é o mascote assistente do projeto.
 
 Recursos atuais:
 
-- Menu contextual por categorias: Sessao, Saves e OakBit.
-- Atalhos para voltar Home, menu da tela, tela cheia, Pokedex, importar save e exportar save.
-- Tutorial flutuante contextual na Home e na pagina da ROM.
-- Modos internos: biblioteca, emulador, Pokedex e alerta.
+- Menu contextual por categorias: Sessão, Saves e OakBit.
+- Atalhos para voltar Home, menu da tela, tela cheia, Pokédex, importar save e exportar save.
+- Tutorial flutuante contextual na Home e na página da ROM, atualizado para os novos blocos do emulador.
+- Modos internos: biblioteca, emulador, Pokédex e alerta.
 - Energia visual persistente.
-- Memoria contextual da sessao atual.
+- Memória contextual da sessão atual.
 - Skins, humor, silenciar, ocultar e restaurar.
 - Modelo Pixel e teste de modelo 3D via Three.js. Em fullscreen, o Pixel e usado como modo seguro.
 - Painel OakBit dentro de Gerenciar Biblioteca com energia, modo, modelo, skin, voz, estado e tutorial.
-- Integracao com Oak Challenge: OakBit aparece no overlay OBS, abre a Pokedex integrada, ensina atalhos da live e oferece tutorial flutuante especifico da pagina.
+- Integração com Oak Challenge: OakBit aparece no overlay OBS, abre a Pokédex integrada, centraliza atalhos como tela cheia/Pokédex e oferece tutorial flutuante específico da página.
 
 Arquivos principais do OakBit:
 
@@ -75,14 +76,16 @@ Arquivos principais:
 - `emulator.js`
 - `emulator.css`
 
-Observacoes:
+Observações:
 
-- O EmulatorJS e carregado via CDN.
+- O EmulatorJS é carregado via CDN.
 - As ROMs e saves ficam no IndexedDB do navegador.
-- Nao ha backend para armazenar ROMs, BIOS ou saves.
-- O fullscreen correto e o da UI do projeto.
-- A Pokedex integrada abre sobre o emulador em fullscreen.
-- PS1 exige BIOS local importada pelo usuario.
+- Não há backend para armazenar ROMs, BIOS ou saves.
+- O fullscreen correto é o da UI do projeto.
+- A Pokédex integrada abre sobre o emulador em fullscreen.
+- A tela da ROM usa blocos compactos para status, runtime e importação de ROM, evitando barras vazias grandes.
+- O layout tenta evitar scroll residual ao voltar do fullscreen.
+- PS1 exige BIOS local importada pelo usuário.
 
 ## Oak Challenge
 
@@ -94,19 +97,20 @@ Arquivos principais:
 
 Recursos:
 
-- runs Pokemon com templates para Emerald, FireRed/LeafGreen, Radical Red, Unbound e modo personalizado;
-- dashboard com time, box, encontros, cemiterio, badges, notas e timeline;
-- busca de Pokemon via PokeAPI com sprite, tipos e habilidade;
-- limite de 6 Pokemon no time, enviando excedentes para a box;
+- runs Pokémon com templates para Emerald, FireRed/LeafGreen, Radical Red, Unbound e modo personalizado;
+- dashboard com time, box, encontros, cemitério, badges, notas e timeline;
+- busca de Pokémon via PokeAPI com sprite, tipos e habilidade;
+- limite de 6 Pokémon no time, enviando excedentes para a box;
 - overlay OBS em `oak-challenge.html?obs=1&run=<id>`;
-- emulador proprio no overlay OBS, sem redirecionar para a pagina da ROM;
+- emulador próprio no overlay OBS, sem redirecionar para a página da ROM;
+- campos de texto da configuração nativa de controle do EmulatorJS com contraste ajustado no OBS;
 - sprites do time com drag, zoom individual, base visual, tooltip de tipos, fraquezas e vantagens;
-- botao para resetar o layout dos sprites no overlay;
+- botão para resetar o layout dos sprites no overlay;
 - painel de rotas por template da ROM para marcar encontros pendentes/capturados;
-- Pokedex integrada no overlay com atalho `P`;
-- OakBit no overlay com menu contextual e tutorial rapido.
+- Pokédex integrada no overlay com atalho `P`;
+- OakBit no overlay com menu contextual e tutorial rápido.
 
-## Pokedex
+## Pokédex
 
 Arquivos principais:
 
@@ -116,54 +120,54 @@ Arquivos principais:
 
 Recursos:
 
-- busca por nome ou numero;
+- busca por nome ou número;
 - filtro por tipo;
 - abas Dados, Stats, Moves, Forms e Lore;
-- sprites animados quando disponiveis;
-- cries da PokeAPI quando disponiveis;
+- sprites animados quando disponíveis;
+- cries da PokeAPI quando disponíveis;
 - modo embed para uso dentro do emulador.
-- modo embed tambem usado no Oak Challenge, com layout responsivo dentro do painel OBS.
+- modo embed também usado no Oak Challenge, com layout responsivo dentro do painel OBS.
 
-## Paginas informativas
+## Páginas informativas
 
 - `sobre.html`: apresenta o projeto, privacidade local, consoles e BIOS PS1.
 - `como-usar.html`: guia atualizado de uso.
-- `patch-notes.html`: historico de versoes e melhorias recentes.
-- `info-pages.js`: textos dinamicos e traducao basica BR/US.
+- `patch-notes.html`: histórico de versões e melhorias recentes.
+- `info-pages.js`: textos dinâmicos e tradução básica BR/US.
 
 ## Estrutura principal
 
 - `index.html`: Home e biblioteca.
-- `home-library.js`: logica da Home, biblioteca local e dashboard.
-- `roms.js`: utilitarios compartilhados de ROMs, sistemas, IndexedDB, saves e BIOS.
+- `home-library.js`: lógica da Home, biblioteca local e dashboard.
+- `roms.js`: utilitários compartilhados de ROMs, sistemas, IndexedDB, saves e BIOS.
 - `server.js`: servidor local e endpoints auxiliares.
 - `styles.css`: estilos base.
-- `home.css`: Home, dashboard e paginas informativas.
+- `home.css`: Home, dashboard e páginas informativas.
 - `assets/rom-covers/`: capas locais conhecidas.
-- `assets/favicon.svg`: icone da aba do navegador.
+- `assets/favicon.svg`: ícone da aba do navegador.
 
-## Narracao
+## Narração
 
-- Em `localhost`, a narracao pode usar ElevenLabs se o `.env` estiver configurado.
-- No site online, a narracao usa voz nativa do navegador em `pt-BR`, sem depender da ElevenLabs.
+- Em `localhost`, a narração pode usar ElevenLabs se o `.env` estiver configurado.
+- No site online, a narração usa voz nativa do navegador em `pt-BR`, sem depender da ElevenLabs.
 
 ## Deploy no Render
 
-O projeto esta pronto para deploy no Render com frontend e backend juntos.
+O projeto está pronto para deploy no Render com frontend e backend juntos.
 
-Configuracao:
+Configuração:
 
 - `Runtime`: Node
 - `Build Command`: `npm install`
 - `Start Command`: `npm start`
 
-O arquivo `render.yaml` pode ajudar o Render a preencher parte da configuracao.
+O arquivo `render.yaml` pode ajudar o Render a preencher parte da configuração.
 
 ## Checklist antes de subir para GitHub
 
 Antes de commit ou push, siga `GITHUB_CHECKLIST.md`.
 
-Nao subir:
+Não subir:
 
 - `.env`
 - BIOS de PS1
@@ -179,7 +183,7 @@ Sempre conferir:
 git status --short --ignored
 ```
 
-## Validacoes uteis
+## Validações úteis
 
 ```powershell
 node --check oak-challenge.js

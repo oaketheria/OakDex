@@ -675,9 +675,23 @@ function getTutorialSteps() {
   const pt = locale === "pt";
   const steps = [];
 
+  const isVisibleTutorialTarget = (target) => {
+    if (!target) {
+      return false;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const style = window.getComputedStyle(target);
+    return rect.width > 8
+      && rect.height > 8
+      && style.display !== "none"
+      && style.visibility !== "hidden"
+      && Number(style.opacity || 1) > 0;
+  };
+
   const add = (selector, titlePt, copyPt, titleEn, copyEn) => {
     const target = document.querySelector(selector);
-    if (target) {
+    if (isVisibleTutorialTarget(target)) {
       steps.push({
         selector,
         title: pt ? titlePt : titleEn,
@@ -690,20 +704,23 @@ function getTutorialSteps() {
     add(".rom-library-hero", "Home", "Aqui voce escolhe uma capa para abrir a pagina da ROM.", "Home", "Choose a cover here to open a ROM page.");
     add(".home-upload-panel", "Adicionar ROM", "Use este painel para salvar ROMs locais neste navegador.", "Add ROM", "Use this panel to save local ROMs in this browser.");
     add("#open-library-dashboard", "Gerenciar biblioteca", "Aqui ficam ROMs locais, saves, BIOS, backups e preferencias do OakBit.", "Manage library", "Local ROMs, saves, BIOS, backups, and OakBit settings live here.");
-    add("#rom-library-grid", "Biblioteca", "As ROMs salvas e padrao aparecem como capas para acesso rapido.", "Library", "Saved and default ROMs appear as covers for quick access.");
+    add(".library-toolbar-panel", "Filtros", "Busca, sistema, ordenacao e resultados ficam nesta barra compacta.", "Filters", "Search, system, sorting, and results live in this compact bar.");
+    add("#rom-grid", "Biblioteca", "As ROMs salvas e padrao aparecem aqui, organizadas por sistema.", "Library", "Saved and default ROMs appear here, organized by system.");
   } else {
+    add(".rom-page-title", "ROM atual", "Este bloco mostra a ROM aberta e acompanha o novo topo compacto do emulador.", "Current ROM", "This block shows the open ROM and follows the compact emulator header.");
+    add(".rom-page-status", "Status da sessao", "Aqui ficam o estado do emulador e a origem da ROM carregada.", "Session status", "This shows emulator state and where the loaded ROM came from.");
     add(".rom-player-stage, .player-stage", "Emulador", "Esta e a area principal do jogo. O modo foco deixa tudo mais limpo.", "Emulator", "This is the main game area. Focus mode keeps the screen clean.");
-    add("#rom-focus-menu-toggle", "Menu da tela", "O OakBit usa este controle para mostrar ou esconder paineis da pagina.", "Screen menu", "OakBit uses this control to show or hide page panels.");
+    add(".player-session-meta", "Sessao", "Esses chips mostram runtime e estado da sessao alinhados com a tela do jogo.", "Session", "These chips show runtime and session state aligned with the game screen.");
+    add(".rom-upload-strip", "ROM local", "Upload e status ficam agrupados acima do player sem ocupar a largura inteira da pagina.", "Local ROM", "Upload and status are grouped above the player without spanning the whole page.");
+    add("#rom-focus-menu-toggle", "Painéis", "O OakBit usa este controle para alternar entre paineis visiveis e foco no jogo.", "Panels", "OakBit uses this control to switch between visible panels and game focus.");
     add(".rom-controls-panel", "Controles", "Este painel muda conforme o console detectado pela ROM.", "Controls", "This panel changes based on the console detected from the ROM.");
-    add("#dock-fullscreen", "Tela cheia", "Entre em fullscreen para jogar com mais espaco e usar a Pokedex integrada.", "Fullscreen", "Enter fullscreen for more room and the integrated Pokedex.");
-    add("#pokedex-toggle", "Pokedex", "Em jogos Pokemon, este botao abre a Pokedex integrada em tela cheia.", "Pokedex", "In Pokemon games, this opens the integrated Pokedex in fullscreen.");
     add("#session-export-save", "Saves", "Importe ou exporte saves locais por estes comandos.", "Saves", "Import or export local saves from these commands.");
   }
 
   steps.push({
     selector: ".oakbit-button",
     title: pt ? "OakBit" : "OakBit",
-    copy: pt ? "Clique no mascote para abrir atalhos, tutorial, skins, humor e opcoes da sessao." : "Click the mascot to open shortcuts, tutorial, skins, mood, and session options.",
+    copy: pt ? "Tela cheia e Pokedex ficam aqui no mascote, junto com saves, tutorial, skins e opcoes da sessao." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options.",
   });
 
   return steps;
@@ -716,6 +733,7 @@ function positionTutorial() {
 
   const step = tutorialSteps[tutorialIndex];
   const target = document.querySelector(step.selector);
+  target?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
   const rect = target?.getBoundingClientRect();
   const safeRect = rect && rect.width && rect.height
     ? rect
@@ -727,11 +745,11 @@ function positionTutorial() {
   tutorialSpotlight.style.width = `${Math.min(window.innerWidth - 16, safeRect.width + pad * 2)}px`;
   tutorialSpotlight.style.height = `${Math.min(window.innerHeight - 16, safeRect.height + pad * 2)}px`;
 
-  const cardWidth = Math.min(320, window.innerWidth - 24);
+  const cardWidth = Math.min(300, window.innerWidth - 24);
   let left = Math.min(window.innerWidth - cardWidth - 12, Math.max(12, safeRect.left));
-  let top = safeRect.bottom + 14;
-  if (top + 190 > window.innerHeight) {
-    top = Math.max(12, safeRect.top - 204);
+  let top = safeRect.bottom + 12;
+  if (top + 176 > window.innerHeight) {
+    top = Math.max(12, safeRect.top - 188);
   }
 
   tutorialCard.style.left = `${left}px`;
@@ -857,8 +875,8 @@ function updateMenuLabels() {
 
   const locale = getLocale();
   const labels = locale === "pt"
-    ? { mute: "Silenciar", unmute: "Ativar voz", mood: "Humor", hide: "Ocultar", model: "Modelo", home: "Voltar Home", screenMenu: "Menu da tela", focus: "Foco no jogo", fullscreen: "Tela cheia", pokedex: "Pokedex", saveImport: "Importar save", saveExport: "Exportar save" }
-    : { mute: "Mute", unmute: "Enable voice", mood: "Mood", hide: "Hide", model: "Model", home: "Back Home", screenMenu: "Screen menu", focus: "Game focus", fullscreen: "Fullscreen", pokedex: "Pokedex", saveImport: "Import save", saveExport: "Export save" };
+    ? { mute: "Silenciar", unmute: "Ativar voz", mood: "Humor", hide: "Ocultar", model: "Modelo", home: "Voltar Home", screenMenu: "Mostrar painéis", focus: "Foco no jogo", fullscreen: "Tela cheia", pokedex: "Abrir Pokedex", saveImport: "Importar save", saveExport: "Exportar save" }
+    : { mute: "Mute", unmute: "Enable voice", mood: "Mood", hide: "Hide", model: "Model", home: "Back Home", screenMenu: "Show panels", focus: "Game focus", fullscreen: "Fullscreen", pokedex: "Open Pokedex", saveImport: "Import save", saveExport: "Export save" };
 
   const muteButton = root.querySelector("[data-oakbit-action='mute']");
   const modelButton = root.querySelector("[data-oakbit-action='model']");

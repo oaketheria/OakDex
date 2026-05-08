@@ -19,7 +19,7 @@
       <header class="rom-home-header">
         <a class="rom-logo" href="./index.html" aria-label="OakRom"></a>
 
-        <nav class="rom-main-nav" aria-label="Navegacao principal">
+        <nav class="rom-main-nav" aria-label="Navegação principal">
           <a href="./index.html">Home</a>
           <a href="./oak-challenge.html">Oak Challenge</a>
           <a href="./sobre.html">Sobre o Projeto</a>
@@ -27,7 +27,7 @@
           <a class="is-active" href="./patch-notes.html">Patch Notes</a>
         </nav>
 
-        <nav class="rom-home-actions" aria-label="Acoes da biblioteca">
+        <nav class="rom-home-actions" aria-label="Ações da biblioteca">
           <a class="github-link" href="https://github.com/oaketheria/OakDex" target="_blank" rel="noopener noreferrer" aria-label="GitHub do projeto" title="GitHub do projeto">
             <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
               <path d="M12 2C6.48 2 2 6.58 2 12.24c0 4.52 2.87 8.35 6.84 9.71.5.09.68-.22.68-.49v-1.9c-2.78.62-3.37-1.21-3.37-1.21-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.35 1.11 2.92.85.09-.67.35-1.11.64-1.37-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.35 9.35 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9v2.8c0 .27.18.59.69.49A10.15 10.15 0 0 0 22 12.24C22 6.58 17.52 2 12 2Z" />
@@ -44,10 +44,35 @@
         <section class="info-page-hero">
           <span>Changelog</span>
           <h1>Patch Notes</h1>
-          <p>Historico das atualizacoes recentes do OakRom, incluindo OakBit, modo foco, tela do emulador, Pokedex integrada e melhorias da biblioteca.</p>
+          <p>Histórico das atualizações recentes do OakRom, incluindo OakBit, Home, página da ROM, tela do emulador, Pokédex integrada, Oak Challenge e melhorias da biblioteca.</p>
         </section>
 
-        <section class="patch-notes-timeline" aria-label="Historico de atualizacoes">
+        <section class="patch-notes-timeline" aria-label="Histórico de atualizações">
+          <article class="patch-note-card">
+            <div class="patch-note-meta">
+              <span>v1.2.0</span>
+              <strong>Arcade UI</strong>
+            </div>
+            <div class="patch-note-content">
+              <h2>Nova ambientação e emulador mais limpo</h2>
+              <p>A Home, a página da ROM e o overlay OBS receberam ajustes visuais e funcionais para deixar a experiência mais clara, compacta e consistente.</p>
+              <ul>
+                <li>Adicionada nova imagem de fundo arcade neon na Home e na página dedicada da ROM.</li>
+                <li>Removido o fundo antigo de Pac-Man/grid para deixar a nova arte como destaque principal.</li>
+                <li>Melhorada a barra de busca, sistema, ordenação e contador de resultados da Home.</li>
+                <li>Atualizados os nomes da navegação para refletir as páginas atuais, incluindo Oak Challenge.</li>
+                <li>Reorganizada a página do emulador em blocos compactos para evitar barras grandes e vazias.</li>
+                <li>Reposicionados status, runtime e importação de ROM local na página dedicada da ROM.</li>
+                <li>Ocultados botões duplicados de Voz, Tela cheia e Pokédex da página do emulador, mantendo essas ações no OakBit.</li>
+                <li>Botão e input de BIOS PS1 agora aparecem apenas quando a ROM/sistema exige PS1.</li>
+                <li>OakBit recebeu ajustes de tamanho e tutorial para acompanhar a nova página do emulador.</li>
+                <li>Atualizados os passos do tutorial que apontavam para botões movidos para o OakBit.</li>
+                <li>Melhorado o comportamento ao sair do fullscreen para reduzir scroll residual na página da ROM.</li>
+                <li>Corrigido o contraste dos campos de texto da configuração nativa de controles do EmulatorJS no overlay OBS do Oak Challenge.</li>
+              </ul>
+            </div>
+          </article>
+
           <article class="patch-note-card">
             <div class="patch-note-meta">
               <span>v1.1.0</span>
@@ -55,20 +80,20 @@
             </div>
             <div class="patch-note-content">
               <h2>Overlay OBS para Nuzlocke e Hackroms</h2>
-              <p>Oak Challenge ganhou uma experiencia dedicada para streamers jogarem ROMs de Pokemon com HUD, time, box, rotas, Pokedex integrada e OakBit.</p>
+              <p>Oak Challenge ganhou uma experiência dedicada para streamers jogarem ROMs de Pokémon com HUD, time, box, rotas, Pokédex integrada e OakBit.</p>
               <ul>
-                <li>Adicionada pagina Oak Challenge para runs de Nuzlocke, Hardcore e Hackroms.</li>
-                <li>Adicionado overlay OBS com emulador proprio, HUD de run, badges, mortes, level cap e time na tela.</li>
-                <li>Adicionado limite de 6 Pokemon no time, com envio automatico dos excedentes para a box.</li>
-                <li>Adicionado gerenciamento de time e box com sprites, tipos, fraquezas, vantagens e troca de Pokemon pelo overlay.</li>
-                <li>Adicionado ajuste individual de zoom, arraste livre e botao para resetar a posicao dos sprites.</li>
+                <li>Adicionada página Oak Challenge para runs de Nuzlocke, Hardcore e Hackroms.</li>
+                <li>Adicionado overlay OBS com emulador próprio, HUD de run, badges, mortes, level cap e time na tela.</li>
+                <li>Adicionado limite de 6 Pokémon no time, com envio automático dos excedentes para a box.</li>
+                <li>Adicionado gerenciamento de time e box com sprites, tipos, fraquezas, vantagens e troca de Pokémon pelo overlay.</li>
+                <li>Adicionado ajuste individual de zoom, arraste livre e botão para resetar a posição dos sprites.</li>
                 <li>Adicionado painel de rotas por template de ROM para marcar encontros capturados ou pendentes.</li>
-                <li>Adicionada Pokedex integrada no overlay OBS, com atalho P para abrir e fechar.</li>
-                <li>Atualizada a narracao de lore da Pokedex integrada para funcionar dentro do overlay.</li>
-                <li>OakBit agora aparece no overlay OBS, abre a Pokedex integrada e ensina atalhos do Oak Challenge.</li>
+                <li>Adicionada Pokédex integrada no overlay OBS, com atalho P para abrir e fechar.</li>
+                <li>Atualizada a narração de lore da Pokédex integrada para funcionar dentro do overlay.</li>
+                <li>OakBit agora aparece no overlay OBS, abre a Pokédex integrada e ensina atalhos do Oak Challenge.</li>
                 <li>Adicionado tutorial flutuante do OakBit para explicar runs, time, emulador, overlay e controles de streamer.</li>
-                <li>Atualizado o icone do Oak Challenge para usar o visual do OakBit.</li>
-                <li>Melhorado o tema visual dos formularios, selects, cards e paineis para reduzir elementos cinza padrao do navegador.</li>
+                <li>Atualizado o ícone do Oak Challenge para usar o visual do OakBit.</li>
+                <li>Melhorado o tema visual dos formulários, selects, cards e painéis para reduzir elementos cinza padrão do navegador.</li>
               </ul>
             </div>
           </article>
@@ -80,13 +105,13 @@
             </div>
             <div class="patch-note-content">
               <h2>Mascote interativo e tutorial flutuante</h2>
-              <p>OakBit deixou de ser apenas visual e virou um assistente contextual para navegar pelo site e pela sessao do emulador.</p>
+              <p>OakBit deixou de ser apenas visual e virou um assistente contextual para navegar pelo site e pela sessão do emulador.</p>
               <ul>
-                <li>Adicionado menu do OakBit com categorias: Sessao, Saves e OakBit.</li>
-                <li>Adicionado tutorial flutuante contextual na Home e na pagina da ROM.</li>
-                <li>Adicionados modos do OakBit: biblioteca, emulador, Pokedex e alerta.</li>
-                <li>Adicionada energia visual, memoria da sessao, skins, humor e estado persistente.</li>
-                <li>Adicionados atalhos para voltar Home, tela cheia, Pokedex, importar save e exportar save.</li>
+                <li>Adicionado menu do OakBit com categorias: Sessão, Saves e OakBit.</li>
+                <li>Adicionado tutorial flutuante contextual na Home e na página da ROM.</li>
+                <li>Adicionados modos do OakBit: biblioteca, emulador, Pokédex e alerta.</li>
+                <li>Adicionada energia visual, memória da sessão, skins, humor e estado persistente.</li>
+                <li>Adicionados atalhos para voltar Home, tela cheia, Pokédex, importar save e exportar save.</li>
               </ul>
             </div>
           </article>
@@ -98,12 +123,12 @@
             </div>
             <div class="patch-note-content">
               <h2>Modo foco, fullscreen e retomada local</h2>
-              <p>A pagina da ROM ficou mais limpa para jogar, com controles escondidos quando necessario e carregamento local mais confiavel.</p>
+              <p>A página da ROM ficou mais limpa para jogar, com controles escondidos quando necessário e carregamento local mais confiável.</p>
               <ul>
-                <li>Adicionado modo foco para esconder paineis da tela do emulador.</li>
+                <li>Adicionado modo foco para esconder painéis da tela do emulador.</li>
                 <li>Controles agora mudam conforme o console/core detectado.</li>
-                <li>ROMs vinculadas a capas padrao tentam retomar automaticamente depois do F5.</li>
-                <li>Atualizada a tela de fullscreen para manter OakBit acima da Pokedex integrada.</li>
+                <li>ROMs vinculadas a capas padrão tentam retomar automaticamente depois do F5.</li>
+                <li>Atualizada a tela de fullscreen para manter OakBit acima da Pokédex integrada.</li>
                 <li>Corrigido modelo 3D do OakBit em fullscreen, mantendo Pixel como modo seguro.</li>
               </ul>
             </div>
@@ -121,7 +146,7 @@
                 <li>Adicionado dashboard por abas: ROMs, Saves, BIOS, Backup, OakBit e Limpeza.</li>
                 <li>ROMs e saves agrupados por console dentro do painel.</li>
                 <li>Aba OakBit mostra energia, modo, modelo, skin, voz, estado e skin secreta.</li>
-                <li>Adicionados botoes para tutorial, forcar Pixel, silenciar, trocar skin e resetar preferencias.</li>
+                <li>Adicionados botões para tutorial, forçar Pixel, silenciar, trocar skin e resetar preferências.</li>
                 <li>Corrigido o corte do dashboard em telas menores.</li>
               </ul>
             </div>
@@ -130,7 +155,7 @@
           <article class="patch-note-card">
             <div class="patch-note-meta">
               <span>v0.7.0</span>
-              <strong>Biblioteca Avancada</strong>
+              <strong>Biblioteca Avançada</strong>
             </div>
             <div class="patch-note-content">
               <h2>Controle completo das ROMs locais</h2>
@@ -138,7 +163,7 @@
               <ul>
                 <li>Adicionado painel para listar, abrir, editar e excluir ROMs locais.</li>
                 <li>Adicionado upload em lote de ROMs e capas com pareamento por nome.</li>
-                <li>Adicionado backup e importacao de metadados em JSON.</li>
+                <li>Adicionado backup e importação de metadados em JSON.</li>
                 <li>Padronizado o tamanho das capas em Jogados recentes e ROMs da biblioteca.</li>
               </ul>
             </div>
@@ -151,12 +176,12 @@
             </div>
             <div class="patch-note-content">
               <h2>Novos sistemas e PS1 com BIOS local</h2>
-              <p>O emulador foi expandido para consoles alem do GBA, mantendo arquivos sensiveis no navegador do usuario.</p>
+              <p>O emulador foi expandido para consoles além do GBA, mantendo arquivos sensíveis no navegador do usuário.</p>
               <ul>
                 <li>Adicionado suporte a GB, GBC, NES, SNES, Mega Drive, Master System, Game Gear, N64 e PS1.</li>
                 <li>Adicionado fluxo local para importar BIOS PS1 scph5501.bin.</li>
-                <li>Atualizados filtros por sistema e ordenacao da biblioteca.</li>
-                <li>Adicionadas protecoes para evitar BIOS e ROMs comerciais no repositorio.</li>
+                <li>Atualizados filtros por sistema e ordenação da biblioteca.</li>
+                <li>Adicionadas proteções para evitar BIOS e ROMs comerciais no repositório.</li>
               </ul>
             </div>
           </article>
@@ -164,15 +189,15 @@
           <article class="patch-note-card">
             <div class="patch-note-meta">
               <span>v0.5.0</span>
-              <strong>Pokedex Integrada</strong>
+              <strong>Pokédex Integrada</strong>
             </div>
             <div class="patch-note-content">
-              <h2>Pokedex no emulador</h2>
-              <p>A Pokedex integrada ganhou comportamento mais seguro e comandos voltados para jogos Pokemon.</p>
+              <h2>Pokédex no emulador</h2>
+              <p>A Pokédex integrada ganhou comportamento mais seguro e comandos voltados para jogos Pokémon.</p>
               <ul>
-                <li>Pokedex integrada exibida em fullscreen.</li>
-                <li>Botao da Pokedex aparece em jogos Pokemon ou ROMs marcadas manualmente.</li>
-                <li>Atalhos P, V e Esc documentados dentro da Pokedex.</li>
+                <li>Pokédex integrada exibida em fullscreen.</li>
+                <li>Botão da Pokédex aparece em jogos Pokémon ou ROMs marcadas manualmente.</li>
+                <li>Atalhos P, V e Esc documentados dentro da Pokédex.</li>
                 <li>Adicionados eventos para OakBit reagir a busca, cry, voz e resultados.</li>
               </ul>
             </div>

@@ -76,6 +76,7 @@ let runtimeResizeInterval = null;
 let activeSessionStartedAt = 0;
 let integratedDexVoiceRecognition = null;
 let animeModulePromise = null;
+let wasInFullscreen = false;
 
 const IntegratedDexSpeechRecognitionApi =
   window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -224,6 +225,27 @@ function renderControlPreset(system) {
   controlList.innerHTML = preset
     .map(([label, key]) => `<div><span>${label}</span><kbd>${key}</kbd></div>`)
     .join("");
+}
+
+function setBiosImportVisible(system) {
+  const isPs1 = Boolean(system?.biosId || system?.label === "PS1" || system?.core === "psx");
+
+  if (biosImportLabel) {
+    biosImportLabel.hidden = !isPs1;
+    biosImportLabel.classList.toggle("is-attention", isPs1);
+    if (isPs1 && !/importada/i.test(biosImportLabel.textContent || "")) {
+      biosImportLabel.textContent = "Importar BIOS PS1";
+    }
+  }
+
+  if (biosImportInput) {
+    biosImportInput.hidden = !isPs1;
+    biosImportInput.disabled = !isPs1;
+    biosImportInput.tabIndex = isPs1 ? 0 : -1;
+    if (!isPs1) {
+      biosImportInput.value = "";
+    }
+  }
 }
 
 function getSupportedRomExtensionsLabel() {
@@ -2606,6 +2628,7 @@ async function bootEmulator(file) {
   }
 
   const system = getRomSystem(file);
+  setBiosImportVisible(system);
   oakBitSetContext({
     title: getRomDisplayName(file),
     system: system.label,
@@ -2752,6 +2775,7 @@ if (romInput && romStatus && romFileName) {
       romStatus.textContent = "Sem ROM carregada";
       romFileName.textContent = "Nenhum arquivo selecionado";
       hudMode.textContent = "Aguardando ROM";
+      setBiosImportVisible(null);
       if (screenBadge) {
         setSessionBadgeText("Pronto para iniciar");
       }
@@ -2764,6 +2788,7 @@ if (romInput && romStatus && romFileName) {
     await flushActiveSessionPlaytime();
 
     romStatus.textContent = "Arquivo selecionado";
+    setBiosImportVisible(getRomSystem(file));
     syncSessionSummary();
 
     romStatus.textContent = "ROM pronta para integrar";
@@ -2815,16 +2840,30 @@ if (dockFullscreen && emulatorRuntime) {
 }
 
 document.addEventListener("fullscreenchange", () => {
+  const isFullscreen = Boolean(document.fullscreenElement);
   syncPokedexFullscreenHost();
   syncOakBitFullscreenHost();
-  if (document.fullscreenElement) {
+  document.body.classList.toggle("is-runtime-fullscreen", isFullscreen);
+
+  if (isFullscreen) {
+    wasInFullscreen = true;
     oakBitSay("Tela cheia ativada. Bom jogo.", "happy", 2800);
   }
-  if (!document.fullscreenElement && document.body.classList.contains("is-pokedex-open")) {
+
+  if (!isFullscreen && document.body.classList.contains("is-pokedex-open")) {
     setPokedexOpen(false);
   }
+
   syncDockState();
   window.setTimeout(() => syncRuntimeViewport(), 60);
+  if (!isFullscreen && wasInFullscreen) {
+    window.setTimeout(() => {
+      syncRuntimeViewport();
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }, 120);
+  }
 });
 
 window.addEventListener("message", (event) => {

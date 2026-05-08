@@ -805,6 +805,13 @@ function buildChallengeRuntimeDocument({ core, gameName, gameUrl, biosUrl }) {
     body.oak-control-settings-open #player {
       min-height: 100%;
     }
+    .ejs_control_body input[type='text'] {
+      background: rgba(12, 18, 32, 0.96) !important;
+      border: 1px solid rgba(96, 165, 250, 0.78) !important;
+      color: #eaf2ff !important;
+      -webkit-text-fill-color: #eaf2ff !important;
+      text-shadow: none !important;
+    }
   </style>
 </head>
 <body>
