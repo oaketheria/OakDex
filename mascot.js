@@ -703,13 +703,18 @@ function getTutorialSteps() {
   };
 
   if (document.body.classList.contains("oakduo-page")) {
-    add(".oakduo-room-card", "1. Convide o outro jogador", "Clique em Copiar convite e envie o link. A outra pessoa abre a mesma sala no navegador dela.", "1. Invite the Other Player", "Click Copy invite and send the link. The other person opens the same room in their browser.");
-    add("[data-player-panel='1'] .oakduo-actions", "2. Prepare o Jogador 1", "Clique em Escolher ROM no lado esquerdo. Depois use Assumir controle quando quiser que o teclado controle este emulador.", "2. Prepare Player 1", "Click Choose ROM on the left side. Then use Take control when you want the keyboard to control this emulator.");
-    add("[data-player-panel='2'] .oakduo-actions", "3. Prepare o Jogador 2", "Repita no lado direito se quiser outra ROM ou outra sessão. O botão Assumir controle troca o foco entre os dois emuladores.", "3. Prepare Player 2", "Repeat on the right side if you want another ROM or another session. Take control switches focus between the two emulators.");
-    add("#oakduo-create-offer", "4. Comece a conexão", "Quem vai iniciar clica em Criar oferta. Quando o código aparecer em Seu código, copie e envie para a outra pessoa.", "4. Start the Connection", "The person starting clicks Create offer. When the code appears in Your code, copy it and send it to the other person.");
-    add("#oakduo-accept-offer", "5. Gere a resposta", "No outro navegador, cole a oferta em Recebido e clique em Gerar resposta. Copie o novo código gerado e envie de volta.", "5. Generate the Answer", "In the other browser, paste the offer in Received and click Generate answer. Copy the new generated code and send it back.");
-    add("#oakduo-apply-answer", "6. Conclua e transmita", "No navegador que criou a oferta, cole a resposta em Recebido e clique em Concluir conexão. Depois use Transmitir este lado no emulador que quer compartilhar.", "6. Finish and Stream", "In the browser that created the offer, paste the answer in Received and click Finish connection. Then use Stream this side on the emulator you want to share.");
-    add(".oakduo-stage", "7. Pokédex em tela cheia", "P abre ou fecha a Pokédex integrada. V ativa o comando de voz: diga abrir pokédex, fechar pokédex ou buscar pikachu na pokédex.", "7. Fullscreen Pokedex", "P opens or closes the integrated Pokedex. V starts voice commands: say open pokedex, close pokedex, or search pikachu in pokedex.");
+    if (document.body.classList.contains("is-oakduo-setup-open")) {
+      add("[data-oakduo-role='1']", "Criar oferta", "Use este botão no navegador que vai jogar no lado esquerdo. Depois envie o convite e o código de oferta.", "Create Offer", "Use this button in the browser that will play on the left side. Then send the invite and offer code.");
+      add("[data-oakduo-role='2']", "Entrar na sala", "Use este botão no navegador que recebeu o convite. Cole a oferta recebida e gere a resposta.", "Join Room", "Use this button in the browser that received the invite. Paste the received offer and generate the answer.");
+      add(".oakduo-setup-connect", "Códigos", "O campo de cima é o código que você envia. O campo de baixo recebe o código enviado pela outra pessoa.", "Codes", "The top field is the code you send. The bottom field receives the code sent by the other person.");
+      add(".oakduo-setup-actions", "Próxima ação", "Depois de escolher um lado, use os botões liberados: Convite, Oferta, Resposta, Conectar, ROM e Transmitir.", "Next Action", "After choosing a side, use the enabled buttons: Invite, Offer, Answer, Connect, ROM, and Stream.");
+    } else {
+      add(".oakduo-room-card", "Sala", "Aqui ficam o código da sala, o último evento e os atalhos para convite, nova sala e tela cheia.", "Room", "This shows the room code, last event, and shortcuts for invite, new room, and fullscreen.");
+      add("[data-player-panel='1']", "Jogador 1", "Este lado é controlado e transmitido pelo navegador que criou a oferta. No outro navegador ele aparece como Recebendo.", "Player 1", "This side is controlled and streamed by the browser that created the offer. In the other browser it appears as Receiving.");
+      add("[data-player-panel='2']", "Jogador 2", "Este lado é controlado e transmitido pelo navegador que entrou na sala. No outro navegador ele aparece como Recebendo.", "Player 2", "This side is controlled and streamed by the browser that joined the room. In the other browser it appears as Receiving.");
+      add(".oakduo-stage", "ROM e transmissão", "Escolha ROM e transmita apenas no seu lado. A tela remota chega pelo vídeo do outro painel.", "ROM and Streaming", "Choose a ROM and stream only on your side. The remote screen arrives through the video in the other panel.");
+      add(".oakduo-stage", "Pokédex", "P abre ou fecha a Pokédex integrada. V ativa a voz para abrir, fechar ou buscar Pokémon.", "Pokedex", "P opens or closes the integrated Pokedex. V enables voice commands to open, close, or search Pokemon.");
+    }
   } else if (document.body.classList.contains("home-page")) {
     add(".rom-library-hero", "Home", "Aqui você escolhe uma capa para abrir a página da ROM.", "Home", "Choose a cover here to open a ROM page.");
     add(".home-upload-panel", "Adicionar ROM", "Use este painel para salvar ROMs locais neste navegador.", "Add ROM", "Use this panel to save local ROMs in this browser.");
@@ -731,8 +736,8 @@ function getTutorialSteps() {
     selector: ".oakbit-button",
     title: pt ? "OakBit" : "OakBit",
     copy: pt
-      ? (document.body.classList.contains("oakduo-page") ? "No OakDuo eu fico fora dos emuladores para ajudar com sala, controle e conexão." : "Tela cheia e Pokédex ficam aqui no mascote, junto com saves, tutorial, skins e opções da sessão.")
-      : (document.body.classList.contains("oakduo-page") ? "In OakDuo I stay outside the emulators to help with room, control, and connection." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options."),
+      ? (document.body.classList.contains("oakduo-page") ? "No OakDuo eu fico fora dos emuladores para ajudar com lado, convite, conexão e transmissão." : "Tela cheia e Pokédex ficam aqui no mascote, junto com saves, tutorial, skins e opções da sessão.")
+      : (document.body.classList.contains("oakduo-page") ? "In OakDuo I stay outside the emulators to help with side, invite, connection, and streaming." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options."),
   });
 
   return steps;
@@ -783,7 +788,7 @@ function renderTutorial() {
     <div class="oakbit-tour-actions">
       <button type="button" data-oakbit-tour="prev"${tutorialIndex === 0 ? " disabled" : ""}>${locale === "pt" ? "Voltar" : "Back"}</button>
       <button type="button" data-oakbit-tour="skip">${locale === "pt" ? "Pular" : "Skip"}</button>
-      <button type="button" data-oakbit-tour="next">${tutorialIndex === tutorialSteps.length - 1 ? (locale === "pt" ? "Concluir" : "Done") : (locale === "pt" ? "Proximo" : "Next")}</button>
+      <button type="button" data-oakbit-tour="next">${tutorialIndex === tutorialSteps.length - 1 ? (locale === "pt" ? "Concluir" : "Done") : (locale === "pt" ? "Próximo" : "Next")}</button>
     </div>
   `;
   positionTutorial();

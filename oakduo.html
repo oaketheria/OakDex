@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
@@ -34,6 +34,75 @@
       </header>
 
       <main class="oakduo-main">
+        <section class="oakduo-setup" id="oakduo-setup" aria-label="Preparar OakDuo">
+          <div class="oakduo-setup-panel">
+            <div class="oakduo-setup-copy">
+              <span class="oakduo-kicker">Preparar sessão</span>
+              <h1>OakDuo</h1>
+              <p>Escolha como vai entrar.</p>
+            </div>
+
+            <div class="oakduo-setup-choices" aria-label="Escolha de jogador">
+              <button type="button" data-oakduo-role="1">
+                <span class="oakduo-controller-icon" aria-hidden="true">
+                  <span class="oakduo-controller-dpad"></span>
+                  <span class="oakduo-controller-button"></span>
+                </span>
+                <strong>Criar oferta</strong>
+                <small>Cria a sala, envia o convite e joga no lado esquerdo.</small>
+              </button>
+              <button type="button" data-oakduo-role="2">
+                <span class="oakduo-controller-icon oakduo-controller-icon-alt" aria-hidden="true">
+                  <span class="oakduo-controller-dpad"></span>
+                  <span class="oakduo-controller-button"></span>
+                </span>
+                <strong>Entrar na sala</strong>
+                <small>Recebe o convite, cola a oferta e joga no lado direito.</small>
+              </button>
+            </div>
+
+            <ol class="oakduo-setup-flow">
+              <li data-setup-step="role">Papel</li>
+              <li data-setup-step="connection">Conexão</li>
+              <li data-setup-step="rom">ROM</li>
+              <li data-setup-step="stream">Transmissão</li>
+            </ol>
+
+            <div class="oakduo-setup-connect" aria-label="Códigos de conexão">
+              <div class="oakduo-setup-connect-head">
+                <div>
+                  <span class="oakduo-kicker">Conexão manual</span>
+                  <strong id="oakduo-peer-status" aria-live="polite">Desconectado</strong>
+                </div>
+                <button type="button" data-setup-action="new-session">Nova sessão</button>
+              </div>
+              <label class="oakduo-setup-signal">
+                <span>Seu código para enviar</span>
+                <textarea id="oakduo-local-signal" readonly placeholder="O código gerado aparece aqui."></textarea>
+              </label>
+              <label class="oakduo-setup-signal">
+                <span>Código recebido do outro jogador</span>
+                <textarea id="oakduo-remote-signal" placeholder="Cole aqui a oferta ou a resposta recebida."></textarea>
+              </label>
+            </div>
+
+            <div class="oakduo-setup-actions" aria-label="Ações de preparação">
+              <button type="button" data-setup-action="continue">Abrir emuladores</button>
+              <button type="button" data-setup-action="new-session">Nova sessão</button>
+              <button type="button" data-setup-action="copy-invite">Convite</button>
+              <button type="button" data-setup-action="create-offer">Oferta</button>
+              <button type="button" data-setup-action="accept-offer">Resposta</button>
+              <button type="button" id="oakduo-copy-signal" data-setup-action="copy-signal">Copiar código</button>
+              <button type="button" data-setup-action="apply-answer">Conectar</button>
+              <button type="button" data-setup-action="choose-rom">ROM</button>
+              <button type="button" data-setup-action="stream">Transmitir</button>
+            </div>
+
+            <p class="oakduo-setup-status" id="oakduo-setup-status" aria-live="polite">Escolha Jogador 1 ou Jogador 2 para começar.</p>
+            <div class="oakduo-setup-guide" id="oakduo-setup-guide" aria-live="polite"></div>
+          </div>
+        </section>
+
         <section class="oakduo-hero" aria-label="Resumo do OakDuo">
           <div class="oakduo-hero-copy">
             <span class="oakduo-kicker">Modo dupla grátis</span>
@@ -42,8 +111,11 @@
 
           <div class="oakduo-room-card" aria-label="Resumo da sala">
             <span>Sala <strong id="oakduo-room-code">OAK-247</strong></span>
-            <strong id="oakduo-active-player">Jogador 1 no controle</strong>
-            <p>Abra o convite no outro navegador e conecte pela sala manual.</p>
+            <strong id="oakduo-active-player" aria-live="polite">Jogador 1 no controle</strong>
+            <p id="oakduo-room-hint">
+              <span id="oakduo-next-step">Abra o convite no outro navegador e conecte pela sala manual.</span>
+              <small id="oakduo-last-event">Aguardando sessão</small>
+            </p>
             <div class="oakduo-room-actions">
               <button type="button" id="oakduo-new-room">Nova sala</button>
               <button type="button" id="oakduo-copy-invite">Copiar convite</button>
@@ -58,9 +130,9 @@
               <div>
                 <span class="oakduo-player-kicker">Lado esquerdo</span>
                 <h2>Jogador 1</h2>
-                <p class="oakduo-rom-meta" data-player-rom="1">Nenhuma ROM carregada</p>
+                <p class="oakduo-rom-meta" data-player-rom="1" aria-live="polite">Nenhuma ROM carregada</p>
               </div>
-              <span class="oakduo-status" data-player-status="1">Pronto</span>
+              <span class="oakduo-status" data-player-status="1" aria-live="polite">Pronto</span>
             </header>
 
             <div class="oakduo-frame-wrap">
@@ -71,6 +143,7 @@
                 src="./emulator.html?duo=1&player=1"
                 allow="fullscreen; gamepad"
               ></iframe>
+              <span class="oakduo-remote-badge" data-remote-badge="1">Recebendo J1</span>
               <video class="oakduo-remote-player-video" data-remote-player="1" autoplay playsinline></video>
             </div>
 
@@ -84,8 +157,9 @@
           <aside class="oakduo-session-strip" aria-label="Sessão OakDuo">
             <span class="oakduo-session-dot" aria-hidden="true"></span>
             <strong id="oakduo-strip-code">OAK-247</strong>
-            <span>Local</span>
-            <span>Gratis</span>
+            <span id="oakduo-strip-player-1" aria-live="polite">J1 sem ROM</span>
+            <span id="oakduo-strip-player-2" aria-live="polite">J2 sem ROM</span>
+            <span id="oakduo-strip-peer" aria-live="polite">Offline</span>
           </aside>
 
           <article class="oakduo-player" data-player-panel="2">
@@ -93,9 +167,9 @@
               <div>
                 <span class="oakduo-player-kicker">Lado direito</span>
                 <h2>Jogador 2</h2>
-                <p class="oakduo-rom-meta" data-player-rom="2">Nenhuma ROM carregada</p>
+                <p class="oakduo-rom-meta" data-player-rom="2" aria-live="polite">Nenhuma ROM carregada</p>
               </div>
-              <span class="oakduo-status" data-player-status="2">Pronto</span>
+              <span class="oakduo-status" data-player-status="2" aria-live="polite">Pronto</span>
             </header>
 
             <div class="oakduo-frame-wrap">
@@ -106,6 +180,7 @@
                 src="./emulator.html?duo=1&player=2"
                 allow="fullscreen; gamepad"
               ></iframe>
+              <span class="oakduo-remote-badge" data-remote-badge="2">Recebendo J2</span>
               <video class="oakduo-remote-player-video" data-remote-player="2" autoplay playsinline></video>
             </div>
 
@@ -123,23 +198,23 @@
               <span class="oakduo-kicker">Online grátis</span>
               <h2>Conexão manual</h2>
             </div>
-            <strong id="oakduo-peer-status">Desconectado</strong>
+            <strong aria-live="polite">Conexão na preparação</strong>
           </div>
 
           <div class="oakduo-webrtc-grid">
             <label class="oakduo-signal-box">
               <span>Seu código</span>
-              <textarea id="oakduo-local-signal" readonly placeholder="Código gerado"></textarea>
+              <textarea readonly placeholder="Use a tela de preparação para gerar o código"></textarea>
               <span class="oakduo-box-actions">
                 <button type="button" id="oakduo-create-offer">Criar oferta</button>
                 <button type="button" id="oakduo-accept-offer">Gerar resposta</button>
-                <button type="button" id="oakduo-copy-signal">Copiar código</button>
+                <button type="button">Copiar código</button>
               </span>
             </label>
 
             <label class="oakduo-signal-box">
               <span>Recebido</span>
-              <textarea id="oakduo-remote-signal" placeholder="Cole o código"></textarea>
+              <textarea placeholder="Use a tela de preparação para colar o código"></textarea>
               <span class="oakduo-box-actions">
                 <button type="button" id="oakduo-apply-answer">Concluir conexão</button>
               </span>

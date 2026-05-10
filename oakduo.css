@@ -197,11 +197,216 @@ body.oakduo-page .oakbit-bubble {
     filter 180ms ease;
 }
 
+.oakduo-actions button[data-oak-icon],
+.oakduo-room-actions button[data-oak-icon],
+.oakduo-webrtc-actions button[data-oak-icon],
+.oakduo-box-actions button[data-oak-icon] {
+  gap: 7px;
+}
+
+.oakduo-actions button[data-oak-icon-only],
+.oakduo-room-actions button[data-oak-icon-only],
+.oakduo-webrtc-actions button[data-oak-icon-only] {
+  width: 38px;
+  min-width: 38px;
+  min-height: 34px;
+  padding: 0;
+  overflow: visible;
+  gap: 0;
+  font-size: 0;
+}
+
+.oakduo-actions button[data-oak-icon-only]::after,
+.oakduo-room-actions button[data-oak-icon-only]::after,
+.oakduo-webrtc-actions button[data-oak-icon-only]::after {
+  content: attr(data-oak-tooltip);
+  position: absolute;
+  inset: auto auto calc(100% + 9px) 50%;
+  z-index: 30;
+  width: max-content;
+  max-width: min(220px, 72vw);
+  padding: 6px 8px;
+  border: 1px solid rgba(174, 183, 255, 0.24);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.96), rgba(4, 8, 18, 0.94)),
+    rgba(2, 5, 14, 0.92);
+  color: rgba(245, 247, 255, 0.94);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.oakduo-actions button[data-oak-icon-only]:hover::after,
+.oakduo-room-actions button[data-oak-icon-only]:hover::after,
+.oakduo-webrtc-actions button[data-oak-icon-only]:hover::after,
+.oakduo-actions button[data-oak-icon-only]:focus-visible::after,
+.oakduo-room-actions button[data-oak-icon-only]:focus-visible::after,
+.oakduo-webrtc-actions button[data-oak-icon-only]:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.oakduo-room-actions button[data-oak-icon-only] {
+  width: 34px;
+  min-width: 34px;
+  min-height: 31px;
+}
+
+.oakduo-webrtc-actions button[data-oak-icon-only] {
+  width: 36px;
+  min-width: 36px;
+}
+
+.oakduo-actions button[data-oak-icon]::before,
+.oakduo-room-actions button[data-oak-icon]::before,
+.oakduo-webrtc-actions button[data-oak-icon]::before,
+.oakduo-box-actions button[data-oak-icon]::before {
+  position: static;
+  z-index: auto;
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  place-items: center;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 58%),
+    rgba(245, 247, 255, 0.08);
+  color: currentColor;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  opacity: 0.92;
+  transform: none;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    filter 180ms ease;
+}
+
+.oakduo-actions button[data-oak-icon]:hover::before,
+.oakduo-room-actions button[data-oak-icon]:hover::before,
+.oakduo-webrtc-actions button[data-oak-icon]:hover::before,
+.oakduo-box-actions button[data-oak-icon]:hover::before,
+.oakduo-actions button[data-oak-icon]:focus-visible::before,
+.oakduo-room-actions button[data-oak-icon]:focus-visible::before,
+.oakduo-webrtc-actions button[data-oak-icon]:focus-visible::before,
+.oakduo-box-actions button[data-oak-icon]:focus-visible::before {
+  opacity: 1;
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 5px currentColor);
+}
+
+.oakduo-actions button[data-oak-icon="rom"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, currentColor 0 2px, transparent 2px 4px, currentColor 4px 6px, transparent 6px 8px, currentColor 8px 10px, transparent 10px),
+    linear-gradient(180deg, transparent 0 4px, currentColor 4px 6px, transparent 6px),
+    rgba(245, 247, 255, 0.08);
+  background-position: center bottom, center, center;
+  background-size: 12px 4px, 10px 10px, auto;
+  background-repeat: no-repeat;
+}
+
+.oakduo-actions button[data-oak-icon="control"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, currentColor 0 2px, transparent 2.5px),
+    linear-gradient(currentColor 0 0) center / 9px 2px no-repeat,
+    linear-gradient(currentColor 0 0) center / 2px 9px no-repeat,
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-actions button[data-oak-icon="stream"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  background:
+    radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px),
+    radial-gradient(circle at 50% 50%, transparent 0 5px, currentColor 5.4px 6.4px, transparent 6.8px),
+    radial-gradient(circle at 50% 50%, transparent 0 8px, currentColor 8.2px 9px, transparent 9.4px),
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-actions button[data-oak-icon="stream"].is-streaming-action::before,
+.oakduo-actions button[data-oak-icon="control"].is-current-control::before,
+.oakduo-box-actions button[data-oak-icon="signal"]:not(:disabled)::before {
+  animation: oakduo-icon-pulse 1300ms ease-in-out infinite;
+}
+
+.oakduo-room-actions button[data-oak-icon="plus"]::before,
+.oakduo-box-actions button[data-oak-icon="reply"]::before {
+  content: "+";
+}
+
+.oakduo-room-actions button[data-oak-icon="invite"]::before,
+.oakduo-box-actions button[data-oak-icon="copy"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  background:
+    linear-gradient(currentColor 0 0) 4px 4px / 8px 1px no-repeat,
+    linear-gradient(currentColor 0 0) 4px 7px / 8px 1px no-repeat,
+    linear-gradient(currentColor 0 0) 4px 10px / 6px 1px no-repeat,
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-room-actions button[data-oak-icon="screen"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  background:
+    linear-gradient(currentColor 0 0) center bottom 2px / 8px 1px no-repeat,
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-box-actions button[data-oak-icon="signal"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 50%, currentColor 0 2px, transparent 2.5px),
+    conic-gradient(from -45deg, transparent 0 25%, currentColor 25% 30%, transparent 30% 100%),
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-box-actions button[data-oak-icon="link"]::before {
+  content: "<>";
+  font-size: 0.9rem;
+}
+
+.oakduo-webrtc-actions button[data-oak-icon="stop"]::before {
+  content: "";
+  border: 1px solid currentColor;
+  background:
+    linear-gradient(currentColor 0 0) center / 7px 7px no-repeat,
+    rgba(245, 247, 255, 0.08);
+}
+
+.oakduo-webrtc-actions button[data-oak-icon="disconnect"]::before {
+  content: "x";
+  font-size: 0.9rem;
+}
+
 .oakduo-nav a::before,
-.oakduo-actions button::before,
-.oakduo-room-actions button::before,
-.oakduo-webrtc-actions button::before,
-.oakduo-box-actions button::before {
+.oakduo-actions button:not([data-oak-icon])::before,
+.oakduo-room-actions button:not([data-oak-icon])::before,
+.oakduo-webrtc-actions button:not([data-oak-icon])::before,
+.oakduo-box-actions button:not([data-oak-icon])::before {
   content: "";
   position: absolute;
   inset: 1px;
@@ -218,9 +423,9 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-nav a::after,
-.oakduo-actions button::after,
-.oakduo-room-actions button::after,
-.oakduo-webrtc-actions button::after,
+.oakduo-actions button:not([data-oak-icon-only])::after,
+.oakduo-room-actions button:not([data-oak-icon-only])::after,
+.oakduo-webrtc-actions button:not([data-oak-icon-only])::after,
 .oakduo-box-actions button::after {
   content: "";
   position: absolute;
@@ -269,29 +474,29 @@ body.oakduo-page .oakbit-bubble {
 
 .oakduo-nav a:hover::before,
 .oakduo-nav a.is-active::before,
-.oakduo-actions button:hover::before,
-.oakduo-room-actions button:hover::before,
-.oakduo-webrtc-actions button:hover::before,
-.oakduo-box-actions button:hover::before,
+.oakduo-actions button:not([data-oak-icon]):hover::before,
+.oakduo-room-actions button:not([data-oak-icon]):hover::before,
+.oakduo-webrtc-actions button:not([data-oak-icon]):hover::before,
+.oakduo-box-actions button:not([data-oak-icon]):hover::before,
 .oakduo-nav a:focus-visible::before,
-.oakduo-actions button:focus-visible::before,
-.oakduo-room-actions button:focus-visible::before,
-.oakduo-webrtc-actions button:focus-visible::before,
-.oakduo-box-actions button:focus-visible::before {
+.oakduo-actions button:not([data-oak-icon]):focus-visible::before,
+.oakduo-room-actions button:not([data-oak-icon]):focus-visible::before,
+.oakduo-webrtc-actions button:not([data-oak-icon]):focus-visible::before,
+.oakduo-box-actions button:not([data-oak-icon]):focus-visible::before {
   opacity: 1;
   transform: translateX(20%);
 }
 
 .oakduo-nav a:hover::after,
 .oakduo-nav a.is-active::after,
-.oakduo-actions button:hover::after,
-.oakduo-room-actions button:hover::after,
-.oakduo-webrtc-actions button:hover::after,
+.oakduo-actions button:not([data-oak-icon-only]):hover::after,
+.oakduo-room-actions button:not([data-oak-icon-only]):hover::after,
+.oakduo-webrtc-actions button:not([data-oak-icon-only]):hover::after,
 .oakduo-box-actions button:hover::after,
 .oakduo-nav a:focus-visible::after,
-.oakduo-actions button:focus-visible::after,
-.oakduo-room-actions button:focus-visible::after,
-.oakduo-webrtc-actions button:focus-visible::after,
+.oakduo-actions button:not([data-oak-icon-only]):focus-visible::after,
+.oakduo-room-actions button:not([data-oak-icon-only]):focus-visible::after,
+.oakduo-webrtc-actions button:not([data-oak-icon-only]):focus-visible::after,
 .oakduo-box-actions button:focus-visible::after {
   opacity: 0.62;
   filter: blur(9px) saturate(1.7);
@@ -311,6 +516,384 @@ body.oakduo-page .oakbit-bubble {
   display: grid;
   gap: 10px;
   margin-top: 8px;
+}
+
+.oakduo-setup {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  place-items: center;
+  padding: 20px;
+  background:
+    linear-gradient(180deg, rgba(2, 5, 14, 0.5), rgba(2, 5, 14, 0.78)),
+    rgba(2, 5, 14, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+body.is-oakduo-setup-open .oakduo-setup {
+  display: grid;
+}
+
+body.is-oakduo-setup-open .oakduo-hero,
+body.is-oakduo-setup-open .oakduo-stage,
+body.is-oakduo-setup-open .oakduo-webrtc {
+  visibility: hidden;
+}
+
+.oakduo-setup-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.72fr) minmax(360px, 1.28fr);
+  gap: 12px;
+  width: min(940px, 100%);
+  padding: 16px;
+  border: 1px solid rgba(174, 183, 255, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(12, 18, 36, 0.94), rgba(4, 8, 18, 0.92)),
+    rgba(2, 5, 14, 0.74);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 24px 70px rgba(0, 0, 0, 0.46);
+}
+
+.oakduo-setup-copy h1 {
+  margin: 4px 0 8px;
+  font-family: "Orbitron", sans-serif;
+  font-size: clamp(1.55rem, 3vw, 2.35rem);
+  letter-spacing: 0;
+}
+
+.oakduo-setup-copy p {
+  margin: 0;
+  color: rgba(245, 247, 255, 0.72);
+  line-height: 1.45;
+}
+
+.oakduo-setup-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.oakduo-setup-choices button {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-areas:
+    "icon title"
+    "icon meta";
+  align-items: center;
+  gap: 2px 10px;
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid rgba(36, 230, 170, 0.25);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(36, 230, 170, 0.14), rgba(8, 18, 32, 0.92)),
+    rgba(2, 5, 14, 0.54);
+  color: #f5f7ff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.oakduo-setup-choices button:hover,
+.oakduo-setup-choices button:focus-visible,
+.oakduo-setup-choices button.is-selected {
+  border-color: rgba(36, 230, 170, 0.62);
+  background:
+    linear-gradient(180deg, rgba(36, 230, 170, 0.22), rgba(8, 18, 32, 0.92)),
+    rgba(2, 5, 14, 0.54);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.oakduo-controller-icon {
+  grid-area: icon;
+  position: relative;
+  width: 50px;
+  height: 34px;
+  border: 2px solid currentColor;
+  border-radius: 16px 16px 12px 12px;
+  color: #9dffd9;
+  background:
+    radial-gradient(circle at 18% 72%, rgba(255, 255, 255, 0.18), transparent 18%),
+    radial-gradient(circle at 82% 72%, rgba(255, 255, 255, 0.18), transparent 18%),
+    rgba(2, 8, 16, 0.2);
+  box-shadow: 0 0 16px rgba(36, 230, 170, 0.18);
+}
+
+.oakduo-controller-icon::before,
+.oakduo-controller-icon::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 9px;
+  height: 8px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+}
+
+.oakduo-controller-icon::before {
+  left: 9px;
+}
+
+.oakduo-controller-icon::after {
+  right: 9px;
+}
+
+.oakduo-controller-dpad,
+.oakduo-controller-dpad::before {
+  position: absolute;
+  content: "";
+  left: 10px;
+  top: 15px;
+  width: 14px;
+  height: 4px;
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.oakduo-controller-dpad::before {
+  left: 5px;
+  top: -5px;
+  width: 4px;
+  height: 14px;
+}
+
+.oakduo-controller-button {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 9px 6px 0 currentColor;
+}
+
+.oakduo-controller-icon-alt {
+  color: #ffed65;
+}
+
+.oakduo-setup-choices strong {
+  grid-area: title;
+  font-family: "Orbitron", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.oakduo-setup-choices small {
+  grid-area: meta;
+  color: rgba(245, 247, 255, 0.68);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.oakduo-setup-flow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.oakduo-setup-flow li {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 7px;
+  color: rgba(245, 247, 255, 0.72);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.oakduo-setup-flow li.is-complete {
+  border-color: rgba(36, 230, 170, 0.38);
+  color: #9dffd9;
+}
+
+.oakduo-setup-connect {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(67, 219, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(4, 10, 24, 0.72);
+}
+
+.oakduo-setup-connect-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.oakduo-setup-connect-head strong {
+  display: block;
+  margin-top: 3px;
+  color: #cdefff;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.95rem;
+}
+
+.oakduo-setup-connect-head button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(67, 219, 255, 0.34);
+  border-radius: 7px;
+  background: rgba(8, 16, 34, 0.88);
+  color: #cdefff;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.oakduo-setup-signal {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.oakduo-setup-signal span {
+  color: rgba(245, 247, 255, 0.74);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.oakduo-setup-signal textarea {
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  border: 1px solid rgba(174, 183, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(2, 5, 14, 0.7);
+  color: #f5f7ff;
+  font: 700 0.74rem/1.35 "Rajdhani", sans-serif;
+  padding: 9px;
+}
+
+.oakduo-setup-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.oakduo-setup-actions button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(174, 183, 255, 0.2);
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(19, 25, 48, 0.96), rgba(7, 10, 24, 0.94));
+  color: rgba(245, 247, 255, 0.9);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.oakduo-setup-actions [data-setup-action="continue"] {
+  border-color: rgba(36, 230, 170, 0.45);
+  color: #9dffd9;
+}
+
+.oakduo-setup-actions [data-setup-action="copy-signal"] {
+  border-color: rgba(67, 219, 255, 0.38);
+  color: #cdefff;
+}
+
+.oakduo-setup-actions [data-setup-action="new-session"],
+.oakduo-setup-actions [data-setup-action="apply-answer"] {
+  border-color: rgba(67, 219, 255, 0.38);
+  color: #cdefff;
+}
+
+.oakduo-setup-actions [data-setup-action="copy-invite"],
+.oakduo-setup-actions [data-setup-action="create-offer"],
+.oakduo-setup-actions [data-setup-action="accept-offer"] {
+  border-color: rgba(255, 237, 101, 0.34);
+  color: #fff4a9;
+}
+
+.oakduo-setup-actions [data-setup-action="stream"] {
+  border-color: rgba(255, 185, 80, 0.4);
+  color: #ffdf91;
+}
+
+.oakduo-setup-actions button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.oakduo-setup-actions button:not(:disabled):hover,
+.oakduo-setup-actions button:not(:disabled):focus-visible {
+  border-color: rgba(36, 230, 170, 0.58);
+  outline: none;
+}
+
+body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-connect,
+body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-actions {
+  opacity: 0.46;
+}
+
+body.is-oakduo-offer-role .oakduo-setup-actions [data-setup-action="accept-offer"],
+body.is-oakduo-answer-role .oakduo-setup-actions [data-setup-action="copy-invite"],
+body.is-oakduo-answer-role .oakduo-setup-actions [data-setup-action="create-offer"],
+body.is-oakduo-answer-role:not(.is-oakduo-setup-streaming) .oakduo-setup-actions [data-setup-action="apply-answer"] {
+  display: none;
+}
+
+.oakduo-webrtc {
+  display: none;
+}
+
+.oakduo-setup-status {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #ffed65;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.oakduo-setup-guide {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.oakduo-setup-guide span {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(174, 183, 255, 0.14);
+  border-radius: 7px;
+  color: rgba(245, 247, 255, 0.72);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
 }
 
 .oakduo-hero {
@@ -386,7 +969,31 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-room-card p {
-  display: none;
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  max-width: 100%;
+  color: rgba(245, 247, 255, 0.62);
+  font-size: 0.76rem;
+  white-space: normal;
+}
+
+.oakduo-room-card p span,
+.oakduo-room-card p small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oakduo-room-card p small {
+  color: rgba(174, 183, 255, 0.72);
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .oakduo-room-card span {
@@ -469,6 +1076,32 @@ body.oakduo-page .oakbit-bubble {
     0 18px 48px rgba(0, 0, 0, 0.36);
 }
 
+.oakduo-player.is-loaded {
+  border-color: rgba(255, 237, 101, 0.28);
+}
+
+.oakduo-player.is-active.is-loaded {
+  border-color: rgba(36, 230, 170, 0.7);
+}
+
+.oakduo-player.is-streaming {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 237, 101, 0.22),
+    0 18px 48px rgba(255, 185, 80, 0.1),
+    0 18px 48px rgba(0, 0, 0, 0.34);
+}
+
+.oakduo-player.has-status-warning {
+  border-color: rgba(255, 185, 80, 0.48);
+}
+
+.oakduo-player.has-status-warning .oakduo-status {
+  border-color: rgba(255, 185, 80, 0.56);
+  background: rgba(255, 185, 80, 0.14);
+  color: #ffdf91;
+}
+
 .oakduo-player-head {
   display: flex;
   align-items: center;
@@ -511,9 +1144,28 @@ body.oakduo-page .oakbit-bubble {
   white-space: nowrap;
 }
 
+.oakduo-player.is-loaded .oakduo-status {
+  border-color: rgba(255, 237, 101, 0.36);
+  background: rgba(255, 237, 101, 0.1);
+  color: #fff4a9;
+}
+
+.oakduo-player.is-active .oakduo-status {
+  border-color: rgba(36, 230, 170, 0.48);
+  background: rgba(36, 230, 170, 0.13);
+  color: #9dffd9;
+}
+
+.oakduo-player.is-streaming .oakduo-status {
+  border-color: rgba(255, 185, 80, 0.52);
+  background: rgba(255, 185, 80, 0.14);
+  color: #ffdf91;
+}
+
 .oakduo-frame-wrap {
   position: relative;
-  min-height: 440px;
+  aspect-ratio: 4 / 3;
+  min-height: 0;
   overflow: hidden;
   border: 1px solid rgba(174, 183, 255, 0.16);
   border-radius: 8px;
@@ -528,7 +1180,7 @@ body.oakduo-page .oakbit-bubble {
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 440px;
+  min-height: 0;
   border: 0;
   background: #000;
 }
@@ -544,16 +1196,46 @@ body.oakduo-page .oakbit-bubble {
   object-fit: contain;
 }
 
+.oakduo-remote-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  display: none;
+  max-width: calc(100% - 20px);
+  padding: 5px 8px;
+  overflow: hidden;
+  border: 1px solid rgba(36, 230, 170, 0.42);
+  border-radius: 999px;
+  background: rgba(2, 8, 16, 0.78);
+  color: #9dffd9;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.oakduo-player.is-remote-streaming .oakduo-remote-badge {
+  display: none;
+}
+
 .oakduo-player.is-remote-streaming .oakduo-remote-player-video {
   display: block;
+  pointer-events: none;
 }
 
 .oakduo-player.is-remote-streaming .oakduo-frame {
-  opacity: 0.12;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .oakduo-actions {
   flex-wrap: wrap;
+  justify-content: center;
   gap: 9px;
   margin-top: 12px;
 }
@@ -571,13 +1253,26 @@ body.oakduo-page .oakbit-bubble {
     0 10px 24px rgba(36, 230, 170, 0.18);
 }
 
+.oakduo-actions button.is-current-control {
+  filter: saturate(1.08);
+  cursor: default;
+}
+
+.oakduo-actions button.is-streaming-action {
+  border-color: rgba(255, 185, 80, 0.58);
+  background:
+    linear-gradient(180deg, rgba(255, 237, 101, 0.24), rgba(255, 185, 80, 0.14)),
+    linear-gradient(180deg, rgba(43, 31, 9, 0.98), rgba(18, 12, 4, 0.94));
+  color: #ffdf91;
+}
+
 .oakduo-session-strip {
   display: flex;
   min-height: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
+  gap: 7px;
   padding: 8px 0;
   overflow: hidden;
   text-align: center;
@@ -588,11 +1283,24 @@ body.oakduo-page .oakbit-bubble {
 }
 
 .oakduo-session-strip strong {
-  display: none;
+  display: block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: #ffed65;
+  font-size: 0.72rem;
+  line-height: 1;
 }
 
 .oakduo-session-strip span:not(.oakduo-session-dot) {
-  display: none;
+  display: block;
+  max-width: 16px;
+  overflow: hidden;
+  color: rgba(245, 247, 255, 0.62);
+  font-size: 0.58rem;
+  line-height: 1;
+  text-overflow: clip;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
 .oakduo-session-dot {
@@ -672,6 +1380,27 @@ body.oakduo-page .oakbit-bubble {
   color: #cdefff;
 }
 
+body.is-oakduo-connected #oakduo-peer-status,
+body.is-oakduo-connected .oakduo-session-dot {
+  border-color: rgba(36, 230, 170, 0.46);
+  background: #24e6aa;
+  color: #02110d;
+}
+
+body.is-oakduo-connecting #oakduo-peer-status,
+body.is-oakduo-connecting .oakduo-session-dot {
+  border-color: rgba(67, 219, 255, 0.46);
+  background: #43dbff;
+  color: #03131b;
+}
+
+body.is-oakduo-warning #oakduo-peer-status,
+body.is-oakduo-warning .oakduo-session-dot {
+  border-color: rgba(255, 185, 80, 0.52);
+  background: #ffb950;
+  color: #1c1003;
+}
+
 .oakduo-webrtc-grid {
   grid-area: signals;
   display: grid;
@@ -697,6 +1426,34 @@ body.oakduo-page .oakbit-bubble {
   backdrop-filter: blur(14px);
 }
 
+.oakduo-signal-box.is-next-step {
+  border-color: rgba(67, 219, 255, 0.38);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(67, 219, 255, 0.12),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.oakduo-signal-box.is-filled {
+  border-color: rgba(36, 230, 170, 0.28);
+}
+
+.oakduo-signal-box.is-action-ready {
+  border-color: rgba(255, 237, 101, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(255, 237, 101, 0.13),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
+.oakduo-signal-box.is-conflict {
+  border-color: rgba(255, 95, 110, 0.52);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 0 1px rgba(255, 95, 110, 0.16),
+    0 16px 34px rgba(0, 0, 0, 0.22);
+}
+
 .oakduo-signal-box span {
   color: #aeb7ff;
   font-family: "Rajdhani", sans-serif;
@@ -704,6 +1461,15 @@ body.oakduo-page .oakbit-bubble {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.oakduo-actions button:disabled,
+.oakduo-room-actions button:disabled,
+.oakduo-webrtc-actions button:disabled,
+.oakduo-box-actions button:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .oakduo-signal-box .oakduo-box-actions {
@@ -955,9 +1721,9 @@ body.oakduo-page .oakbit-bubble {
 
 @media (prefers-reduced-motion: no-preference) {
   .oakduo-nav a::after,
-  .oakduo-actions button::after,
-  .oakduo-room-actions button::after,
-  .oakduo-webrtc-actions button::after,
+  .oakduo-actions button:not([data-oak-icon-only])::after,
+  .oakduo-room-actions button:not([data-oak-icon-only])::after,
+  .oakduo-webrtc-actions button:not([data-oak-icon-only])::after,
   .oakduo-box-actions button::after {
     animation: oakduo-liquid-metal 4200ms linear infinite;
   }
@@ -1000,6 +1766,19 @@ body.oakduo-page .oakbit-bubble {
   }
 }
 
+@keyframes oakduo-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(255, 237, 101, 0));
+  }
+
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 7px currentColor);
+  }
+}
+
 @media (max-width: 1180px) {
   .oakduo-stage {
     grid-template-columns: 1fr;
@@ -1013,6 +1792,12 @@ body.oakduo-page .oakbit-bubble {
 
   .oakduo-session-strip strong {
     display: none;
+  }
+
+  .oakduo-session-strip span:not(.oakduo-session-dot) {
+    max-width: none;
+    writing-mode: horizontal-tb;
+    transform: none;
   }
 
   .oakduo-session-dot::before,
@@ -1061,6 +1846,21 @@ body.oakduo-page .oakbit-bubble {
   .oakduo-hero,
   .oakduo-webrtc-grid {
     grid-template-columns: 1fr;
+  }
+
+  .oakduo-setup-panel,
+  .oakduo-setup-flow,
+  .oakduo-setup-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .oakduo-setup-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .oakduo-setup-panel {
+    max-height: calc(100vh - 32px);
+    overflow: auto;
   }
 
   .oakduo-webrtc {
@@ -1135,20 +1935,31 @@ body.oakduo-page .oakbit-bubble {
 }
 
 @media (max-width: 560px) {
-  .oakduo-actions,
-  .oakduo-room-actions,
-  .oakduo-webrtc-actions,
+  .oakduo-setup-choices,
+  .oakduo-setup-actions {
+    grid-template-columns: 1fr;
+  }
+
   .oakduo-box-actions {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .oakduo-actions,
+  .oakduo-room-actions,
+  .oakduo-webrtc-actions {
+    align-items: center;
+    justify-content: center;
+  }
+
   .oakduo-room-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, max-content);
+    justify-content: center;
   }
 
   .oakduo-webrtc-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, max-content);
+    justify-content: center;
   }
 
   .oakduo-actions button,
@@ -1156,5 +1967,317 @@ body.oakduo-page .oakbit-bubble {
   .oakduo-webrtc-actions button,
   .oakduo-box-actions button {
     width: 100%;
+  }
+
+  .oakduo-actions button[data-oak-icon-only],
+  .oakduo-room-actions button[data-oak-icon-only],
+  .oakduo-webrtc-actions button[data-oak-icon-only] {
+    width: 42px;
+    min-width: 42px;
+  }
+}
+
+body .oakduo-webrtc {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .oakduo-setup-connect,
+  .oakduo-setup-actions,
+  .oakduo-setup-guide {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.is-oakduo-setup-open .oakduo-setup-panel {
+  grid-template-columns: 1fr;
+  width: min(760px, 100%);
+  gap: 14px;
+  padding: 18px;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-copy {
+  text-align: center;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-copy p {
+  max-width: 34ch;
+  margin: 0 auto;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-flow,
+body.is-oakduo-setup-open .oakduo-setup-guide,
+body.is-oakduo-setup-open .oakduo-setup-status {
+  display: none;
+}
+
+body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-connect,
+body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-actions {
+  display: none;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-choices {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.is-oakduo-setup-open .oakduo-setup-choices button {
+  min-height: 118px;
+  padding: 18px;
+}
+
+body.is-oakduo-offer-role .oakduo-setup-choices,
+body.is-oakduo-answer-role .oakduo-setup-choices {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.is-oakduo-offer-role .oakduo-setup-choices button:not(.is-selected),
+body.is-oakduo-answer-role .oakduo-setup-choices button:not(.is-selected) {
+  display: none;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-connect {
+  grid-template-columns: 1fr;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-signal textarea {
+  min-height: 86px;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.is-oakduo-setup-open .oakduo-setup-actions [data-setup-action="new-session"],
+body.is-oakduo-setup-open .oakduo-setup-actions [data-setup-action="choose-rom"],
+body.is-oakduo-setup-open .oakduo-setup-actions [data-setup-action="stream"] {
+  display: none;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-actions [data-setup-action="continue"] {
+  display: none;
+}
+
+body.is-oakduo-setup-connected .oakduo-setup-actions [data-setup-action="copy-invite"],
+body.is-oakduo-setup-connected .oakduo-setup-actions [data-setup-action="create-offer"],
+body.is-oakduo-setup-connected .oakduo-setup-actions [data-setup-action="accept-offer"],
+body.is-oakduo-setup-connected .oakduo-setup-actions [data-setup-action="copy-signal"],
+body.is-oakduo-setup-connected .oakduo-setup-actions [data-setup-action="apply-answer"],
+body.is-oakduo-setup-connected .oakduo-setup-signal {
+  display: none;
+}
+
+body.is-oakduo-setup-connected:not(.is-oakduo-setup-has-rom) .oakduo-setup-actions [data-setup-action="choose-rom"],
+body.is-oakduo-setup-can-stream:not(.is-oakduo-setup-streaming) .oakduo-setup-actions [data-setup-action="stream"],
+body.is-oakduo-setup-streaming .oakduo-setup-actions [data-setup-action="continue"] {
+  display: block;
+}
+
+body.is-oakduo-setup-has-rom:not(.is-oakduo-setup-streaming) .oakduo-setup-actions [data-setup-action="stream"]:not(:disabled) {
+  display: block;
+}
+
+body.is-oakduo-setup-connected .oakduo-setup-connect {
+  grid-template-columns: 1fr;
+}
+
+body.is-oakduo-offer-role .oakduo-setup-actions [data-setup-action="accept-offer"] {
+  display: none;
+}
+
+body.is-oakduo-answer-role .oakduo-setup-actions [data-setup-action="copy-invite"],
+body.is-oakduo-answer-role .oakduo-setup-actions [data-setup-action="create-offer"],
+body.is-oakduo-answer-role:not(.is-oakduo-setup-streaming) .oakduo-setup-actions [data-setup-action="apply-answer"] {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  body.is-oakduo-setup-open .oakduo-setup-choices,
+  body.is-oakduo-offer-role .oakduo-setup-choices,
+  body.is-oakduo-answer-role .oakduo-setup-choices,
+  body.is-oakduo-setup-open .oakduo-setup-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.is-oakduo-setup-open .oakduo-setup-panel {
+  justify-items: center;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-choices,
+body.is-oakduo-setup-open .oakduo-setup-connect,
+body.is-oakduo-setup-open .oakduo-setup-actions {
+  width: min(100%, 720px);
+}
+
+body.is-oakduo-setup-open .oakduo-setup-choices {
+  justify-content: center;
+}
+
+body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-choices {
+  grid-template-columns: repeat(2, minmax(240px, 340px));
+}
+
+body.is-oakduo-offer-role .oakduo-setup-choices,
+body.is-oakduo-answer-role .oakduo-setup-choices {
+  grid-template-columns: minmax(260px, 380px);
+}
+
+body.is-oakduo-setup-open .oakduo-setup-connect {
+  position: relative;
+  justify-self: center;
+  padding: 12px;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-connect-head {
+  justify-content: center;
+  text-align: center;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-connect-head button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+body.is-oakduo-setup-connected .oakduo-setup-connect-head button {
+  position: static;
+}
+
+body.is-oakduo-setup-open .oakduo-setup-actions {
+  justify-content: center;
+  grid-template-columns: repeat(4, minmax(130px, 176px));
+}
+
+body.is-oakduo-setup-connected .oakduo-setup-actions {
+  grid-template-columns: minmax(180px, 260px);
+}
+
+body.is-oakduo-setup-open .oakduo-setup-actions button {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  body.is-oakduo-setup-open:not(.is-oakduo-offer-role):not(.is-oakduo-answer-role) .oakduo-setup-choices,
+  body.is-oakduo-setup-open .oakduo-setup-actions {
+    grid-template-columns: 1fr;
+  }
+
+  body.is-oakduo-setup-open .oakduo-setup-connect-head {
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  body.is-oakduo-setup-open .oakduo-setup-connect-head button {
+    position: static;
+  }
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-hero,
+body:not(.is-oakduo-setup-open) .oakduo-session-strip,
+body:not(.is-oakduo-setup-open) .oakduo-actions [data-oakduo-action="rom"],
+body:not(.is-oakduo-setup-open) .oakduo-actions [data-oakduo-action="focus"],
+body:not(.is-oakduo-setup-open) .oakduo-actions [data-oakduo-action="stream"] {
+  display: none;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-actions {
+  display: none;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-main {
+  min-height: calc(100vh - 96px);
+  align-content: center;
+  gap: 0;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-stage {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-stage:fullscreen {
+  min-height: 100vh;
+  align-items: center;
+  padding-block: 0;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-player {
+  align-content: start;
+  grid-template-rows: auto auto;
+  min-height: 0;
+  padding: 8px;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-player-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(82px, auto);
+  gap: 8px;
+  min-height: 38px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-player-head > div {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-player h2 {
+  display: inline;
+  margin: 0;
+  font-size: clamp(0.95rem, 1.35vw, 1.25rem);
+  line-height: 1;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-player-kicker {
+  display: inline;
+  margin-right: 8px;
+  font-size: 0.62rem;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-rom-meta {
+  display: inline;
+  margin: 0 0 0 8px;
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-status {
+  justify-self: end;
+  max-width: 94px;
+  min-height: 24px;
+  padding-inline: 9px;
+  overflow: hidden;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-frame-wrap {
+  aspect-ratio: 3 / 2;
+  height: auto;
+  max-height: calc(100vh - 158px);
+  min-height: 0;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-frame,
+body:not(.is-oakduo-setup-open) .oakduo-remote-player-video {
+  height: 100%;
+  min-height: 0;
+}
+
+body:not(.is-oakduo-setup-open) .oakduo-actions {
+  margin-top: 8px;
+}
+
+@media (max-width: 900px) {
+  body:not(.is-oakduo-setup-open) .oakduo-stage {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.is-oakduo-setup-open) .oakduo-player {
+    min-height: 62vh;
   }
 }

@@ -10,7 +10,7 @@ OakRom é um projeto web vanilla com servidor Node.js simples. Ele combina:
 - Emulador via EmulatorJS.
 - Página dedicada de ROM.
 - Pokédex integrada ao emulador.
-- OakDuo com dois emuladores lado a lado e conexão manual WebRTC.
+- OakDuo com dois emuladores lado a lado, fluxo por papel e conexão manual WebRTC.
 - Mascote OakBit com menu, tutorial, atalhos e comportamento contextual.
 - Oak Challenge para runs Pokémon/Nuzlocke/Hackroms com overlay OBS.
 
@@ -49,8 +49,8 @@ Servidor padrão:
 - `emulator.html`: tela completa do emulador antigo/launcher.
 - `emulator.js`: boot do EmulatorJS, biblioteca local, fullscreen, saves, Pokédex integrada e eventos do OakBit.
 - `emulator.css`: layout do emulador e Pokédex integrada.
-- `oakduo.html`: tela OakDuo com dois emuladores, sala, conexão manual, OakBit e Pokédex integrada.
-- `oakduo.js`: lógica de sala, troca de controle, WebRTC, transmissão, nova sala, Pokédex integrada e sincronização de ROM remota.
+- `oakduo.html`: tela OakDuo com setup por papel, dois emuladores, sala, conexão manual, OakBit e Pokédex integrada.
+- `oakduo.js`: lógica de sala, papel do jogador, WebRTC, transmissão remota, nova sala, Pokédex integrada e sincronização de ROM remota.
 - `oakduo.css`: layout do OakDuo, botões, separador central, conexão manual e overlay da Pokédex.
 - `oak-challenge.html`: página de runs Pokémon, modo streamer, emulador Challenge e overlay OBS.
 - `oak-challenge.js`: lógica de runs, time/box, PokeAPI, rotas, overlay OBS, EmulatorJS direto no overlay e Pokédex integrada.
@@ -92,11 +92,13 @@ OakDuo fica em `oakduo.html` e usa dois `emulator.html?duo=1&player=<n>` dentro 
 Funcionalidades:
 
 - Dois emuladores lado a lado.
-- Cada emulador tem ações próprias: escolher ROM, assumir controle e transmitir este lado.
+- Setup por papel: `Criar oferta` seleciona o Jogador 1/lado esquerdo; `Entrar na sala` seleciona o Jogador 2/lado direito.
+- Cada navegador escolhe ROM, controla e transmite apenas o próprio lado.
+- O lado remoto deve aparecer como `Recebendo` quando a transmissão do outro navegador chega.
 - Separador central fino, sem informações duplicadas.
 - Card de sala com código, jogador no controle, nova sala, copiar convite e tela cheia.
 - Botão `Nova sala` gera outro código, atualiza a URL, limpa códigos WebRTC antigos e desconecta a sessão anterior.
-- Conexão manual por WebRTC usando oferta, resposta e conclusão de conexão.
+- Conexão manual por WebRTC: Jogador 1 cria oferta, Jogador 2 gera resposta e Jogador 1 conclui a conexão.
 - Transmissão do lado escolhido por `captureStream`.
 - Sincronização do status e nome da ROM remota entre navegadores.
 - OakBit único no canto da página, fora dos iframes.
@@ -110,6 +112,7 @@ Observações técnicas:
 - O código da sala é visual e usado no convite; não é uma sala persistida em servidor.
 - A conexão real depende dos códigos WebRTC manuais.
 - Se a conexão cair, normalmente é preciso refazer oferta, resposta e conclusão.
+- Depois de alterar WebRTC ou transmissão, recarregue as duas abas e refaça oferta/resposta antes de testar.
 - `mascot.js` não monta OakBit dentro dos iframes `duo=1`; o OakBit fica apenas na página OakDuo.
 
 ## Emulador e ROM
@@ -184,7 +187,7 @@ Recursos:
 - Menu por categorias: Sessão, Saves e OakBit.
 - Ações contextuais: Voltar Home, Menu da tela, Tela cheia, Pokédex, Voz da Pokédex, Importar save e Exportar save.
 - Tutorial flutuante contextual.
-- Tutorial específico para OakDuo com passos reais de convite, ROMs, conexão, transmissão e Pokédex.
+- Tutorial específico para OakDuo com passos contextuais: setup por papel, códigos WebRTC, ROM, transmissão, estado `Recebendo` e Pokédex.
 - Tutorial específico no Oak Challenge.
 - Modos: `library`, `emulator`, `pokedex`, `system-alert`.
 - Energia persistente.

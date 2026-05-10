@@ -29,7 +29,7 @@ Depois abra:
 - Pokédex principal com busca, filtros, detalhes, sprites, cries e modo embed.
 - Pokédex integrada no emulador, no OakDuo e no Oak Challenge.
 - OakBit como assistente contextual, com tutorial, atalhos, skins, energia, voz e suporte a fullscreen.
-- OakDuo em `oakduo.html`, com dois emuladores lado a lado, conexão manual WebRTC, convite por sala, tela cheia, Pokédex integrada e OakBit fora dos iframes.
+- OakDuo em `oakduo.html`, com dois emuladores lado a lado, fluxo por papel, conexão manual WebRTC, convite por sala, transmissão remota, tela cheia, Pokédex integrada e OakBit fora dos iframes.
 - Oak Challenge para runs Pokémon, Nuzlocke e hackroms, com overlay OBS, time, box, rotas, badges, notas e Pokédex integrada.
 - Favicon próprio em `assets/favicon.svg`.
 
@@ -43,15 +43,21 @@ Arquivos principais:
 
 Recursos atuais:
 
-- Dois emuladores lado a lado, com controles separados para Jogador 1 e Jogador 2.
-- Botões por emulador: escolher ROM, assumir controle e transmitir este lado.
+- Dois emuladores lado a lado: Jogador 1 no lado esquerdo e Jogador 2 no lado direito.
+- Fluxo inicial por papel: `Criar oferta` para o Jogador 1 e `Entrar na sala` para o Jogador 2.
+- Cada navegador escolhe ROM, controla e transmite apenas o próprio lado.
+- O lado remoto aparece como `Recebendo` quando a transmissão do outro jogador chega.
 - Separador central reduzido, sem texto duplicado.
 - Card da sala com código, jogador no controle, botão para nova sala, copiar convite e tela cheia.
 - Botão `Nova sala` para gerar outro código, atualizar a URL, limpar códigos WebRTC antigos e desconectar a sessão anterior.
-- Conexão manual grátis via WebRTC, usando oferta, resposta e conclusão de conexão.
+- Conexão manual grátis via WebRTC: o Jogador 1 cria a oferta, o Jogador 2 gera a resposta e o Jogador 1 conclui a conexão.
+- Estados contextuais para sala, jogadores, ROMs carregadas, conexão, código pronto, transmissão e erros.
+- Campos WebRTC com rascunho por sala, restauração após recarregar, limpeza ao desconectar e proteção contra colar o próprio código.
+- Botões contextuais sem controles extras: trocar ROM, lado no controle, transmitir apenas quando a sessão e a ROM estiverem prontas.
+- Feedback discreto para próximo passo, último evento, código copiado, transmissão remota e ações WebRTC em processamento.
 - Sincronização do nome da ROM remota entre os navegadores.
 - OakBit único no canto da página, fora dos emuladores.
-- Tutorial do OakBit específico para OakDuo, com passos práticos de convite, ROMs, conexão e transmissão.
+- Tutorial do OakBit específico para OakDuo, com passos diferentes para o setup e para os emuladores abertos.
 - Pokédex integrada em tela cheia com:
   - `P` para abrir/fechar;
   - `V` para comando de voz;
@@ -64,6 +70,7 @@ Observações:
 - O código da sala identifica o convite e ajuda os dois navegadores a usarem a mesma sala visual.
 - A conexão real ainda depende da troca manual dos códigos WebRTC.
 - Se a conexão cair de verdade, normalmente é preciso refazer oferta, resposta e conclusão da conexão.
+- Para testar depois de mudanças no WebRTC, recarregue as duas abas e refaça oferta/resposta antes de transmitir.
 
 ## OakBit
 

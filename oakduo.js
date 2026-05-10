@@ -1,13 +1,24 @@
 const stage = document.querySelector("#oakduo-stage");
+const setupPanel = document.querySelector("#oakduo-setup");
+const setupStatus = document.querySelector("#oakduo-setup-status");
+const setupGuide = document.querySelector("#oakduo-setup-guide");
 const fullscreenButton = document.querySelector("#oakduo-fullscreen");
 const copyInviteButton = document.querySelector("#oakduo-copy-invite");
 const newRoomButton = document.querySelector("#oakduo-new-room");
 const activePlayerLabel = document.querySelector("#oakduo-active-player");
 const roomCodeLabel = document.querySelector("#oakduo-room-code");
 const stripCodeLabel = document.querySelector("#oakduo-strip-code");
+const roomHint = document.querySelector("#oakduo-room-hint");
+const stripPlayerOne = document.querySelector("#oakduo-strip-player-1");
+const stripPlayerTwo = document.querySelector("#oakduo-strip-player-2");
+const stripPeer = document.querySelector("#oakduo-strip-peer");
+const nextStepLabel = document.querySelector("#oakduo-next-step");
+const lastEventLabel = document.querySelector("#oakduo-last-event");
 const peerStatus = document.querySelector("#oakduo-peer-status");
 const localSignal = document.querySelector("#oakduo-local-signal");
 const remoteSignal = document.querySelector("#oakduo-remote-signal");
+const localSignalBox = localSignal?.closest(".oakduo-signal-box") || null;
+const remoteSignalBox = remoteSignal?.closest(".oakduo-signal-box") || null;
 const createOfferButton = document.querySelector("#oakduo-create-offer");
 const acceptOfferButton = document.querySelector("#oakduo-accept-offer");
 const applyAnswerButton = document.querySelector("#oakduo-apply-answer");
@@ -24,7 +35,27 @@ const pokedexOriginalNextSibling = pokedexPanel?.nextSibling || null;
 const remotePlayerVideos = new Map(
   [...document.querySelectorAll("[data-remote-player]")].map((item) => [item.dataset.remotePlayer, item])
 );
+const remotePlayerBadges = new Map(
+  [...document.querySelectorAll("[data-remote-badge]")].map((item) => [item.dataset.remoteBadge, item])
+);
 const playerPanels = [...document.querySelectorAll("[data-player-panel]")];
+const setupSteps = new Map(
+  [...document.querySelectorAll("[data-setup-step]")].map((item) => [item.dataset.setupStep, item])
+);
+const setupActions = new Map(
+  [...document.querySelectorAll("[data-setup-action]")].map((item) => [item.dataset.setupAction, item])
+);
+const iconButtonMap = new Map([
+  ["oakduo-new-room", "plus"],
+  ["oakduo-copy-invite", "invite"],
+  ["oakduo-fullscreen", "screen"],
+  ["oakduo-create-offer", "signal"],
+  ["oakduo-accept-offer", "reply"],
+  ["oakduo-copy-signal", "copy"],
+  ["oakduo-apply-answer", "link"],
+  ["oakduo-stop-screen", "stop"],
+  ["oakduo-disconnect-peer", "disconnect"],
+]);
 const statuses = new Map(
   [...document.querySelectorAll("[data-player-status]")].map((item) => [item.dataset.playerStatus, item])
 );
@@ -47,10 +78,32 @@ let dataChannel = null;
 let localScreenStream = null;
 let streamingPlayer = "";
 let pendingRemoteStream = null;
+const pendingRemoteStreams = new Map();
 let remoteStreamingPlayer = "";
 let isRenegotiating = false;
 let pokedexVoiceRecognition = null;
+let peerState = "offline";
+let recentEvent = "Aguardando sessão";
+let peerConnectionToken = 0;
+let isPeerActionRunning = false;
+let setupReadySent = false;
+let remoteSetupReady = false;
+let reconnectTimer = 0;
+let setupReadinessTimer = 0;
+let streamAnnounceTimer = 0;
+const SETUP_STORAGE_KEY = "oakduoSetupFlowDoneV2";
+const ROLE_STORAGE_KEY = "oakduoPreferredRole";
+const SIGNAL_STORAGE_KEYS = {
+  local: "oakduoLocalSignalDraft",
+  remote: "oakduoRemoteSignalDraft",
+  room: "oakduoSignalDraftRoom",
+};
+const OAKBIT_NOTICE_COOLDOWN = 6500;
+const oakBitNoticeTimes = new Map();
 const PokedexSpeechRecognitionApi = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const originalButtonLabels = new WeakMap();
+const navigationEntry = performance.getEntriesByType?.("navigation")?.[0] || null;
+const didReloadPage = navigationEntry?.type === "reload" || performance.navigation?.type === 1;
 
 function cueOakBit(message, mood = "happy", duration = 3200) {
   window.OakMascot?.setMode?.("emulator");
@@ -60,6 +113,17 @@ function cueOakBit(message, mood = "happy", duration = 3200) {
     room: roomCodeLabel?.textContent || "",
   });
   window.OakMascot?.say?.(message, mood, duration);
+}
+
+function cueOakBitOnce(key, message, mood = "happy", duration = 3200, cooldown = OAKBIT_NOTICE_COOLDOWN) {
+  const now = Date.now();
+  const lastNoticeTime = oakBitNoticeTimes.get(key) || 0;
+  if (now - lastNoticeTime < cooldown) {
+    return;
+  }
+
+  oakBitNoticeTimes.set(key, now);
+  cueOakBit(message, mood, duration);
 }
 
 function syncPokedexFullscreenHost() {
@@ -310,8 +374,11 @@ function createNewRoom() {
   if (remoteSignal) {
     remoteSignal.value = "";
   }
+  clearSignalDrafts();
+  oakBitNoticeTimes.clear();
   setRoomCode(nextCode);
   setPeerStatus("Nova sala");
+  setLastEvent(`Sala ${nextCode} criada`);
   cueOakBit(`Nova sala criada: ${nextCode}. Copie o convite para chamar a outra pessoa.`, "happy", 4200);
 }
 
@@ -326,6 +393,63 @@ function syncRoomCode() {
   return roomCode;
 }
 
+function storeSignalDrafts() {
+  sessionStorage.setItem(SIGNAL_STORAGE_KEYS.room, syncRoomCode());
+  if (localSignal) {
+    sessionStorage.setItem(SIGNAL_STORAGE_KEYS.local, localSignal.value || "");
+  }
+  if (remoteSignal) {
+    sessionStorage.setItem(SIGNAL_STORAGE_KEYS.remote, remoteSignal.value || "");
+  }
+}
+
+function clearSignalDrafts() {
+  sessionStorage.removeItem(SIGNAL_STORAGE_KEYS.local);
+  sessionStorage.removeItem(SIGNAL_STORAGE_KEYS.remote);
+  sessionStorage.removeItem(SIGNAL_STORAGE_KEYS.room);
+}
+
+function restoreSignalDrafts() {
+  const currentRoom = syncRoomCode();
+  const storedRoom = sessionStorage.getItem(SIGNAL_STORAGE_KEYS.room) || "";
+  const storedLocalSignal = sessionStorage.getItem(SIGNAL_STORAGE_KEYS.local) || "";
+  const storedRemoteSignal = sessionStorage.getItem(SIGNAL_STORAGE_KEYS.remote) || "";
+
+  if (storedRoom && storedRoom !== currentRoom) {
+    clearSignalDrafts();
+    setLastEvent("Código antigo ignorado");
+    return;
+  }
+
+  if (localSignal && storedLocalSignal) {
+    localSignal.value = storedLocalSignal;
+  }
+  if (remoteSignal && storedRemoteSignal) {
+    remoteSignal.value = storedRemoteSignal;
+  }
+  if (storedLocalSignal || storedRemoteSignal) {
+    setLastEvent("Código restaurado da sessão");
+  }
+}
+
+function prepareReloadedSession() {
+  if (!didReloadPage) {
+    return;
+  }
+
+  sessionStorage.removeItem(SETUP_STORAGE_KEY);
+  resetSetupReadyState();
+  clearSignalDrafts();
+  if (localSignal) {
+    localSignal.value = "";
+  }
+  if (remoteSignal) {
+    remoteSignal.value = "";
+  }
+  setPeerStatus("Reconectar");
+  setLastEvent("Página recarregada");
+}
+
 function setPlayerStatus(player, message) {
   const playerId = String(player);
   const status = statuses.get(playerId);
@@ -336,12 +460,498 @@ function setPlayerStatus(player, message) {
     ...(playerState.get(playerId) || {}),
     label: message,
   });
+  updateDuoOverview();
 }
 
 function setPeerStatus(message) {
   if (peerStatus) {
     peerStatus.textContent = message;
   }
+  peerState = getPeerStateFromLabel(message);
+  updateDuoOverview();
+}
+
+function setLastEvent(message) {
+  const normalized = String(message || "").trim();
+  if (!normalized) {
+    return;
+  }
+
+  recentEvent = normalized;
+  if (lastEventLabel) {
+    lastEventLabel.textContent = normalized;
+  }
+  updateDuoOverview();
+}
+
+function setSetupOpen(open) {
+  document.body.classList.toggle("is-oakduo-setup-open", open);
+  setupPanel?.setAttribute("aria-hidden", String(!open));
+  if (open) {
+    startSetupReadinessWatch();
+  } else {
+    stopSetupReadinessWatch();
+  }
+}
+
+function startSetupReadinessWatch() {
+  if (setupReadinessTimer) {
+    return;
+  }
+
+  setupReadinessTimer = window.setInterval(() => {
+    if (!document.body.classList.contains("is-oakduo-setup-open")) {
+      stopSetupReadinessWatch();
+      return;
+    }
+    updateSetupState();
+  }, 700);
+}
+
+function stopSetupReadinessWatch() {
+  window.clearInterval(setupReadinessTimer);
+  setupReadinessTimer = 0;
+}
+
+function resetSetupReadyState() {
+  setupReadySent = false;
+  remoteSetupReady = false;
+}
+
+function handleConnectionProblem(status, eventMessage, oakBitMessage) {
+  resetSetupReadyState();
+  sessionStorage.removeItem(SETUP_STORAGE_KEY);
+  resetStreamingState();
+  setPeerStatus(status);
+  setLastEvent(eventMessage);
+  setSetupOpen(true);
+  updateSetupState();
+  if (oakBitMessage) {
+    cueOakBitOnce(`connection-${status}`, oakBitMessage, "alert", 4400);
+  }
+}
+
+function getPreferredRole() {
+  return sessionStorage.getItem(ROLE_STORAGE_KEY) || "";
+}
+
+function isLocalPlayer(player) {
+  const role = getPreferredRole();
+  return !role || String(player) === role;
+}
+
+function getOtherPlayer(player) {
+  return String(player) === "2" ? "1" : "2";
+}
+
+function getPlayerHasRom(player) {
+  const state = playerState.get(String(player)) || {};
+  return Boolean(state.romLabel && state.romLabel !== "Nenhuma ROM carregada");
+}
+
+function getPlayerCanStream(player) {
+  return Boolean(getPlayerCanvas(player)?.captureStream);
+}
+
+function getSetupProgress() {
+  const role = getPreferredRole();
+  const hasRole = role === "1" || role === "2";
+  const isConnected = peerState === "connected";
+  const hasRom = hasRole && getPlayerHasRom(role);
+  const canStream = hasRole && getPlayerCanStream(role);
+  const isStreamingOwnSide = hasRole && streamingPlayer === role;
+
+  return {
+    role,
+    hasRole,
+    isConnected,
+    hasRom,
+    canStream,
+    isStreamingOwnSide,
+    done: hasRole && isConnected && hasRom && isStreamingOwnSide,
+  };
+}
+
+function maybeOpenPreparedEmulators(progress = getSetupProgress()) {
+  if (!progress.done) {
+    return;
+  }
+
+  if (!setupReadySent) {
+    setupReadySent = true;
+    sendPeerMessage("setup-ready", { player: progress.role });
+  }
+
+  if (!remoteSetupReady) {
+    if (setupStatus) {
+      setupStatus.textContent = "Tudo pronto deste lado. Aguardando o outro jogador.";
+    }
+    return;
+  }
+
+  if (document.body.classList.contains("is-oakduo-setup-open")) {
+    sessionStorage.setItem(SETUP_STORAGE_KEY, "true");
+    window.setTimeout(() => {
+      setSetupOpen(false);
+      focusPlayer(progress.role);
+      scheduleStreamResync();
+    }, 450);
+  }
+}
+
+function updateSetupState() {
+  if (!setupPanel) {
+    return;
+  }
+
+  const progress = getSetupProgress();
+  document.querySelectorAll("[data-oakduo-role]").forEach((button) => {
+    button.classList.toggle("is-selected", button.dataset.oakduoRole === progress.role);
+  });
+  setupSteps.get("role")?.classList.toggle("is-complete", progress.hasRole);
+  setupSteps.get("connection")?.classList.toggle("is-complete", progress.isConnected);
+  setupSteps.get("rom")?.classList.toggle("is-complete", progress.hasRom);
+  setupSteps.get("stream")?.classList.toggle("is-complete", progress.isStreamingOwnSide);
+
+  setupActions.get("continue")?.toggleAttribute("disabled", !progress.done);
+  setupActions.get("copy-invite")?.toggleAttribute("disabled", !progress.hasRole);
+  setupActions.get("create-offer")?.toggleAttribute("disabled", !progress.hasRole || progress.isConnected || isPeerActionRunning);
+  setupActions.get("accept-offer")?.toggleAttribute("disabled", !progress.hasRole || progress.isConnected || isPeerActionRunning || !remoteSignal?.value?.trim() || hasOwnSignalInRemoteBox());
+  setupActions.get("apply-answer")?.toggleAttribute("disabled", !progress.hasRole || progress.isConnected || isPeerActionRunning || !peerConnection || !remoteSignal?.value?.trim() || hasOwnSignalInRemoteBox());
+  setupActions.get("copy-signal")?.toggleAttribute("disabled", !progress.hasRole || !localSignal?.value?.trim());
+  setupActions.get("choose-rom")?.toggleAttribute("disabled", !progress.isConnected || progress.hasRom);
+  setupActions.get("stream")?.toggleAttribute("disabled", !progress.hasRole || !progress.isConnected || !progress.canStream || progress.isStreamingOwnSide);
+  document.body.classList.toggle("is-oakduo-offer-role", progress.role === "1");
+  document.body.classList.toggle("is-oakduo-answer-role", progress.role === "2");
+  document.body.classList.toggle("is-oakduo-setup-connected", progress.isConnected);
+  document.body.classList.toggle("is-oakduo-setup-has-rom", progress.hasRom);
+  document.body.classList.toggle("is-oakduo-setup-can-stream", progress.canStream);
+  document.body.classList.toggle("is-oakduo-setup-streaming", progress.isStreamingOwnSide);
+
+  if (setupStatus) {
+    setupStatus.textContent = !progress.hasRole
+      ? "Escolha Jogador 1 ou Jogador 2 para começar."
+      : !progress.isConnected
+        ? "Conecte com o outro jogador usando convite, oferta e resposta."
+        : !progress.hasRom
+          ? `Conexão pronta. Escolha a ROM do Jogador ${progress.role}.`
+          : !progress.canStream
+            ? "ROM escolhida. Aguarde o emulador iniciar."
+          : !progress.isStreamingOwnSide
+            ? "ROM pronta. Inicie a transmissão do seu lado."
+            : "Tudo pronto. Abrindo os emuladores.";
+  }
+
+  if (setupGuide) {
+    const guides = !progress.hasRole
+      ? ["Jogador 1 cria a sala.", "Jogador 2 entra pelo convite.", "Depois os dois carregam ROM e transmitem."]
+      : progress.role === "1"
+        ? progress.isConnected
+          ? ["Conexão ativa.", "Escolha a ROM do lado esquerdo.", "Depois transmita seu lado."]
+          : ["Copie o convite e envie.", "Clique em Oferta e envie o código.", "Cole a resposta do Jogador 2 e conecte."]
+        : progress.isConnected
+          ? ["Conexão ativa.", "Escolha a ROM do lado direito.", "Depois transmita seu lado."]
+          : ["Abra o convite recebido.", "Cole a oferta em Recebido.", "Clique em Resposta e envie o código ao Jogador 1."];
+    setupGuide.innerHTML = guides.map((item) => `<span>${item}</span>`).join("");
+  }
+
+  maybeOpenPreparedEmulators(progress);
+}
+
+function completeSetup(player) {
+  const playerId = String(player) === "2" ? "2" : "1";
+  sessionStorage.setItem(ROLE_STORAGE_KEY, playerId);
+  focusPlayer(playerId);
+  setLastEvent(`Sessão preparada como Jogador ${playerId}`);
+  updateSetupState();
+  cueOakBit(`Você está como Jogador ${playerId}. Conecte com o outro jogador antes de abrir a tela dupla.`, "happy", 4200);
+}
+
+function initializeSetup() {
+  sessionStorage.removeItem("oakduoSetupDone");
+  const preferredRole = sessionStorage.getItem(ROLE_STORAGE_KEY) || "";
+  setSetupOpen(true);
+  if (preferredRole === "1" || preferredRole === "2") {
+    setActivePlayer(preferredRole);
+  }
+  updateSetupState();
+  if (didReloadPage && setupStatus) {
+    setupStatus.textContent = "Sessão recarregada. Reconecte usando uma nova oferta.";
+    cueOakBit("Sessão recarregada. Mantenha a sala e troque uma nova oferta com o outro jogador.", "alert", 5200);
+  }
+}
+
+function getPeerStateFromLabel(message = "") {
+  const text = String(message).toLowerCase();
+  if (text.includes("conectado") || text.includes("sincronizado") || text.includes("recebendo") || text.includes("transmitindo")) {
+    return "connected";
+  }
+  if (text.includes("oferta pronta") || text.includes("resposta pronta") || text.includes("código recebido") || text.includes("codigo recebido") || text.includes("código copiado") || text.includes("codigo copiado")) {
+    return "ready";
+  }
+  if (text.includes("desconectado") || text.includes("nova sala") || text.includes("sem código") || text.includes("sem codigo") || text.includes("conecte primeiro") || text.includes("crie oferta primeiro")) {
+    return "offline";
+  }
+  if (text.includes("conectando") || text.includes("coletando") || text.includes("preparando")) {
+    return "connecting";
+  }
+  if (text.includes("processando")) {
+    return "connecting";
+  }
+  if (text.includes("instavel") || text.includes("instável")) {
+    return "reconnecting";
+  }
+  if (text.includes("falha") || text.includes("falhou") || text.includes("erro") || text.includes("sala diferente") || text.includes("código repetido") || text.includes("codigo repetido")) {
+    return "error";
+  }
+  return "offline";
+}
+
+function getPlayerReadiness(player) {
+  const state = playerState.get(String(player)) || {};
+  const hasRom = state.romLabel && state.romLabel !== "Nenhuma ROM carregada";
+  if (streamingPlayer === String(player)) {
+    return "Transmitindo";
+  }
+  if (state.label === "No controle") {
+    return hasRom ? "No controle" : "Controle";
+  }
+  if (hasRom || ["selected", "loading", "booting", "running", "focused"].includes(state.status)) {
+    return "ROM pronta";
+  }
+  if (state.status === "choosing" || state.label === "Escolhendo") {
+    return "Escolhendo";
+  }
+  return "Sem ROM";
+}
+
+function updatePlayerPanelState(player) {
+  const playerId = String(player);
+  const panel = playerPanels.find((item) => item.dataset.playerPanel === playerId);
+  const state = playerState.get(playerId) || {};
+  const hasRom = state.romLabel && state.romLabel !== "Nenhuma ROM carregada";
+  const isActive = panel?.classList.contains("is-active") || false;
+  const isStreaming = streamingPlayer === playerId;
+  const isOwnSide = isLocalPlayer(playerId);
+  const canStream = Boolean(peerConnection) && hasRom && isOwnSide;
+  if (!panel) {
+    return;
+  }
+
+  panel.classList.toggle("is-loaded", Boolean(hasRom));
+  panel.classList.toggle("is-streaming", isStreaming);
+  panel.classList.toggle("is-receiving", remoteStreamingPlayer === playerId);
+  panel.classList.toggle("has-status-warning", ["error"].includes(state.status));
+  panel.setAttribute("aria-current", isActive ? "true" : "false");
+  panel.setAttribute("aria-busy", String(["choosing", "loading", "booting"].includes(state.status)));
+  panel.setAttribute("aria-label", `Jogador ${playerId}: ${getPlayerReadiness(playerId)}${remoteStreamingPlayer === playerId ? ", recebendo transmissão remota" : ""}`);
+  panel.dataset.oakduoReady = hasRom ? "true" : "false";
+
+  const romButton = panel.querySelector("[data-oakduo-action='rom']");
+  const focusButton = panel.querySelector("[data-oakduo-action='focus']");
+  const streamButton = panel.querySelector("[data-oakduo-action='stream']");
+
+  if (romButton) {
+    romButton.textContent = hasRom ? "Trocar ROM" : "Escolher ROM";
+    romButton.setAttribute("aria-label", romButton.textContent);
+    romButton.dataset.oakTooltip = isOwnSide ? romButton.textContent : "Este lado pertence ao outro jogador";
+    romButton.removeAttribute("title");
+    romButton.toggleAttribute("disabled", !isOwnSide);
+  }
+
+  if (focusButton) {
+    focusButton.textContent = isActive ? "No controle" : "Assumir controle";
+    focusButton.setAttribute("aria-label", focusButton.textContent);
+    focusButton.dataset.oakTooltip = isOwnSide ? focusButton.textContent : "Este lado pertence ao outro jogador";
+    focusButton.removeAttribute("title");
+    focusButton.classList.toggle("is-current-control", isActive);
+    focusButton.setAttribute("aria-pressed", String(isActive));
+    focusButton.toggleAttribute("disabled", isActive || !isOwnSide);
+  }
+
+  if (streamButton) {
+    streamButton.textContent = isStreaming ? "Transmitindo" : "Transmitir este lado";
+    streamButton.setAttribute("aria-label", streamButton.textContent);
+    streamButton.dataset.oakTooltip = isStreaming
+      ? "Este lado está sendo transmitido"
+      : canStream
+        ? "Transmitir o emulador deste lado"
+        : isOwnSide
+          ? "Conecte a sessão e inicie a ROM antes de transmitir"
+          : "Este lado pertence ao outro jogador";
+    streamButton.removeAttribute("title");
+    streamButton.classList.toggle("is-streaming-action", isStreaming);
+    streamButton.toggleAttribute("disabled", !isStreaming && !canStream);
+  }
+}
+
+function updateRoomHint() {
+  const target = nextStepLabel || roomHint;
+  if (!target) {
+    return;
+  }
+
+  const bothReady = ["1", "2"].every((player) => getPlayerReadiness(player) !== "Sem ROM");
+  const hasLocalSignal = Boolean(localSignal?.value?.trim());
+  const hasRemoteSignal = Boolean(remoteSignal?.value?.trim());
+  const hasRepeatedSignal = hasOwnSignalInRemoteBox();
+  const hints = {
+    connected: bothReady ? "Conexão ativa. Escolha o lado para controlar ou transmitir." : "Conexão ativa. Carregue as ROMs nos dois lados quando estiver pronto.",
+    repeated: "Você colou seu próprio código. Cole o código enviado pelo outro navegador.",
+    ready: hasLocalSignal ? "Código pronto. Copie e envie para o outro jogador." : "Cole o código recebido para continuar a conexão.",
+    connecting: "Código gerado. Envie para o outro navegador e aguarde a resposta.",
+    reconnecting: "Conexão instável. Mantenha a sala aberta enquanto o navegador tenta recuperar.",
+    error: "Confira se o código recebido pertence a esta sala e tente gerar a conexão novamente.",
+    offline: hasRemoteSignal ? "Use o código colado para gerar resposta ou concluir conexão." : "Envie o convite e troque os códigos manuais.",
+  };
+
+  target.textContent = hasRepeatedSignal ? hints.repeated : hints[peerState] || hints.offline;
+}
+
+function updateSignalPlaceholders() {
+  const hasLocalSignal = Boolean(localSignal?.value?.trim());
+  const hasRemoteSignal = Boolean(remoteSignal?.value?.trim());
+
+  if (localSignal) {
+    localSignal.placeholder = hasLocalSignal
+      ? "Código pronto para copiar"
+      : "Crie oferta ou gere resposta";
+  }
+
+  if (remoteSignal) {
+    remoteSignal.placeholder = hasRemoteSignal
+      ? "Código recebido pronto"
+      : peerConnection
+        ? "Cole a resposta recebida"
+        : "Cole a oferta recebida";
+  }
+}
+
+function recoverPeerStatusAfterSignalEdit() {
+  if (peerState !== "error") {
+    return;
+  }
+
+  if (hasOwnSignalInRemoteBox()) {
+    return;
+  }
+
+  const hasRemoteSignal = Boolean(remoteSignal?.value?.trim());
+  setPeerStatus(hasRemoteSignal ? "Código recebido" : "Desconectado");
+}
+
+function hasActiveDuoSession() {
+  return Boolean(
+    peerConnection ||
+    dataChannel ||
+    localScreenStream ||
+    streamingPlayer ||
+    remoteStreamingPlayer ||
+    localSignal?.value?.trim() ||
+    remoteSignal?.value?.trim()
+  );
+}
+
+function selectSignalText(target) {
+  if (!target?.value) {
+    return;
+  }
+
+  target.focus();
+  target.select();
+}
+
+function normalizeSignalText(value) {
+  return String(value || "").replace(/\s+/g, "");
+}
+
+function flashButtonLabel(button, label, duration = 1600) {
+  if (!button) {
+    return;
+  }
+
+  if (!originalButtonLabels.has(button)) {
+    originalButtonLabels.set(button, button.textContent);
+  }
+
+  button.textContent = label;
+  window.setTimeout(() => {
+    button.textContent = originalButtonLabels.get(button) || button.textContent;
+  }, duration);
+}
+
+function applyButtonIcons() {
+  document.querySelectorAll(".oakduo-room-actions button, .oakduo-actions button, .oakduo-webrtc-actions button, .oakduo-box-actions button").forEach((button) => {
+    if (!(button instanceof HTMLElement)) {
+      return;
+    }
+
+    const actionIconMap = {
+      rom: "rom",
+      focus: "control",
+      stream: "stream",
+    };
+    const icon = actionIconMap[button.dataset.oakduoAction] || iconButtonMap.get(button.id) || "";
+    if (icon) {
+      button.dataset.oakIcon = icon;
+      button.setAttribute("aria-label", button.textContent.trim());
+      if (button.closest(".oakduo-actions, .oakduo-room-actions, .oakduo-webrtc-actions")) {
+        button.dataset.oakIconOnly = "true";
+        button.dataset.oakTooltip = button.textContent.trim();
+        button.removeAttribute("title");
+      }
+    }
+  });
+}
+
+function updateDuoOverview() {
+  const j1 = getPlayerReadiness("1");
+  const j2 = getPlayerReadiness("2");
+  const hasLocalSignal = Boolean(localSignal?.value?.trim());
+  const hasRemoteSignal = Boolean(remoteSignal?.value?.trim());
+  const hasRepeatedSignal = hasOwnSignalInRemoteBox();
+  const hasConnection = Boolean(peerConnection);
+  const isConnected = peerState === "connected";
+  if (stripPlayerOne) {
+    stripPlayerOne.textContent = `J1 ${j1}`;
+  }
+  if (stripPlayerTwo) {
+    stripPlayerTwo.textContent = `J2 ${j2}`;
+  }
+  if (stripPeer) {
+    const labels = {
+      connected: "Conectado",
+      connecting: "Conectando",
+      reconnecting: "Reconectando",
+      ready: "Código pronto",
+      error: "Atenção",
+      offline: "Offline",
+    };
+    stripPeer.textContent = labels[peerState] || "Offline";
+  }
+
+  document.body.classList.toggle("is-oakduo-connected", peerState === "connected");
+  document.body.classList.toggle("is-oakduo-connecting", peerState === "connecting" || peerState === "ready");
+  document.body.classList.toggle("is-oakduo-warning", peerState === "reconnecting" || peerState === "error");
+  localSignalBox?.classList.toggle("is-next-step", peerState === "ready" && hasLocalSignal);
+  localSignalBox?.classList.toggle("is-filled", hasLocalSignal);
+  remoteSignalBox?.classList.toggle("is-next-step", peerState !== "connected" && !hasLocalSignal && !hasRemoteSignal);
+  remoteSignalBox?.classList.toggle("is-filled", hasRemoteSignal);
+  remoteSignalBox?.classList.toggle("is-action-ready", peerState !== "connected" && hasRemoteSignal);
+  remoteSignalBox?.classList.toggle("is-conflict", hasRepeatedSignal);
+  copySignalButton?.toggleAttribute("disabled", !hasLocalSignal);
+  stopScreenButton?.toggleAttribute("disabled", !streamingPlayer);
+  disconnectPeerButton?.toggleAttribute("disabled", !hasConnection && !hasLocalSignal && !hasRemoteSignal);
+  createOfferButton?.toggleAttribute("disabled", isPeerActionRunning || isConnected);
+  applyAnswerButton?.toggleAttribute("disabled", isPeerActionRunning || hasRepeatedSignal || !hasConnection || !hasRemoteSignal || isConnected);
+  acceptOfferButton?.toggleAttribute("disabled", isPeerActionRunning || hasRepeatedSignal || !hasRemoteSignal || isConnected);
+  ["1", "2"].forEach(updatePlayerPanelState);
+  if (lastEventLabel) {
+    lastEventLabel.textContent = recentEvent;
+  }
+  updateRoomHint();
+  updateSignalPlaceholders();
+  updateSetupState();
 }
 
 function setPlayerRomMeta(player, detail = {}) {
@@ -365,6 +975,7 @@ function setPlayerRomMeta(player, detail = {}) {
     ...(playerState.get(playerId) || {}),
     romLabel,
   });
+  updateDuoOverview();
 }
 
 function applyRemotePlayerState(player, state = {}) {
@@ -373,9 +984,15 @@ function applyRemotePlayerState(player, state = {}) {
     return;
   }
 
+  const localRole = getPreferredRole();
+  const incomingLabel = String(state.label || "");
+  const label = localRole && playerId !== localRole && incomingLabel === "No controle"
+    ? "Recebendo"
+    : incomingLabel;
   const nextState = {
     ...(playerState.get(playerId) || {}),
     ...state,
+    ...(label ? { label } : {}),
   };
   playerState.set(playerId, nextState);
 
@@ -402,7 +1019,7 @@ function postToPlayer(player, action) {
 
 function setActivePlayer(player) {
   const playerId = String(player);
-  const otherPlayerId = playerId === "1" ? "2" : "1";
+  const otherPlayerId = getOtherPlayer(playerId);
   const otherState = playerState.get(otherPlayerId);
 
   playerPanels.forEach((panel) => {
@@ -414,11 +1031,19 @@ function setActivePlayer(player) {
   if (activePlayerLabel) {
     activePlayerLabel.textContent = `Jogador ${playerId} no controle`;
   }
+  sessionStorage.setItem("oakduoActivePlayer", playerId);
+  setLastEvent(`Jogador ${playerId} assumiu controle`);
   cueOakBit(`Jogador ${playerId} no controle.`, "happy", 2200);
   sendPeerMessage("active-player", { player: playerId });
 }
 
 function focusPlayer(player) {
+  if (!isLocalPlayer(player)) {
+    setLastEvent(`Jogador ${player} pertence ao outro navegador`);
+    cueOakBitOnce("remote-side-control", "Controle apenas o lado escolhido neste navegador. O outro lado chega pela transmissão.", "alert", 3200);
+    return;
+  }
+
   const frame = getFrame(player);
   if (!frame) {
     return;
@@ -431,6 +1056,12 @@ function focusPlayer(player) {
 }
 
 function chooseRom(player) {
+  if (!isLocalPlayer(player)) {
+    setLastEvent(`ROM do Jogador ${player} fica no outro navegador`);
+    cueOakBitOnce("remote-side-rom", "Cada jogador escolhe a ROM no próprio lado. Depois use Transmitir para enviar a tela.", "alert", 3600);
+    return;
+  }
+
   const frame = getFrame(player);
 
   if (!frame?.contentWindow) {
@@ -440,6 +1071,7 @@ function chooseRom(player) {
 
   focusPlayer(player);
   setPlayerStatus(player, "Escolhendo");
+  setLastEvent(`Jogador ${player} escolhendo ROM`);
   postToPlayer(player, "open-rom");
 }
 
@@ -495,6 +1127,9 @@ function handleDuoStatus(data) {
   }
 
   setPlayerStatus(player, label);
+  if (["selected", "loading", "booting", "running", "error"].includes(data.status)) {
+    setLastEvent(`J${player}: ${label}`);
+  }
   sendPeerMessage("player-status", {
     player,
     status: data.status,
@@ -512,7 +1147,23 @@ function encodeSignal(description) {
 }
 
 function decodeSignal(value) {
-  const signal = JSON.parse(atob(String(value || "").trim()));
+  const rawValue = String(value || "").trim();
+  if (!rawValue) {
+    throw new Error("empty-signal");
+  }
+
+  let signal = null;
+  try {
+    signal = JSON.parse(atob(rawValue));
+  } catch (error) {
+    throw new Error("invalid-signal");
+  }
+
+  const description = signal?.description || signal;
+  if (!description?.type || !description?.sdp) {
+    throw new Error("invalid-signal");
+  }
+
   if (signal?.description) {
     return signal;
   }
@@ -521,6 +1172,57 @@ function decodeSignal(value) {
     room: "",
     description: signal,
   };
+}
+
+function getRemoteSignalValue() {
+  return normalizeSignalText(remoteSignal?.value || "");
+}
+
+function getLocalSignalValue() {
+  return normalizeSignalText(localSignal?.value || "");
+}
+
+function hasOwnSignalInRemoteBox() {
+  const remoteValue = getRemoteSignalValue();
+  const localValue = getLocalSignalValue();
+  return Boolean(remoteValue && localValue && remoteValue === localValue);
+}
+
+function guardRemoteSignal() {
+  if (!hasOwnSignalInRemoteBox()) {
+    return true;
+  }
+
+  setPeerStatus("Código repetido");
+  setLastEvent("Você colou seu próprio código");
+  cueOakBitOnce("own-signal", "Esse é o seu próprio código. Cole o código enviado pelo outro navegador.", "alert", 4200);
+  return false;
+}
+
+function guardSignalRoom(signal) {
+  const signalRoom = String(signal?.room || "").trim().toUpperCase();
+  const currentRoom = syncRoomCode();
+  if (!signalRoom || signalRoom === currentRoom) {
+    return true;
+  }
+
+  setPeerStatus("Sala diferente");
+  setLastEvent("Código de outra sala");
+  cueOakBitOnce("signal-room-mismatch", "Esse código pertence a outra sala. Peça um novo código para a sala atual.", "alert", 4400);
+  return false;
+}
+
+function guardSignalType(signal, expectedType) {
+  const type = signal?.description?.type || "";
+  if (type === expectedType) {
+    return true;
+  }
+
+  const expectedLabel = expectedType === "offer" ? "oferta" : "resposta";
+  setPeerStatus("Código errado");
+  setLastEvent(`Cole uma ${expectedLabel}`);
+  cueOakBitOnce(`signal-type-${expectedType}`, `Esse campo precisa de uma ${expectedLabel}. Confira se o outro jogador enviou o código certo.`, "alert", 4400);
+  return false;
 }
 
 function waitForIceGathering(connection) {
@@ -539,14 +1241,28 @@ function waitForIceGathering(connection) {
   });
 }
 
-function closePeerConnection() {
-  stopScreenShare();
-  clearRemotePlayerStream();
+function closePeerConnection({ clearSignals = false } = {}) {
+  peerConnectionToken += 1;
+  window.clearTimeout(reconnectTimer);
+  reconnectTimer = 0;
+  stopStreamAnnouncer();
+  resetSetupReadyState();
+  resetStreamingState();
   dataChannel?.close();
   peerConnection?.close();
   dataChannel = null;
   peerConnection = null;
+  if (clearSignals) {
+    if (localSignal) {
+      localSignal.value = "";
+    }
+    if (remoteSignal) {
+      remoteSignal.value = "";
+    }
+    clearSignalDrafts();
+  }
   setPeerStatus("Desconectado");
+  setLastEvent("Conexão encerrada");
 }
 
 function getActivePlayerId() {
@@ -589,26 +1305,54 @@ function clearRemotePlayerStream(player = remoteStreamingPlayer) {
     if (video) {
       video.srcObject = null;
     }
+    const badge = remotePlayerBadges.get(String(player));
+    if (badge) {
+      badge.textContent = `Recebendo J${player}`;
+    }
     playerPanels
       .find((panel) => panel.dataset.playerPanel === String(player))
       ?.classList.remove("is-remote-streaming");
   }
   remoteStreamingPlayer = "";
+  updateDuoOverview();
 }
 
-function attachRemotePlayerStream(player, stream = pendingRemoteStream) {
+function resetStreamingState() {
+  stopScreenShare();
+  clearRemotePlayerStream();
+  streamingPlayer = "";
+  pendingRemoteStream = null;
+  pendingRemoteStreams.clear();
+  remoteStreamingPlayer = "";
+  updateDuoOverview();
+}
+
+function attachRemotePlayerStream(player, stream = pendingRemoteStreams.get(String(player || "")) || pendingRemoteStream) {
   const playerId = String(player || "");
   const video = remotePlayerVideos.get(playerId);
   if (!video || !stream) {
     return;
   }
 
+  if (remoteStreamingPlayer === playerId && video.srcObject === stream) {
+    playerPanels
+      .find((panel) => panel.dataset.playerPanel === playerId)
+      ?.classList.add("is-remote-streaming");
+    return;
+  }
+
   clearRemotePlayerStream();
+  const badge = remotePlayerBadges.get(playerId);
+  if (badge) {
+    badge.textContent = `Recebendo J${playerId}`;
+  }
   video.srcObject = stream;
+  video.play?.().catch(() => {});
   playerPanels
     .find((panel) => panel.dataset.playerPanel === playerId)
     ?.classList.add("is-remote-streaming");
   remoteStreamingPlayer = playerId;
+  setLastEvent(`Recebendo transmissão do J${playerId}`);
 }
 
 function sendPeerMessage(type, payload = {}) {
@@ -669,9 +1413,51 @@ async function applyVideoRenegotiationAnswer(description) {
 
 function sendLocalSnapshot() {
   sendPeerMessage("snapshot", {
+    role: getPreferredRole() || getActivePlayerId(),
     activePlayer: playerPanels.find((panel) => panel.classList.contains("is-active"))?.dataset.playerPanel || "1",
+    streamingPlayer,
     players: Object.fromEntries(playerState),
   });
+}
+
+function sendLocalStreamState() {
+  if (!streamingPlayer) {
+    return;
+  }
+
+  sendPeerMessage("screen-share", { active: true, player: streamingPlayer });
+}
+
+function requestStreamResync() {
+  sendPeerMessage("stream-resync-request", { player: getPreferredRole() || getActivePlayerId() });
+}
+
+function scheduleStreamResync() {
+  [250, 900, 1800, 3200].forEach((delay) => {
+    window.setTimeout(() => {
+      requestStreamResync();
+      sendLocalStreamState();
+    }, delay);
+  });
+}
+
+function startStreamAnnouncer() {
+  if (streamAnnounceTimer) {
+    return;
+  }
+
+  streamAnnounceTimer = window.setInterval(() => {
+    if (!streamingPlayer || dataChannel?.readyState !== "open") {
+      stopStreamAnnouncer();
+      return;
+    }
+    sendLocalStreamState();
+  }, 1500);
+}
+
+function stopStreamAnnouncer() {
+  window.clearInterval(streamAnnounceTimer);
+  streamAnnounceTimer = 0;
 }
 
 function handlePeerMessage(event) {
@@ -688,29 +1474,54 @@ function handlePeerMessage(event) {
 
   if (message.room && message.room !== syncRoomCode()) {
     setPeerStatus("Sala diferente");
+    setLastEvent("Código de outra sala");
+    cueOakBitOnce("room-mismatch", "Esse código pertence a outra sala. Confira o convite ou gere uma nova oferta.", "alert", 4200);
     return;
   }
 
   if (message.type === "hello") {
     setPeerStatus("Conectado");
+    setLastEvent("Sessão conectada");
     sendLocalSnapshot();
+    sendLocalStreamState();
   }
 
   if (message.type === "active-player") {
     setPeerStatus(`Conectado - remoto no J${message.payload?.player || "?"}`);
+    setLastEvent(`Remoto no J${message.payload?.player || "?"}`);
   }
 
   if (message.type === "player-status") {
     applyRemotePlayerState(message.payload?.player, message.payload || {});
     setPeerStatus(`Conectado - J${message.payload?.player || "?"}: ${message.payload?.label || "status"}`);
+    setLastEvent(`Remoto J${message.payload?.player || "?"}: ${message.payload?.label || "status"}`);
   }
 
   if (message.type === "snapshot") {
     const players = message.payload?.players || {};
-    Object.entries(players).forEach(([player, state]) => {
-      applyRemotePlayerState(player, state);
-    });
+    const remoteRole = String(message.payload?.role || "");
+    if (remoteRole && players[remoteRole]) {
+      applyRemotePlayerState(remoteRole, players[remoteRole]);
+    }
+    if (message.payload?.streamingPlayer) {
+      remoteStreamingPlayer = String(message.payload.streamingPlayer);
+      attachRemotePlayerStream(remoteStreamingPlayer);
+    }
     setPeerStatus("Conectado - sessão sincronizada");
+    setLastEvent("Sessão sincronizada");
+  }
+
+  if (message.type === "setup-ready") {
+    remoteSetupReady = true;
+    setLastEvent(`Jogador ${message.payload?.player || "remoto"} pronto`);
+    sendLocalSnapshot();
+    sendLocalStreamState();
+    updateSetupState();
+  }
+
+  if (message.type === "stream-resync-request") {
+    sendLocalSnapshot();
+    sendLocalStreamState();
   }
 
   if (message.type === "screen-share") {
@@ -719,43 +1530,73 @@ function handlePeerMessage(event) {
       remoteStreamingPlayer = player;
       attachRemotePlayerStream(player);
       setPeerStatus(`Recebendo emulador J${player || "?"}`);
+      setLastEvent(`Recebendo emulador J${player || "?"}`);
       return;
     }
 
     clearRemotePlayerStream(player);
     setPeerStatus("Emulador remoto pausado");
+    setLastEvent("Transmissão remota pausada");
   }
 
   if (message.type === "signal-offer") {
     answerVideoRenegotiation(message.payload?.description)
-      .then(() => setPeerStatus("Video remoto sincronizado"))
-      .catch(() => setPeerStatus("Falha ao sincronizar video"));
+      .then(() => {
+        setPeerStatus("Video remoto sincronizado");
+        setLastEvent("Vídeo remoto sincronizado");
+      })
+      .catch(() => {
+        setPeerStatus("Falha ao sincronizar video");
+        setLastEvent("Falha ao sincronizar vídeo");
+      });
   }
 
   if (message.type === "signal-answer") {
     applyVideoRenegotiationAnswer(message.payload?.description)
-      .then(() => setPeerStatus("Video remoto sincronizado"))
-      .catch(() => setPeerStatus("Falha ao receber video"));
+      .then(() => {
+        setPeerStatus("Video remoto sincronizado");
+        setLastEvent("Vídeo remoto sincronizado");
+      })
+      .catch(() => {
+        setPeerStatus("Falha ao receber video");
+        setLastEvent("Falha ao receber vídeo");
+      });
   }
 }
 
 function bindDataChannel(channel) {
   dataChannel = channel;
   dataChannel.addEventListener("open", () => {
+    window.clearTimeout(reconnectTimer);
+    reconnectTimer = 0;
     setPeerStatus("Conectado");
+    setLastEvent("Canal de dados conectado");
     sendPeerMessage("hello", { room: syncRoomCode() });
     sendLocalSnapshot();
+    sendLocalStreamState();
   });
-  dataChannel.addEventListener("close", () => setPeerStatus("Desconectado"));
-  dataChannel.addEventListener("error", () => setPeerStatus("Erro WebRTC"));
+  dataChannel.addEventListener("close", () => {
+    if (peerConnection?.connectionState === "connected") {
+      return;
+    }
+    handleConnectionProblem("Reconectando", "Canal de dados fechado", "A conexão com o outro jogador caiu. Gere uma nova oferta na mesma sala se ela não voltar.");
+  });
+  dataChannel.addEventListener("error", () => {
+    handleConnectionProblem("Erro WebRTC", "Erro no canal WebRTC", "A conexão WebRTC encontrou um erro. Gere uma nova oferta para recuperar a sessão.");
+  });
   dataChannel.addEventListener("message", handlePeerMessage);
 }
 
 function createPeerConnection() {
   closePeerConnection();
+  const connectionToken = peerConnectionToken;
   peerConnection = new RTCPeerConnection(peerConfig);
   peerConnection.addTransceiver("video", { direction: "sendrecv" });
   peerConnection.addEventListener("track", (event) => {
+    if (connectionToken !== peerConnectionToken) {
+      return;
+    }
+
     if (event.track.kind !== "video") {
       return;
     }
@@ -768,45 +1609,96 @@ function createPeerConnection() {
     setPeerStatus("Emulador remoto recebido");
   });
   peerConnection.addEventListener("connectionstatechange", () => {
+    if (connectionToken !== peerConnectionToken) {
+      return;
+    }
+
     const state = peerConnection?.connectionState || "closed";
     const labels = {
       new: "Preparando",
       connecting: "Conectando",
       connected: "Conectado",
-      disconnected: "Instavel",
+      disconnected: "Reconectando",
       failed: "Falhou",
       closed: "Desconectado",
     };
     setPeerStatus(labels[state] || state);
+    if (state === "connected") {
+      window.clearTimeout(reconnectTimer);
+      reconnectTimer = 0;
+      setLastEvent("Conexão recuperada");
+      return;
+    }
+    if (state === "disconnected") {
+      window.clearTimeout(reconnectTimer);
+      setLastEvent("Tentando recuperar conexão");
+      setSetupOpen(true);
+      updateSetupState();
+      reconnectTimer = window.setTimeout(() => {
+        if (peerConnection?.connectionState === "disconnected") {
+          handleConnectionProblem("Falhou", "Reconexão não concluída", "O outro jogador pode ter fechado a aba ou perdido a rede. Gere uma nova oferta na mesma sala.");
+        }
+      }, 8000);
+      cueOakBitOnce("connection-disconnected", "A conexão ficou instável. Mantenha a sala aberta por alguns segundos.", "alert", 3800);
+    }
+    if (state === "failed") {
+      handleConnectionProblem("Falhou", "Conexão falhou", "A conexão falhou. Use a sala atual para gerar uma nova oferta.");
+    }
   });
-  peerConnection.addEventListener("datachannel", (event) => bindDataChannel(event.channel));
+  peerConnection.addEventListener("iceconnectionstatechange", () => {
+    if (connectionToken !== peerConnectionToken) {
+      return;
+    }
+
+    if (peerConnection?.iceConnectionState === "failed") {
+      handleConnectionProblem("Falhou", "Rota WebRTC falhou", "A rota de conexão falhou. Gere uma nova oferta para tentar outra rota.");
+    }
+  });
+  peerConnection.addEventListener("datachannel", (event) => {
+    if (connectionToken !== peerConnectionToken) {
+      return;
+    }
+
+    bindDataChannel(event.channel);
+  });
   return peerConnection;
 }
 
 async function shareScreen(player = getActivePlayerId()) {
   if (!peerConnection) {
     setPeerStatus("Conecte primeiro");
+    setLastEvent("Conecte antes de transmitir");
     return;
   }
 
   const playerId = String(player);
+  if (!isLocalPlayer(playerId)) {
+    setLastEvent(`Jogador ${playerId} pertence ao outro navegador`);
+    cueOakBitOnce("remote-side-stream", "Transmita apenas o seu lado. A tela do outro jogador aparece quando ele transmitir.", "alert", 3600);
+    return;
+  }
+
   const canvas = getPlayerCanvas(playerId);
   if (!canvas?.captureStream) {
-    setPeerStatus("Inicie a ROM antes");
+    setLastEvent("Inicie a ROM antes de transmitir");
+    updateSetupState();
+    cueOakBitOnce("rom-not-ready", "A ROM ainda está iniciando. Espere a tela do jogo aparecer antes de transmitir.", "alert", 3600);
     return;
   }
 
   localScreenStream = canvas.captureStream(30);
   const [videoTrack] = localScreenStream.getVideoTracks();
   if (!videoTrack) {
-    setPeerStatus("Sem video");
+    setLastEvent("Sem vídeo para transmitir");
+    updateSetupState();
     return;
   }
 
-  const sender = getVideoSender();
+  const sender = getVideoSender(playerId);
 
   if (!sender) {
-    setPeerStatus("Canal de video ausente");
+    setLastEvent("Canal de vídeo ausente");
+    updateSetupState();
     return;
   }
 
@@ -816,18 +1708,24 @@ async function shareScreen(player = getActivePlayerId()) {
   });
   streamingPlayer = playerId;
   setPeerStatus(`Transmitindo emulador J${playerId}`);
+  setLastEvent(`Transmitindo emulador J${playerId}`);
   sendPeerMessage("screen-share", { active: true, player: playerId });
+  sendLocalSnapshot();
+  startStreamAnnouncer();
   await renegotiateVideo();
 }
 
 function stopScreenShare() {
+  const stoppedPlayer = streamingPlayer;
   const tracks = localScreenStream?.getTracks() || [];
   tracks.forEach((track) => track.stop());
   localScreenStream = null;
-  const sender = getVideoSender();
+  const sender = getVideoSender(stoppedPlayer || getActivePlayerId());
   void sender?.replaceTrack(null).catch(() => {});
-  sendPeerMessage("screen-share", { active: false, player: streamingPlayer });
+  sendPeerMessage("screen-share", { active: false, player: stoppedPlayer });
   streamingPlayer = "";
+  stopStreamAnnouncer();
+  setLastEvent("Transmissão encerrada");
 }
 
 async function createOfferSignal() {
@@ -840,13 +1738,23 @@ async function createOfferSignal() {
   await waitForIceGathering(connection);
   if (localSignal) {
     localSignal.value = encodeSignal(connection.localDescription);
+    storeSignalDrafts();
   }
   setPeerStatus("Oferta pronta");
+  setLastEvent("Oferta pronta para copiar");
+  selectSignalText(localSignal);
 }
 
 async function acceptOfferSignal() {
   cueOakBit("Gerando resposta com o código recebido.", "thinking", 3000);
+  if (!guardRemoteSignal()) {
+    return;
+  }
+
   const offerSignal = decodeSignal(remoteSignal?.value);
+  if (!guardSignalRoom(offerSignal) || !guardSignalType(offerSignal, "offer")) {
+    return;
+  }
   if (offerSignal.room) {
     setRoomCode(offerSignal.room);
   }
@@ -859,50 +1767,126 @@ async function acceptOfferSignal() {
   await waitForIceGathering(connection);
   if (localSignal) {
     localSignal.value = encodeSignal(connection.localDescription);
+    storeSignalDrafts();
   }
   setPeerStatus("Resposta pronta");
+  setLastEvent("Resposta pronta para enviar");
+  selectSignalText(localSignal);
 }
 
 async function applyAnswerSignal() {
   cueOakBit("Concluindo a conexão manual.", "thinking", 2600);
   if (!peerConnection) {
     setPeerStatus("Crie oferta primeiro");
+    setLastEvent("Crie uma oferta antes da resposta");
+    return;
+  }
+
+  if (!guardRemoteSignal()) {
     return;
   }
 
   const answerSignal = decodeSignal(remoteSignal?.value);
+  if (!guardSignalRoom(answerSignal) || !guardSignalType(answerSignal, "answer")) {
+    return;
+  }
   if (answerSignal.room) {
     setRoomCode(answerSignal.room);
   }
 
   await peerConnection.setRemoteDescription(answerSignal.description);
   setPeerStatus("Conectando");
+  setLastEvent("Resposta aplicada");
 }
 
 async function copyLocalSignal() {
   const signal = localSignal?.value?.trim();
   if (!signal) {
     setPeerStatus("Sem código");
+    setLastEvent("Nenhum código para copiar");
     return;
   }
 
   try {
     await navigator.clipboard.writeText(signal);
     setPeerStatus("Código copiado");
+    setLastEvent("Código copiado");
+    flashButtonLabel(copySignalButton, "Código copiado");
+    if (peerConnection?.connectionState !== "connected") {
+      remoteSignal?.focus();
+    }
   } catch (error) {
     window.prompt("Copie o código WebRTC:", signal);
   }
 }
 
 async function runPeerAction(action) {
+  if (isPeerActionRunning) {
+    return;
+  }
+
+  isPeerActionRunning = true;
+  updateDuoOverview();
+  setPeerStatus("Processando");
   try {
     await action();
   } catch (error) {
     setPeerStatus("Falha no código");
+    setLastEvent("Código inválido ou incompleto");
+    cueOakBitOnce("invalid-signal", "Não consegui ler esse código. Confira se ele foi copiado inteiro.", "alert", 3800);
+  } finally {
+    isPeerActionRunning = false;
+    updateDuoOverview();
   }
 }
 
 document.addEventListener("click", (event) => {
+  const roleButton = event.target.closest("[data-oakduo-role]");
+  if (roleButton) {
+    completeSetup(roleButton.dataset.oakduoRole);
+    return;
+  }
+
+  const setupButton = event.target.closest("[data-setup-action]");
+  if (setupButton) {
+    const action = setupButton.dataset.setupAction;
+    const role = getPreferredRole() || "1";
+    if (action === "continue") {
+      const progress = getSetupProgress();
+      if (!progress.done) {
+        updateSetupState();
+        return;
+      }
+
+      sessionStorage.setItem(SETUP_STORAGE_KEY, "true");
+      setSetupOpen(false);
+      focusPlayer(role);
+    } else if (action === "new-session") {
+      sessionStorage.removeItem(SETUP_STORAGE_KEY);
+      sessionStorage.removeItem(ROLE_STORAGE_KEY);
+      resetSetupReadyState();
+      createNewRoom();
+      setSetupOpen(true);
+      updateSetupState();
+    } else if (action === "copy-invite") {
+      copyInvite();
+    } else if (action === "create-offer") {
+      runPeerAction(createOfferSignal);
+    } else if (action === "accept-offer") {
+      runPeerAction(acceptOfferSignal);
+    } else if (action === "copy-signal") {
+      copyLocalSignal();
+    } else if (action === "apply-answer") {
+      runPeerAction(applyAnswerSignal);
+    } else if (action === "choose-rom") {
+      chooseRom(role);
+    } else if (action === "stream") {
+      focusPlayer(role);
+      runPeerAction(() => shareScreen(role));
+    }
+    return;
+  }
+
   const button = event.target.closest("[data-oakduo-action]");
   if (!button) {
     return;
@@ -973,18 +1957,17 @@ async function copyInvite() {
   const invite = [
     `OakDuo ${roomCode}`,
     "Dois emuladores lado a lado no OakRom.",
-    "Abra o link, conecte pela sala manual e transmita o emulador do seu lado:",
+    "1. Abra o link no outro navegador.",
+    "2. Use Conexão manual para trocar oferta e resposta.",
+    "3. Depois transmita o emulador do seu lado:",
     inviteUrl.toString(),
   ].join("\n");
 
   try {
     await navigator.clipboard.writeText(invite);
-    if (copyInviteButton) {
-      copyInviteButton.textContent = "Convite copiado";
-      window.setTimeout(() => {
-        copyInviteButton.textContent = "Copiar convite";
-      }, 1800);
-    }
+    flashButtonLabel(copyInviteButton, "Convite copiado", 1800);
+    setLastEvent("Convite copiado");
+    cueOakBit("Convite copiado com sala e passos rápidos.", "happy", 2600);
   } catch (error) {
     window.prompt("Copie o convite do OakDuo:", invite);
   }
@@ -996,8 +1979,51 @@ createOfferButton?.addEventListener("click", () => runPeerAction(createOfferSign
 acceptOfferButton?.addEventListener("click", () => runPeerAction(acceptOfferSignal));
 applyAnswerButton?.addEventListener("click", () => runPeerAction(applyAnswerSignal));
 stopScreenButton?.addEventListener("click", stopScreenShare);
-copySignalButton?.addEventListener("click", () => runPeerAction(copyLocalSignal));
-disconnectPeerButton?.addEventListener("click", closePeerConnection);
+copySignalButton?.addEventListener("click", (event) => {
+  if (event.currentTarget?.dataset?.setupAction) {
+    return;
+  }
+
+  runPeerAction(copyLocalSignal);
+});
+disconnectPeerButton?.addEventListener("click", () => closePeerConnection({ clearSignals: true }));
+remoteSignal?.addEventListener("input", () => {
+  storeSignalDrafts();
+  recoverPeerStatusAfterSignalEdit();
+  setLastEvent(remoteSignal.value.trim() ? "Código recebido colado" : "Código recebido vazio");
+});
+remoteSignal?.addEventListener("paste", (event) => {
+  const pastedText = event.clipboardData?.getData("text") || "";
+  const normalizedText = normalizeSignalText(pastedText);
+  if (!normalizedText || normalizedText === pastedText) {
+    return;
+  }
+
+  event.preventDefault();
+  remoteSignal.value = normalizedText;
+  storeSignalDrafts();
+  recoverPeerStatusAfterSignalEdit();
+  setLastEvent("Código recebido limpo");
+});
+remoteSignal?.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.key !== "Enter") {
+    return;
+  }
+
+  event.preventDefault();
+  if (peerConnection) {
+    runPeerAction(applyAnswerSignal);
+    return;
+  }
+
+  runPeerAction(acceptOfferSignal);
+});
+localSignal?.addEventListener("input", () => {
+  storeSignalDrafts();
+  updateDuoOverview();
+});
+localSignal?.addEventListener("focus", () => selectSignalText(localSignal));
+localSignal?.addEventListener("click", () => selectSignalText(localSignal));
 pokedexToggle?.addEventListener("click", () => {
   setPokedexFrameSource();
   void setPokedexOpen(!document.body.classList.contains("is-pokedex-open"));
@@ -1063,16 +2089,35 @@ window.addEventListener("message", (event) => {
   }
 });
 
+window.addEventListener("beforeunload", (event) => {
+  if (!hasActiveDuoSession()) {
+    return;
+  }
+
+  event.preventDefault();
+  event.returnValue = "";
+});
+
 ["1", "2"].forEach((player) => {
   const frame = getFrame(player);
   frame?.addEventListener("load", () => {
     setPlayerStatus(player, "Pronto");
     setPlayerRomMeta(player);
+    window.setTimeout(updateSetupState, 300);
+    window.setTimeout(updateSetupState, 1200);
   });
 });
 
 syncRoomCode();
-setActivePlayer("1");
+if (didReloadPage) {
+  prepareReloadedSession();
+} else {
+  restoreSignalDrafts();
+}
+applyButtonIcons();
+setActivePlayer(sessionStorage.getItem(ROLE_STORAGE_KEY) || sessionStorage.getItem("oakduoActivePlayer") || "1");
+initializeSetup();
+updateDuoOverview();
 window.setTimeout(() => {
-  cueOakBit("OakDuo pronto. Eu fico aqui para ajudar com sala, controle e conexão.", "happy", 4600);
+  cueOakBit("OakDuo pronto. Eu fico aqui para ajudar com lado, convite, conexão e transmissão.", "happy", 4600);
 }, 700);
