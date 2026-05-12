@@ -13,6 +13,7 @@ OakRom é um projeto web vanilla com servidor Node.js simples. Ele combina:
 - OakDuo com dois emuladores lado a lado, fluxo por papel e conexão manual WebRTC.
 - Mascote OakBit com menu, tutorial, atalhos e comportamento contextual.
 - Oak Challenge para runs Pokémon/Nuzlocke/Hackroms com overlay OBS.
+- Oak Rogue com roguelike de ginásios, modo Normal/Nuzlocke, combate automático, mapa ramificado e relíquias.
 
 Não há React, Vue, bundler ou build step.
 
@@ -55,6 +56,9 @@ Servidor padrão:
 - `oak-challenge.html`: página de runs Pokémon, modo streamer, emulador Challenge e overlay OBS.
 - `oak-challenge.js`: lógica de runs, time/box, PokeAPI, rotas, overlay OBS, EmulatorJS direto no overlay e Pokédex integrada.
 - `oak-challenge.css`: layout do Oak Challenge, HUD de streamer, overlay OBS, painéis e tutorial.
+- `oak-rogue.html`: tela Oak Rogue com escolha de modo, mapa, batalha, escolhas, Pokédex da run e fim da expedição.
+- `oak-rogue.js`: lógica do roguelike, Nuzlocke, saves por modo, combate automático, relíquias, mapa, eventos, recrutamento e chefes.
+- `oak-rogue.css`: layout do Oak Rogue, cards de rota, batalha, popups, relíquias e responsividade.
 - `pokedex.html`: Pokédex principal e modo embed.
 - `app.js`: lógica da Pokédex, busca, voz, cries e `postMessage`.
 - `pokedex.css`: visual da Pokédex e overrides do modo embed.
@@ -178,6 +182,29 @@ Overlay OBS:
 - Narração da lore no overlay é feita por `postMessage` da Pokédex embed para o Oak Challenge.
 - OakBit aparece no overlay, abre a Pokédex integrada e possui tutorial rápido específico.
 
+## Oak Rogue
+
+Oak Rogue é a experiência roguelike de Pokémon do projeto, separada do emulador e do Oak Challenge.
+
+Funcionalidades principais:
+
+- Tela inicial com modos Normal e Nuzlocke.
+- Saves ficam vinculados ao modo escolhido; não permitir continuar uma run Normal como Nuzlocke nem o inverso.
+- No Nuzlocke, Pokémon derrotados devem sair imediatamente de `state.team` e de `state.battle.playerTeam`.
+- Baixas do Nuzlocke devem ser preservadas em `state.fallenTeam` para a tela final de derrota.
+- O popup de batalha deve renderizar apenas o time vivo no lado do jogador para não ocupar espaço com derrotados.
+- Antes de remover o último Pokémon derrotado, renderizar HP 0 e animação de queda.
+- Mapa ramificado por arenas, oito ginásios e Liga.
+- Combate automático com velocidade, energia, moves, itens, status, XP, evolução e troca automática de ativo.
+- SFX do Oak Rogue usam Web Audio local para início de batalha, golpes, queda e evolução.
+- Efeitos de batalha devem ficar contidos no modal e não podem criar scroll temporário na página.
+- Relíquias separadas por efeito: `damage`, `atk`, `spd`, `def`, `hp`, `heal`, `crit`, `synergy` e `sash`.
+- `damage` é dano final; `atk`, `spd`, `def` e `hp` alteram atributos separados.
+- Preview de relíquias deve mostrar HP, ATK, DEF e VEL separadamente.
+- OakBit tem tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
+- Textos visíveis do Oak Rogue devem ficar em português revisado, com acentos e termos consistentes.
+- Validar mudanças com `node --check oak-rogue.js`.
+
 ## OakBit
 
 OakBit é o mascote assistente do projeto.
@@ -189,6 +216,7 @@ Recursos:
 - Tutorial flutuante contextual.
 - Tutorial específico para OakDuo com passos contextuais: setup por papel, códigos WebRTC, ROM, transmissão, estado `Recebendo` e Pokédex.
 - Tutorial específico no Oak Challenge.
+- Tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
 - Modos: `library`, `emulator`, `pokedex`, `system-alert`.
 - Energia persistente.
 - Memória contextual da sessão.
@@ -224,7 +252,7 @@ No modo embed, `app.js` envia eventos para o parent com `postMessage`, permitind
 
 - `sobre.html`: visão do projeto.
 - `como-usar.html`: guia atualizado.
-- `patch-notes.html`: histórico com OakDuo, Oak Challenge, OakBit, emulador, dashboard e multi-console.
+- `patch-notes.html`: histórico com OakDuo, Oak Challenge, Oak Rogue, OakBit, emulador, dashboard e multi-console.
 
 ## Backend
 
@@ -276,6 +304,17 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - Manter limite de 6 Pokémon no time.
 - Preservar atalho `P` para Pokédex integrada.
 
+### Oak Rogue
+
+- Verificar `oak-rogue.html`, `oak-rogue.js` e `oak-rogue.css`.
+- Preservar a separacao entre saves Normal e Nuzlocke no botao Continuar run.
+- Em Nuzlocke, manter derrotados fora do time e fora do popup de batalha.
+- Preservar `fallenTeam` para mostrar os mortos quando a run for perdida.
+- Manter overflow/containment das animações de batalha para evitar scroll.
+- Ao adicionar reliquias, classificar corretamente entre dano final, ataque, velocidade, defesa, HP, cura, critico, sinergia ou sobrevivencia.
+- Manter OakBit contextual no Oak Rogue ao mudar telas ou textos principais.
+- Conferir preview de atributos e `node --check oak-rogue.js`.
+
 ### Pokédex
 
 - Verificar `pokedex.html`, `app.js` e `pokedex.css`.
@@ -305,6 +344,7 @@ node --check mascot-3d.js
 node --check emulator.js
 node --check home-library.js
 node --check oak-challenge.js
+node --check oak-rogue.js
 node --check app.js
 ```
 
@@ -315,6 +355,7 @@ Checar páginas:
 - `http://localhost:5500/oakduo.html`
 - `http://localhost:5500/oak-challenge.html`
 - `http://localhost:5500/oak-challenge.html?obs=1`
+- `http://localhost:5500/oak-rogue.html`
 - `http://localhost:5500/pokedex.html?embed=1`
 - `http://localhost:5500/como-usar.html`
 - `http://localhost:5500/patch-notes.html`

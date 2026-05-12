@@ -715,6 +715,13 @@ function getTutorialSteps() {
       add(".oakduo-stage", "ROM e transmissão", "Escolha ROM e transmita apenas no seu lado. A tela remota chega pelo vídeo do outro painel.", "ROM and Streaming", "Choose a ROM and stream only on your side. The remote screen arrives through the video in the other panel.");
       add(".oakduo-stage", "Pokédex", "P abre ou fecha a Pokédex integrada. V ativa a voz para abrir, fechar ou buscar Pokémon.", "Pokedex", "P opens or closes the integrated Pokedex. V enables voice commands to open, close, or search Pokemon.");
     }
+  } else if (document.body.classList.contains("oak-rogue-page")) {
+    add(".run-mode-grid", "Modo da run", "Escolha Normal para testar builds ou Nuzlocke para jogar com perda permanente e level cap.", "Run mode", "Choose Normal to test builds or Nuzlocke for permanent losses and level caps.");
+    add("#continue-run", "Continuar run", "Este botão só aparece quando o save combina com o modo selecionado.", "Continue run", "This button only appears when the save matches the selected mode.");
+    add("#starter-grid", "Inicial", "Escolha o primeiro parceiro da expedição. O tipo define parte do mapa e das sinergias.", "Starter", "Choose the first partner for the expedition. Its type shapes part of the map and synergies.");
+    add(".route-shell", "Mapa", "Cada nó muda a run: batalhas, capturas, relíquias, treino, centro e líderes.", "Map", "Each node changes the run: battles, catches, relics, training, center, and leaders.");
+    add("#route-dex-open", "Pokédex da run", "A Pokédex mostra Pokémon vistos, capturados e shinies encontrados nesta jornada.", "Run Pokedex", "The Pokedex shows seen Pokemon, captured Pokemon, and shinies found in this journey.");
+    add(".battle-grid", "Batalha automática", "O time usa velocidade, energia, golpes e relíquias automaticamente. No Nuzlocke, quem cai sai do time.", "Automatic battle", "The team uses speed, energy, moves, and relics automatically. In Nuzlocke, fainted Pokemon leave the team.");
   } else if (document.body.classList.contains("home-page")) {
     add(".rom-library-hero", "Home", "Aqui você escolhe uma capa para abrir a página da ROM.", "Home", "Choose a cover here to open a ROM page.");
     add(".home-upload-panel", "Adicionar ROM", "Use este painel para salvar ROMs locais neste navegador.", "Add ROM", "Use this panel to save local ROMs in this browser.");
@@ -736,8 +743,8 @@ function getTutorialSteps() {
     selector: ".oakbit-button",
     title: pt ? "OakBit" : "OakBit",
     copy: pt
-      ? (document.body.classList.contains("oakduo-page") ? "No OakDuo eu fico fora dos emuladores para ajudar com lado, convite, conexão e transmissão." : "Tela cheia e Pokédex ficam aqui no mascote, junto com saves, tutorial, skins e opções da sessão.")
-      : (document.body.classList.contains("oakduo-page") ? "In OakDuo I stay outside the emulators to help with side, invite, connection, and streaming." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options."),
+      ? (document.body.classList.contains("oakduo-page") ? "No OakDuo eu fico fora dos emuladores para ajudar com lado, convite, conexão e transmissão." : document.body.classList.contains("oak-rogue-page") ? "No Oak Rogue eu explico modos, mapa, relíquias, Pokédex da run e regras de Nuzlocke." : "Tela cheia e Pokédex ficam aqui no mascote, junto com saves, tutorial, skins e opções da sessão.")
+      : (document.body.classList.contains("oakduo-page") ? "In OakDuo I stay outside the emulators to help with side, invite, connection, and streaming." : document.body.classList.contains("oak-rogue-page") ? "In Oak Rogue I explain modes, map, relics, the run Pokedex, and Nuzlocke rules." : "Fullscreen and Pokedex live here in the mascot, along with saves, tutorial, skins, and session options."),
   });
 
   return steps;

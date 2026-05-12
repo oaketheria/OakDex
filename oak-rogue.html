@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oak Rogue - OakRom</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Press+Start+2P&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./mascot.css" />
+    <link rel="stylesheet" href="./oak-rogue.css" />
+  </head>
+  <body class="oak-rogue-page">
+    <div class="rogue-shell">
+      <header class="rogue-topbar">
+        <a class="rogue-brand" href="./index.html" aria-label="Voltar para Home">
+          <span class="rogue-brand-mark" aria-hidden="true"></span>
+          <span>
+            <span>OakRom Lab</span>
+            <strong>Oak Rogue</strong>
+          </span>
+        </a>
+        <nav class="rogue-nav" aria-label="Navegação principal">
+          <a href="./index.html">Home</a>
+          <a href="./oakduo.html">OakDuo</a>
+          <a href="./oak-challenge.html">Oak Challenge</a>
+          <a class="is-active" href="./oak-rogue.html" aria-current="page">Oak Rogue</a>
+          <a href="./pokedex.html">Pokédex</a>
+        </nav>
+      </header>
+
+      <main class="rogue-layout">
+        <section class="rogue-stage" aria-label="Jogo Oak Rogue">
+          <div class="rogue-status-strip">
+            <div><span>Bioma</span><strong id="rogue-biome">Laboratório</strong></div>
+            <div><span>Andar</span><strong id="rogue-floor">0/12</strong></div>
+            <div><span>Risco</span><strong id="rogue-threat">Estável</strong></div>
+          </div>
+
+          <section class="rogue-screen is-active" id="screen-title" aria-label="Inicio">
+            <div class="rogue-title-scene">
+              <div class="title-copy-panel">
+                <span class="rogue-kicker">Professor Oak apresenta</span>
+                <h1>Oak Rogue</h1>
+                <p>Uma rota roguelike pelos oito ginásios: escolha encontros, equipe itens, evolua no tempo certo e sobreviva aos líderes.</p>
+                <div class="run-mode-grid" aria-label="Escolha o modo da run">
+                  <label class="run-mode-card">
+                    <input id="run-normal" name="run-mode" type="radio" value="normal" checked />
+                    <span>
+                      <strong>Modo normal</strong>
+                      <small>Derrotados voltam depois da luta.</small>
+                    </span>
+                    <ul>
+                      <li>Sem perda permanente do time</li>
+                      <li>Level cap livre</li>
+                      <li>Melhor para testar rotas e itens</li>
+                    </ul>
+                  </label>
+                  <label class="run-mode-card featured">
+                    <input id="run-nuzlocke" name="run-mode" type="radio" value="nuzlocke" />
+                    <span>
+                      <strong>Nuzlocke</strong>
+                      <small>Regras duras do desafio.</small>
+                    </span>
+                    <ul>
+                      <li>Quem cai sai do time</li>
+                      <li>Level cap por ginásio ativado</li>
+                      <li>Escolhas de rota importam mais</li>
+                    </ul>
+                  </label>
+                </div>
+                <div class="rogue-title-actions">
+                  <button class="rogue-primary" id="start-run" type="button">Começar jornada</button>
+                  <button class="rogue-secondary" id="continue-run" type="button" hidden>Continuar run</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="rogue-screen" id="screen-starters" aria-label="Escolha inicial">
+            <div class="rogue-panel-head">
+              <span class="rogue-kicker">Laboratório do Professor Oak</span>
+              <h2>Escolha seu Pokémon inicial</h2>
+            </div>
+            <div class="starter-grid" id="starter-grid"></div>
+          </section>
+
+          <section class="rogue-screen" id="screen-map" aria-label="Mapa">
+            <div class="rogue-panel-head compact">
+              <span class="rogue-kicker">Rota dinâmica</span>
+              <h2 id="map-title">Escolha o próximo nó</h2>
+            </div>
+            <div class="route-shell">
+              <aside class="route-side-card">
+                <span class="rogue-kicker">Equipe</span>
+                <div class="route-team" id="route-team"></div>
+              </aside>
+              <div class="rogue-map" id="rogue-map"></div>
+              <aside class="route-side-card">
+                <span class="rogue-kicker">Unid.</span>
+                <div class="route-item-preview" id="route-item-preview">Saco vazio</div>
+                <span class="rogue-kicker route-badge-title">Distintivos</span>
+                <div class="route-badges" id="route-badges"></div>
+              </aside>
+            </div>
+            <button class="route-dex-button" id="route-dex-open" type="button">
+              <span>Pokédex</span>
+              <strong id="route-dex-count">0/0</strong>
+            </button>
+          </section>
+
+          <section class="rogue-dex-modal" id="rogue-dex-modal" aria-hidden="true" aria-label="Pokédex da run">
+            <div class="rogue-dex-panel">
+              <header class="rogue-dex-header">
+                <div>
+                  <span class="rogue-kicker">Oak Rogue</span>
+                  <h2>Pokédex</h2>
+                </div>
+                <button class="rogue-dex-close" id="rogue-dex-close" type="button" aria-label="Fechar Pokédex">×</button>
+              </header>
+              <nav class="rogue-dex-tabs" aria-label="Abas da Pokédex">
+                <button class="is-active" type="button" data-dex-tab="normal">Pokédex</button>
+                <button type="button" data-dex-tab="shiny">Shiny</button>
+              </nav>
+              <div class="rogue-dex-progress">
+                <strong id="rogue-dex-generation">Gen I - 0%</strong>
+                <div><span id="rogue-dex-generation-bar"></span></div>
+                <strong id="rogue-dex-summary">Todas as gens - 0%</strong>
+                <div><span id="rogue-dex-seen-bar"></span></div>
+              </div>
+              <div class="rogue-dex-grid" id="rogue-dex-grid"></div>
+            </div>
+            <div class="rogue-dex-detail-backdrop" id="rogue-dex-detail-backdrop" hidden>
+              <div class="rogue-dex-detail" id="rogue-dex-detail"></div>
+            </div>
+          </section>
+
+          <section class="rogue-screen" id="screen-choice" aria-label="Escolha">
+            <div class="choice-panel">
+              <div class="rogue-panel-head">
+                <span class="rogue-kicker" id="choice-kicker">Evento</span>
+                <h2 id="choice-title">Escolha</h2>
+                <p id="choice-copy"></p>
+              </div>
+              <div class="choice-grid" id="choice-grid"></div>
+            </div>
+          </section>
+
+          <section class="rogue-screen" id="screen-battle" aria-label="Batalha">
+            <div class="battle-grid">
+              <div class="battle-titlebar">
+                <h2 id="battle-title">Batalha</h2>
+                <p id="battle-log" aria-live="polite"></p>
+              </div>
+              <article class="battle-roster player" id="player-card"></article>
+              <article class="battle-roster enemy" id="enemy-card"></article>
+              <div class="move-grid" id="move-grid"></div>
+            </div>
+          </section>
+
+          <section class="rogue-screen" id="screen-end" aria-label="Fim da run">
+            <div class="end-panel">
+              <span class="rogue-kicker" id="end-kicker">Resultado</span>
+              <h2 id="end-title">Fim</h2>
+              <p id="end-copy"></p>
+              <div id="end-team" class="mini-team"></div>
+              <button class="rogue-primary" id="restart-run" type="button">Jogar de novo</button>
+            </div>
+          </section>
+        </section>
+
+      </main>
+    </div>
+
+    <script src="./mascot.js"></script>
+    <script src="./oak-rogue.js"></script>
+  </body>
+</html>

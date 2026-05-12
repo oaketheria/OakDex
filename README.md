@@ -15,6 +15,7 @@ Depois abra:
 - `http://127.0.0.1:5500/emulator.html`
 - `http://127.0.0.1:5500/oakduo.html`
 - `http://127.0.0.1:5500/oak-challenge.html`
+- `http://127.0.0.1:5500/oak-rogue.html`
 - `http://127.0.0.1:5500/pokedex.html`
 - `http://127.0.0.1:5500/como-usar.html`
 - `http://127.0.0.1:5500/patch-notes.html`
@@ -31,6 +32,7 @@ Depois abra:
 - OakBit como assistente contextual, com tutorial, atalhos, skins, energia, voz e suporte a fullscreen.
 - OakDuo em `oakduo.html`, com dois emuladores lado a lado, fluxo por papel, conexão manual WebRTC, convite por sala, transmissão remota, tela cheia, Pokédex integrada e OakBit fora dos iframes.
 - Oak Challenge para runs Pokémon, Nuzlocke e hackroms, com overlay OBS, time, box, rotas, badges, notas e Pokédex integrada.
+- Oak Rogue em `oak-rogue.html`, roguelike de ginásios com modo Normal/Nuzlocke, mapa ramificado, combate automático, sinergias por tipo, recrutamento, relíquias separadas por atributo e chefes.
 - Favicon próprio em `assets/favicon.svg`.
 
 ## OakDuo
@@ -80,7 +82,7 @@ Recursos atuais:
 
 - Menu contextual por categorias: Sessão, Saves e OakBit.
 - Atalhos para Home, menu da tela, tela cheia, Pokédex, voz da Pokédex, importar save e exportar save.
-- Tutorial flutuante contextual na Home, na página da ROM, no OakDuo e no Oak Challenge.
+- Tutorial flutuante contextual na Home, na página da ROM, no OakDuo, no Oak Challenge e no Oak Rogue.
 - Modos internos: biblioteca, emulador, Pokédex e alerta.
 - Energia visual persistente.
 - Memória contextual da sessão atual.
@@ -89,6 +91,7 @@ Recursos atuais:
 - Em fullscreen, o Pixel é usado como modo seguro.
 - Integração com OakDuo: tela cheia, Pokédex integrada, voz da Pokédex e tutorial específico.
 - Integração com Oak Challenge: OakBit aparece no overlay OBS, abre a Pokédex integrada e oferece tutorial rápido.
+- Integração com Oak Rogue: OakBit explica modos, mapa, relíquias, Pokédex da run e regras de Nuzlocke.
 
 Arquivos principais:
 
@@ -137,6 +140,30 @@ Recursos:
 - Pokédex integrada no overlay com atalho `P`.
 - OakBit no overlay com menu contextual e tutorial rápido.
 
+## Oak Rogue
+
+Arquivos principais:
+
+- `oak-rogue.html`
+- `oak-rogue.js`
+- `oak-rogue.css`
+
+Recursos:
+
+- Roguelike Pokemon com oito ginasios, Liga, mapa ramificado, NPCs por arena, eventos, treino, move tutor e evolucao.
+- Modos Normal e Nuzlocke escolhidos na tela inicial.
+- Saves respeitam o modo da run: uma run Normal nao pode ser continuada como Nuzlocke apos F5.
+- No Nuzlocke, Pokemon derrotados saem imediatamente do time e deixam de ocupar espaco no popup de batalha.
+- Baixas do Nuzlocke ficam registradas em `fallenTeam` e voltam a aparecer na tela de Run perdida.
+- Combate automatico com ordem por velocidade, energia, moves, itens equipados, criticos, efeitos de status e troca automatica do ativo.
+- Sons via Web Audio para inicio de batalha, golpes, queda de Pokemon e evolucao.
+- Animacoes de batalha ficam contidas no modal para nao criar scroll temporario na pagina.
+- Reliquias separadas por efeito: dano final, ataque, velocidade, defesa, HP, cura, critico, sinergia e sobrevivencia.
+- Preview de reliquias mostra HP, ATK, DEF e VEL separadamente antes de equipar.
+- Recrutamento e Pokedex interna da run com vistos/capturados.
+- OakBit com tutorial específico para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
+- Revisão dos textos visíveis em português na tela e nos popups do Oak Rogue.
+
 ## Pokédex
 
 Arquivos principais:
@@ -170,6 +197,7 @@ Recursos:
 - `server.js`: servidor local e endpoints auxiliares.
 - `styles.css`: estilos base.
 - `home.css`: Home, dashboard e páginas informativas.
+- `oak-rogue.html`, `oak-rogue.js`, `oak-rogue.css`: Oak Rogue.
 - `assets/rom-covers/`: capas locais conhecidas.
 - `assets/favicon.svg`: ícone da aba do navegador.
 
@@ -216,4 +244,5 @@ node --check oak-challenge.js
 node --check app.js
 node --check mascot.js
 node --check emulator.js
+node --check oak-rogue.js
 ```
