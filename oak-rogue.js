@@ -21,7 +21,31 @@
   const STARTERS = [
     { id: 1, name: "Bulbasaur", types: ["Grass", "Poison"], hp: 48, atk: 49, def: 49, spd: 45, trait: "Controle", text: "Cura gradual e veneno. Otimo para runs longas." },
     { id: 4, name: "Charmander", types: ["Fire"], hp: 43, atk: 57, def: 40, spd: 65, trait: "Pressão", text: "Alto dano, pouca margem de erro. Vence rápido ou sofre." },
-    { id: 7, name: "Squirtle", types: ["Water"], hp: 52, atk: 48, def: 65, spd: 43, trait: "Guarda", text: "Tanque sólido, combina com relíquias defensivas." }
+    { id: 7, name: "Squirtle", types: ["Water"], hp: 52, atk: 48, def: 65, spd: 43, trait: "Guarda", text: "Tanque sólido, combina com relíquias defensivas." },
+    { id: 152, name: "Chikorita", types: ["Grass"], hp: 45, atk: 49, def: 65, spd: 45, trait: "Folha", text: "Defensivo e estável. Segura pressão enquanto o time cresce." },
+    { id: 155, name: "Cyndaquil", types: ["Fire"], hp: 39, atk: 60, def: 43, spd: 65, trait: "Brasa", text: "Rápido e agressivo. Bom para abrir vantagem cedo." },
+    { id: 158, name: "Totodile", types: ["Water"], hp: 50, atk: 65, def: 64, spd: 43, trait: "Mordida", text: "Ataque físico alto e boa resistência para trocas." },
+    { id: 252, name: "Treecko", types: ["Grass"], hp: 40, atk: 65, def: 35, spd: 70, trait: "Agilidade", text: "Velocidade alta para vencer antes de apanhar." },
+    { id: 255, name: "Torchic", types: ["Fire"], hp: 45, atk: 70, def: 40, spd: 45, trait: "Chama", text: "Ataque forte e evolução com ótimo potencial ofensivo." },
+    { id: 258, name: "Mudkip", types: ["Water"], hp: 50, atk: 70, def: 50, spd: 40, trait: "Lama", text: "Muito consistente. Poucas fraquezas depois de evoluir." },
+    { id: 387, name: "Turtwig", types: ["Grass"], hp: 55, atk: 68, def: 64, spd: 31, trait: "Raiz", text: "Lento, resistente e ótimo com relíquias defensivas." },
+    { id: 390, name: "Chimchar", types: ["Fire"], hp: 44, atk: 58, def: 44, spd: 61, trait: "Ímpeto", text: "Ofensivo e flexível. Cresce rápido em lutas curtas." },
+    { id: 393, name: "Piplup", types: ["Water"], hp: 53, atk: 61, def: 53, spd: 40, trait: "Orgulho", text: "Bom equilíbrio e defesa especial natural." },
+    { id: 495, name: "Snivy", types: ["Grass"], hp: 45, atk: 45, def: 55, spd: 63, trait: "Elegância", text: "Rápido e seguro, com boa defesa para reposicionar." },
+    { id: 498, name: "Tepig", types: ["Fire"], hp: 65, atk: 63, def: 45, spd: 45, trait: "Carga", text: "HP alto e dano constante para rotas perigosas." },
+    { id: 501, name: "Oshawott", types: ["Water"], hp: 55, atk: 55, def: 45, spd: 45, trait: "Concha", text: "Versátil, aprende bem e encaixa em muitos times." },
+    { id: 650, name: "Chespin", types: ["Grass"], hp: 56, atk: 61, def: 65, spd: 38, trait: "Casca", text: "Tanque físico inicial para runs de atrito." },
+    { id: 653, name: "Fennekin", types: ["Fire"], hp: 40, atk: 62, def: 40, spd: 60, trait: "Mente", text: "Atacante especial veloz com boa cobertura futura." },
+    { id: 656, name: "Froakie", types: ["Water"], hp: 41, atk: 60, def: 40, spd: 71, trait: "Ninja", text: "Muito rápido. Excelente para finalizar inimigos frágeis." },
+    { id: 722, name: "Rowlet", types: ["Grass", "Flying"], hp: 68, atk: 55, def: 55, spd: 42, trait: "Pluma", text: "HP alto e tipo extra para cobertura desde o começo." },
+    { id: 725, name: "Litten", types: ["Fire"], hp: 45, atk: 65, def: 40, spd: 70, trait: "Garra", text: "Dano físico rápido e bom ritmo para batalhas selvagens." },
+    { id: 728, name: "Popplio", types: ["Water"], hp: 50, atk: 65, def: 54, spd: 40, trait: "Canção", text: "Ofensivo especial com boa sustentação inicial." },
+    { id: 810, name: "Grookey", types: ["Grass"], hp: 50, atk: 65, def: 50, spd: 65, trait: "Ritmo", text: "Atacante físico equilibrado e fácil de encaixar." },
+    { id: 813, name: "Scorbunny", types: ["Fire"], hp: 50, atk: 71, def: 40, spd: 69, trait: "Arranque", text: "Muito veloz, pressiona cedo e escala bem com dano." },
+    { id: 816, name: "Sobble", types: ["Water"], hp: 50, atk: 60, def: 40, spd: 70, trait: "Disparo", text: "Rápido e ofensivo, ótimo para vencer por velocidade." },
+    { id: 906, name: "Sprigatito", types: ["Grass"], hp: 40, atk: 61, def: 54, spd: 65, trait: "Flor", text: "Ágil e preciso, bom para abrir lutas com vantagem." },
+    { id: 909, name: "Fuecoco", types: ["Fire"], hp: 67, atk: 45, def: 59, spd: 36, trait: "Fornalha", text: "Resistente e forte em rotas longas." },
+    { id: 912, name: "Quaxly", types: ["Water"], hp: 55, atk: 65, def: 45, spd: 50, trait: "Passo", text: "Ataque confiável e bom equilíbrio para montar cobertura." }
   ];
 
   const POOL = [
@@ -453,6 +477,7 @@
     sashUsed: false,
     badges: [],
     offer: [],
+    starterChoices: [],
     fallenTeam: [],
     pendingItem: null,
     pendingEvolutions: [],
@@ -1434,8 +1459,16 @@
     return nodes;
   }
 
+  function randomStarterChoices() {
+    return ["Grass", "Fire", "Water"].map((type) => {
+      const candidates = STARTERS.filter((p) => p.types?.[0] === type);
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }).filter(Boolean);
+  }
+
   function setupStarters() {
-    $("starter-grid").innerHTML = STARTERS.map((p) => `
+    state.starterChoices = randomStarterChoices();
+    $("starter-grid").innerHTML = state.starterChoices.map((p) => `
       <button class="starter-card" type="button" data-starter="${p.id}">
         <span class="rogue-kicker">${p.trait}</span>
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${sprite(p)}'">
@@ -1459,6 +1492,7 @@
     state.sashUsed = false;
     state.badges = [];
     state.offer = [];
+    state.starterChoices = [];
     state.pendingEvolutions = [];
     state.routeVersion = ROUTE_VERSION;
     state.nuzlockeMode = !!$("run-nuzlocke")?.checked;
@@ -1468,8 +1502,10 @@
   }
 
   function chooseStarter(id) {
-    const starter = STARTERS.find((p) => p.id === id);
+    const starter = (state.starterChoices?.length ? state.starterChoices : STARTERS).find((p) => p.id === id);
+    if (!starter) return setupStarters();
     state.team = [maybeMarkShiny(cloneMon(starter, 5))];
+    state.starterChoices = [];
     state.team[0].runId ||= uid("mon");
     registerDexSeen(state.team[0]);
     buildMap();
