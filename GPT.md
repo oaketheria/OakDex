@@ -79,7 +79,10 @@ Nunca subir:
 - BIOS de PS1
 - pasta `bios/`
 - arquivos `.bin`
+- arquivos `.gba`
+- arquivos `.sav`
 - ROMs comerciais
+- saídas locais de `tools/firered-extraction/`
 - `socialrom_repo/`
 - `_backups/`
 
@@ -151,6 +154,7 @@ Consoles suportados:
 Observações técnicas:
 
 - ROMs, saves e BIOS ficam apenas no navegador do usuário via IndexedDB.
+- ROMs e saves locais no workspace, como `fire-red.gba` e `fire-red.sav`, devem ficar ignorados pelo Git.
 - O EmulatorJS depende de CDN.
 - O fullscreen usa a interface do projeto.
 - No fullscreen, OakBit usa Pixel como modo seguro; o modelo 3D fica bloqueado.
@@ -307,11 +311,11 @@ No deploy, a narração pode cair para voz nativa do navegador.
 ### Oak Rogue
 
 - Verificar `oak-rogue.html`, `oak-rogue.js` e `oak-rogue.css`.
-- Preservar a separacao entre saves Normal e Nuzlocke no botao Continuar run.
+- Preservar a separação entre saves Normal e Nuzlocke no botão Continuar run.
 - Em Nuzlocke, manter derrotados fora do time e fora do popup de batalha.
 - Preservar `fallenTeam` para mostrar os mortos quando a run for perdida.
 - Manter overflow/containment das animações de batalha para evitar scroll.
-- Ao adicionar reliquias, classificar corretamente entre dano final, ataque, velocidade, defesa, HP, cura, critico, sinergia ou sobrevivencia.
+- Ao adicionar relíquias, classificar corretamente entre dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia ou sobrevivência.
 - Manter OakBit contextual no Oak Rogue ao mudar telas ou textos principais.
 - Conferir preview de atributos e `node --check oak-rogue.js`.
 

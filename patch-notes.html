@@ -52,27 +52,46 @@
         <section class="patch-notes-timeline" aria-label="Histórico de atualizações">
           <article class="patch-note-card">
             <div class="patch-note-meta">
+              <span>v1.4.1</span>
+              <strong>Segurança e documentação</strong>
+            </div>
+            <div class="patch-note-content">
+              <h2>Proteções para ROMs, saves e arquivos locais</h2>
+              <p>Atualização focada em preparar o projeto para GitHub com regras mais claras para arquivos privados, ROMs comerciais, saves locais e saídas de extração.</p>
+              <ul>
+                <li>Atualizado o <code>.gitignore</code> para ignorar arquivos <code>.gba</code>, <code>.sav</code> e artefatos locais do emulador.</li>
+                <li>Adicionadas regras para manter entradas, saídas e arquivos extraídos de <code>tools/firered-extraction/</code> fora do repositório.</li>
+                <li>Confirmado que <code>fire-red.gba</code> e <code>fire-red.sav</code> ficam ignorados pelo Git.</li>
+                <li>Atualizados <code>README.md</code>, <code>GPT.md</code> e <code>GITHUB_CHECKLIST.md</code> com as regras de segurança antes de commit e push.</li>
+                <li>Reforçado no checklist que ROMs, saves, BIOS, backups e arquivos privados não devem ser enviados ao GitHub.</li>
+                <li>Corrigidos acentos e termos em português na documentação do Oak Rogue.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="patch-note-card">
+            <div class="patch-note-meta">
               <span>v1.4.0</span>
               <strong>Oak Rogue</strong>
             </div>
             <div class="patch-note-content">
-              <h2>Roguelike de ginasios com Nuzlocke, reliquias e combate automatico</h2>
-              <p>Oak Rogue entrou como uma nova experiencia jogavel: uma torre de rotas Pokemon com escolhas de caminho, recrutamento, itens, chefes e regras opcionais de Nuzlocke.</p>
+              <h2>Roguelike de ginásios com Nuzlocke, relíquias e combate automático</h2>
+              <p>Oak Rogue entrou como uma nova experiência jogável: uma torre de rotas Pokémon com escolhas de caminho, recrutamento, itens, chefes e regras opcionais de Nuzlocke.</p>
               <ul>
-                <li>Adicionada pagina Oak Rogue em <code>oak-rogue.html</code>, com link na navegacao principal das paginas informativas.</li>
-                <li>Adicionados modos Normal e Nuzlocke na tela inicial, com level cap automatico no Nuzlocke.</li>
-                <li>Corrigido o botao Continuar run para carregar apenas saves do mesmo modo selecionado.</li>
-                <li>Em Nuzlocke, Pokemon derrotados agora saem imediatamente do time durante a batalha.</li>
-                <li>Pokemons mortos no Nuzlocke agora ficam registrados e voltam a aparecer na tela de Run perdida.</li>
-                <li>Corrigido o popup de batalha para nao manter slots de Pokemon derrotados ocupando espaco.</li>
-                <li>Corrigida a animacao de batalha que criava scroll temporario na pagina.</li>
-                <li>Adicionados sons para inicio de batalha, golpes, queda de Pokemon e evolucao.</li>
-                <li>Separadas as reliquias por tipo de efeito: dano final, ataque, velocidade, defesa e HP.</li>
-                <li>Adicionadas novas reliquias para builds ofensivas, defensivas, rapidas e resistentes.</li>
-                <li>Atualizado o preview de atributos das reliquias para mostrar HP, ATK, DEF e VEL separadamente.</li>
-                <li>Atualizado o OakBit no Oak Rogue com tutorial para modos, mapa, reliquias, Pokedex da run e regras de Nuzlocke.</li>
-                <li>Revisados textos visiveis em portugues na tela, nos popups e no fluxo de batalha do Oak Rogue.</li>
-                <li>Oak Rogue inclui mapa ramificado, oito ginasios, Liga, NPCs por arena, recrutamento, eventos, move tutor, evolucao e Pokedex interna da run.</li>
+                <li>Adicionada página Oak Rogue em <code>oak-rogue.html</code>, com link na navegação principal das páginas informativas.</li>
+                <li>Adicionados modos Normal e Nuzlocke na tela inicial, com level cap automático no Nuzlocke.</li>
+                <li>Corrigido o botão Continuar run para carregar apenas saves do mesmo modo selecionado.</li>
+                <li>Em Nuzlocke, Pokémon derrotados agora saem imediatamente do time durante a batalha.</li>
+                <li>Pokémon mortos no Nuzlocke agora ficam registrados e voltam a aparecer na tela de Run perdida.</li>
+                <li>Corrigido o popup de batalha para não manter slots de Pokémon derrotados ocupando espaço.</li>
+                <li>Corrigida a animação de batalha que criava scroll temporário na página.</li>
+                <li>Adicionados sons para início de batalha, golpes, queda de Pokémon e evolução.</li>
+                <li>Separadas as relíquias por tipo de efeito: dano final, ataque, velocidade, defesa e HP.</li>
+                <li>Adicionadas novas relíquias para builds ofensivas, defensivas, rápidas e resistentes.</li>
+                <li>Atualizado o preview de atributos das relíquias para mostrar HP, ATK, DEF e VEL separadamente.</li>
+                <li>Atualizado o OakBit no Oak Rogue com tutorial para modos, mapa, relíquias, Pokédex da run e regras de Nuzlocke.</li>
+                <li>Revisados textos visíveis em português na tela, nos popups e no fluxo de batalha do Oak Rogue.</li>
+                <li>Oak Rogue inclui mapa ramificado, oito ginásios, Liga, NPCs por arena, recrutamento, eventos, move tutor, evolução e Pokédex interna da run.</li>
               </ul>
             </div>
           </article>

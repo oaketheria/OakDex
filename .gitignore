@@ -1,6 +1,19 @@
 .env
 node_modules/
 bios/
+
+# Local ROMs, saves, and emulator artifacts
 *.bin
+*.gba
+*.sav
+
+# Local extraction outputs
+tools/firered-extraction/input/
+tools/firered-extraction/output/
+tools/firered-extraction/extracted/
+tools/firered-extraction/*.bin
+tools/firered-extraction/*.gba
+tools/firered-extraction/*.sav
+
 socialrom_repo/
 _backups/

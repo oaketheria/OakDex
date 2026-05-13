@@ -8,7 +8,9 @@ Use este checklist sempre antes de fazer commit ou push para o GitHub.
 - Confirmar que BIOS de PS1 não será commitada.
 - Confirmar que a pasta `bios/` não será commitada.
 - Confirmar que arquivos `.bin` não serão commitados.
+- Confirmar que arquivos `.gba` e `.sav` não serão commitados.
 - Confirmar que ROMs comerciais não serão commitadas.
+- Confirmar que saídas locais de `tools/firered-extraction/` não serão commitadas.
 - Confirmar que `socialrom_repo/` não será commitado.
 - Confirmar que backups em `_backups/` não serão commitados.
 - Confirmar que arquivos grandes ou privados não aparecem como `A` no Git.
@@ -22,6 +24,11 @@ O `.gitignore` deve manter pelo menos:
 node_modules/
 bios/
 *.bin
+*.gba
+*.sav
+tools/firered-extraction/input/
+tools/firered-extraction/output/
+tools/firered-extraction/extracted/
 socialrom_repo/
 _backups/
 ```
@@ -33,6 +40,7 @@ git status --short --ignored
 git diff -- .gitignore
 git check-ignore -v bios/scph5501.bin
 git check-ignore -v *.bin
+git check-ignore -v fire-red.gba fire-red.sav
 ```
 
 Resultado esperado:
@@ -42,13 +50,14 @@ Resultado esperado:
 - `socialrom_repo/` aparece apenas como ignorado (`!! socialrom_repo/`), se existir.
 - `bios/scph5501.bin` é ignorado por `bios/`.
 - `*.bin` é ignorado por `*.bin`.
+- `fire-red.gba` e `fire-red.sav` são ignorados por `*.gba` e `*.sav`.
 
 ## Conferir arquivos rastreados
 
 Antes de fazer `git add`, confira se nenhum arquivo proibido já está rastreado:
 
 ```powershell
-git ls-files *.bin bios socialrom_repo _backups .env
+git ls-files *.bin *.gba *.sav bios socialrom_repo _backups .env
 ```
 
 Esse comando deve voltar vazio. Se voltar algum arquivo, pare e resolva antes de commitar.
@@ -98,7 +107,10 @@ Confirmar que a lista staged não inclui:
 - `.env`
 - `bios/`
 - `*.bin`
+- `*.gba`
+- `*.sav`
 - ROMs comerciais
+- saídas locais de `tools/firered-extraction/`
 - `socialrom_repo/`
 - `_backups/`
 
@@ -121,3 +133,5 @@ Antes do push, `git status --short --ignored` deve mostrar somente arquivos igno
 - A BIOS PS1 não deve ser salva no repositório.
 - O arquivo esperado para PS1 é `scph5501.bin`, fornecido pelo próprio usuário.
 - ROMs locais devem ficar apenas no navegador do usuário, não no repositório.
+- Saves locais também não devem ser salvos no repositório.
+- `tools/firered-extraction/README.md` e `manifest.json` podem ser versionados; entradas, saídas e arquivos extraídos da ROM devem ficar ignorados.

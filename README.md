@@ -150,17 +150,17 @@ Arquivos principais:
 
 Recursos:
 
-- Roguelike Pokemon com oito ginasios, Liga, mapa ramificado, NPCs por arena, eventos, treino, move tutor e evolucao.
+- Roguelike Pokémon com oito ginásios, Liga, mapa ramificado, NPCs por arena, eventos, treino, move tutor e evolução.
 - Modos Normal e Nuzlocke escolhidos na tela inicial.
-- Saves respeitam o modo da run: uma run Normal nao pode ser continuada como Nuzlocke apos F5.
-- No Nuzlocke, Pokemon derrotados saem imediatamente do time e deixam de ocupar espaco no popup de batalha.
+- Saves respeitam o modo da run: uma run Normal não pode ser continuada como Nuzlocke após F5.
+- No Nuzlocke, Pokémon derrotados saem imediatamente do time e deixam de ocupar espaço no popup de batalha.
 - Baixas do Nuzlocke ficam registradas em `fallenTeam` e voltam a aparecer na tela de Run perdida.
-- Combate automatico com ordem por velocidade, energia, moves, itens equipados, criticos, efeitos de status e troca automatica do ativo.
-- Sons via Web Audio para inicio de batalha, golpes, queda de Pokemon e evolucao.
-- Animacoes de batalha ficam contidas no modal para nao criar scroll temporario na pagina.
-- Reliquias separadas por efeito: dano final, ataque, velocidade, defesa, HP, cura, critico, sinergia e sobrevivencia.
-- Preview de reliquias mostra HP, ATK, DEF e VEL separadamente antes de equipar.
-- Recrutamento e Pokedex interna da run com vistos/capturados.
+- Combate automático com ordem por velocidade, energia, moves, itens equipados, críticos, efeitos de status e troca automática do ativo.
+- Sons via Web Audio para início de batalha, golpes, queda de Pokémon e evolução.
+- Animações de batalha ficam contidas no modal para não criar scroll temporário na página.
+- Relíquias separadas por efeito: dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia e sobrevivência.
+- Preview de relíquias mostra HP, ATK, DEF e VEL separadamente antes de equipar.
+- Recrutamento e Pokédex interna da run com vistos/capturados.
 - OakBit com tutorial específico para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
 - Revisão dos textos visíveis em português na tela e nos popups do Oak Rogue.
 
@@ -226,7 +226,10 @@ Não subir:
 - BIOS de PS1
 - pasta `bios/`
 - arquivos `.bin`
+- arquivos `.gba`
+- arquivos `.sav`
 - ROMs comerciais
+- saídas locais de `tools/firered-extraction/`
 - `socialrom_repo/`
 - `_backups/`
 

@@ -328,16 +328,16 @@
     { id: "safety-goggles", sprite: "safety-goggles", name: "Oculos Protetor", text: "Aumenta defesa e consistencia.", kind: "def" },
     { id: "power-belt", sprite: "power-belt", name: "Cinto Poder", text: "+12% de defesa.", kind: "def" },
     { id: "metal-powder", sprite: "metal-powder", name: "Po Metalico", text: "+12% de defesa.", kind: "def" },
-    { id: "power-weight", sprite: "power-weight", name: "Peso Poder", text: "+12% de HP maximo.", kind: "hp" },
-    { id: "big-root", sprite: "big-root", name: "Raiz Grande", text: "+12% de HP maximo.", kind: "hp" },
-    { id: "thick-club", sprite: "thick-club", name: "Osso Robusto", text: "+12% de HP maximo.", kind: "hp" },
-    { id: "healthy-feather", sprite: "health-wing", name: "Pena Vigor", text: "+12% de HP maximo.", kind: "hp" },
+    { id: "power-weight", sprite: "power-weight", name: "Peso Poder", text: "+12% de HP máximo.", kind: "hp" },
+    { id: "big-root", sprite: "big-root", name: "Raiz Grande", text: "+12% de HP máximo.", kind: "hp" },
+    { id: "thick-club", sprite: "thick-club", name: "Osso Robusto", text: "+12% de HP máximo.", kind: "hp" },
+    { id: "healthy-feather", sprite: "health-wing", name: "Pena Vigor", text: "+12% de HP máximo.", kind: "hp" },
     { id: "lucky-egg", sprite: "lucky-egg", name: "Lucky Egg", text: "Ajuda o time a escalar melhor.", kind: "synergy" },
     { id: "amulet-coin", sprite: "amulet-coin", name: "Moeda Amuleto", text: "Ajuda a run a escalar melhor.", kind: "synergy" },
     { id: "wide-lens", sprite: "wide-lens", name: "Wide Lens", text: "Melhora consistencia da equipe.", kind: "synergy" },
     { id: "zoom-lens", sprite: "zoom-lens", name: "Zoom Lens", text: "Melhora consistencia da equipe.", kind: "synergy" },
     { id: "metronome", sprite: "metronome", name: "Metronomo", text: "Melhora sinergias de ataques.", kind: "synergy" },
-    { id: "king-s-rock", sprite: "king-s-rock", name: "King's Rock", text: "Melhora sinergias de ataques.", kind: "synergy" },
+    { id: "king-s-rock", sprite: "kings-rock", name: "King's Rock", text: "Melhora sinergias de ataques.", kind: "synergy" },
     { id: "quick-claw", sprite: "quick-claw", name: "Garra Rapida", text: "+15% de velocidade.", kind: "spd" },
     { id: "choice-scarf", sprite: "choice-scarf", name: "Choice Scarf", text: "+15% de velocidade.", kind: "spd" },
     { id: "power-anklet", sprite: "power-anklet", name: "Tornozeleira Poder", text: "+15% de velocidade.", kind: "spd" },
@@ -355,7 +355,7 @@
     ,{ id: "leech", name: "Drenar Energia", type: "Grass", power: 1.05, cost: 1, drain: 0.24 }
     ,{ id: "burn", name: "Chama Viva", type: "Fire", power: 1.18, cost: 1, burn: true }
     ,{ id: "wave", name: "Onda Curativa", type: "Water", power: 1.0, cost: 1, teamHeal: 0.08 }
-    ,{ id: "spark", name: "Centelha Dupla", type: "Electric", power: 1.08, cost: 1, extra: 0.35 }
+    ,{ id: "double-spark", name: "Centelha Dupla", type: "Electric", power: 1.08, cost: 1, extra: 0.35 }
     ,{ id: "shadow", name: "Sombra Final", type: "Ghost", power: 1.16, cost: 1, execute: 0.18 }
   ];
 
@@ -363,41 +363,80 @@
     Grass: [
       { id: "vine-whip", name: "Chicote de Vinha", type: "Grass", power: 0.95, cost: 0, level: 1 },
       { id: "mega-drain", name: "Mega Dreno", type: "Grass", power: 1.12, cost: 1, drain: 0.22, level: 12 },
+      { id: "seed-bomb", name: "Bomba Semente", type: "Grass", power: 1.28, cost: 1, level: 20 },
       { id: "petal-storm", name: "Tempestade Floral", type: "Grass", power: 1.42, cost: 2, level: 28 }
     ],
     Poison: [
       { id: "poison-sting", name: "Agulha Venenosa", type: "Poison", power: 0.9, cost: 0, level: 1 },
-      { id: "sludge", name: "Lodo", type: "Poison", power: 1.14, cost: 1, burn: true, level: 14 }
+      { id: "sludge", name: "Lodo", type: "Poison", power: 1.14, cost: 1, burn: true, level: 14 },
+      { id: "venoshock", name: "Veneno Choque", type: "Poison", power: 1.36, cost: 2, burn: true, level: 28 }
     ],
     Fire: [
       { id: "ember", name: "Brasas", type: "Fire", power: 0.98, cost: 0, level: 1, burn: true },
       { id: "flame-wheel", name: "Roda de Fogo", type: "Fire", power: 1.18, cost: 1, burn: true, level: 12 },
+      { id: "fire-fang", name: "Presa de Fogo", type: "Fire", power: 1.3, cost: 1, burn: true, level: 22 },
       { id: "flamethrower", name: "Lanca-Chamas", type: "Fire", power: 1.48, cost: 2, burn: true, level: 28 }
     ],
     Water: [
       { id: "bubble", name: "Bolha", type: "Water", power: 0.92, cost: 0, level: 1 },
       { id: "water-pulse", name: "Pulso d'Agua", type: "Water", power: 1.16, cost: 1, teamHeal: 0.05, level: 12 },
+      { id: "aqua-tail", name: "Cauda Aqua", type: "Water", power: 1.32, cost: 1, level: 24 },
       { id: "surf", name: "Surfar", type: "Water", power: 1.44, cost: 2, teamHeal: 0.08, level: 30 }
     ],
     Electric: [
       { id: "thundershock", name: "Choque do Trovao", type: "Electric", power: 0.96, cost: 0, level: 1, extra: 0.2 },
-      { id: "spark", name: "Centelha", type: "Electric", power: 1.18, cost: 1, extra: 0.32, level: 13 }
+      { id: "spark", name: "Centelha", type: "Electric", power: 1.18, cost: 1, extra: 0.32, level: 13 },
+      { id: "volt-switch", name: "Troca Volt", type: "Electric", power: 1.34, cost: 2, extra: 0.45, level: 28 }
     ],
     Psychic: [
       { id: "confusion", name: "Confusao", type: "Psychic", power: 1.0, cost: 0, level: 1 },
-      { id: "psybeam", name: "Raio Psiquico", type: "Psychic", power: 1.22, cost: 1, level: 16 }
+      { id: "psybeam", name: "Raio Psiquico", type: "Psychic", power: 1.22, cost: 1, level: 16 },
+      { id: "psyshock", name: "Psicochoque", type: "Psychic", power: 1.38, cost: 2, level: 30 }
     ],
-    Rock: [{ id: "rock-throw", name: "Pedrada", type: "Rock", power: 1.0, cost: 0, level: 1 }],
-    Ground: [{ id: "mud-slap", name: "Tapa de Lama", type: "Ground", power: 0.96, cost: 0, level: 1 }],
-    Fighting: [{ id: "karate-chop", name: "Golpe Karate", type: "Fighting", power: 1.02, cost: 0, level: 1 }],
-    Ghost: [{ id: "lick", name: "Lambida", type: "Ghost", power: 0.94, cost: 0, level: 1 }],
-    Bug: [{ id: "fury-cutter", name: "Corte Furioso", type: "Bug", power: 1.0, cost: 0, level: 1 }],
-    Flying: [{ id: "gust", name: "Lufada", type: "Flying", power: 0.98, cost: 0, level: 1 }],
-    Ice: [{ id: "ice-shard", name: "Estilhaco de Gelo", type: "Ice", power: 1.0, cost: 0, level: 1 }],
-    Dragon: [{ id: "twister", name: "Twister", type: "Dragon", power: 1.0, cost: 0, level: 1 }],
-    Dark: [{ id: "bite", name: "Mordida", type: "Dark", power: 1.02, cost: 0, level: 1 }],
-    Normal: [{ id: "tackle", name: "Investida", type: "Normal", power: 0.92, cost: 0, level: 1 }],
-    Fairy: [{ id: "disarming-voice", name: "Voz Encantada", type: "Fairy", power: 0.98, cost: 0, level: 1 }]
+    Rock: [
+      { id: "rock-throw", name: "Pedrada", type: "Rock", power: 1.0, cost: 0, level: 1 },
+      { id: "stone-edge", name: "Gume de Pedra", type: "Rock", power: 1.42, cost: 2, level: 30 }
+    ],
+    Ground: [
+      { id: "mud-slap", name: "Tapa de Lama", type: "Ground", power: 0.96, cost: 0, level: 1 },
+      { id: "earth-power", name: "Poder da Terra", type: "Ground", power: 1.36, cost: 2, level: 28 }
+    ],
+    Fighting: [
+      { id: "karate-chop", name: "Golpe Karate", type: "Fighting", power: 1.02, cost: 0, level: 1 },
+      { id: "aura-sphere", name: "Esfera Aura", type: "Fighting", power: 1.34, cost: 2, level: 28 }
+    ],
+    Ghost: [
+      { id: "lick", name: "Lambida", type: "Ghost", power: 0.94, cost: 0, level: 1 },
+      { id: "shadow-ball", name: "Bola Sombria", type: "Ghost", power: 1.36, cost: 2, execute: 0.12, level: 28 }
+    ],
+    Bug: [
+      { id: "fury-cutter", name: "Corte Furioso", type: "Bug", power: 1.0, cost: 0, level: 1 },
+      { id: "x-scissor", name: "Tesoura X", type: "Bug", power: 1.3, cost: 1, level: 24 }
+    ],
+    Flying: [
+      { id: "gust", name: "Lufada", type: "Flying", power: 0.98, cost: 0, level: 1 },
+      { id: "air-slash", name: "Corte de Ar", type: "Flying", power: 1.28, cost: 1, level: 22 }
+    ],
+    Ice: [
+      { id: "ice-shard", name: "Estilhaco de Gelo", type: "Ice", power: 1.0, cost: 0, level: 1 },
+      { id: "ice-beam", name: "Raio de Gelo", type: "Ice", power: 1.38, cost: 2, level: 30 }
+    ],
+    Dragon: [
+      { id: "twister", name: "Twister", type: "Dragon", power: 1.0, cost: 0, level: 1 },
+      { id: "dragon-pulse", name: "Pulso Dragao", type: "Dragon", power: 1.38, cost: 2, level: 30 }
+    ],
+    Dark: [
+      { id: "bite", name: "Mordida", type: "Dark", power: 1.02, cost: 0, level: 1 },
+      { id: "night-slash", name: "Corte Noturno", type: "Dark", power: 1.3, cost: 1, level: 24 }
+    ],
+    Normal: [
+      { id: "tackle", name: "Investida", type: "Normal", power: 0.92, cost: 0, level: 1 },
+      { id: "body-slam", name: "Corpo Pesado", type: "Normal", power: 1.24, cost: 1, level: 22 }
+    ],
+    Fairy: [
+      { id: "disarming-voice", name: "Voz Encantada", type: "Fairy", power: 0.98, cost: 0, level: 1 },
+      { id: "moonblast", name: "Explosao Lunar", type: "Fairy", power: 1.4, cost: 2, level: 30 }
+    ]
   };
 
   const EVOLUTIONS = {
@@ -473,6 +512,14 @@
     256: { into: { id: 257, name: "Blaziken", types: ["Fire", "Fighting"], hp: 80, atk: 120, def: 70, spd: 80, trait: "Impeto" }, level: 36 },
     258: { into: { id: 259, name: "Marshtomp", types: ["Water", "Ground"], hp: 70, atk: 85, def: 70, spd: 50, trait: "Lama" }, level: 16 },
     259: { into: { id: 260, name: "Swampert", types: ["Water", "Ground"], hp: 100, atk: 110, def: 90, spd: 60, trait: "Pantano" }, level: 36 },
+    280: { into: { id: 281, name: "Kirlia", types: ["Psychic", "Fairy"], hp: 38, atk: 65, def: 45, spd: 50, trait: "Sincronia" }, level: 20 },
+    281: {
+      options: [
+        { into: { id: 282, name: "Gardevoir", types: ["Psychic", "Fairy"], hp: 68, atk: 100, def: 80, spd: 80, trait: "Graca Psi" }, level: 30 },
+        { into: { id: 475, name: "Gallade", types: ["Psychic", "Fighting"], hp: 68, atk: 125, def: 85, spd: 80, trait: "Lamina Psi" }, level: 30 }
+      ],
+      level: 30
+    },
     387: { into: { id: 388, name: "Grotle", types: ["Grass"], hp: 75, atk: 89, def: 85, spd: 36, trait: "Raiz" }, level: 18 },
     388: { into: { id: 389, name: "Torterra", types: ["Grass", "Ground"], hp: 95, atk: 109, def: 105, spd: 56, trait: "Continente" }, level: 32 },
     390: { into: { id: 391, name: "Monferno", types: ["Fire", "Fighting"], hp: 64, atk: 78, def: 52, spd: 81, trait: "Impeto" }, level: 14 },
@@ -522,7 +569,9 @@
       ],
       stone: "choice"
     },
-    215: { into: { id: 461, name: "Weavile", types: ["Dark", "Ice"], hp: 70, atk: 120, def: 65, spd: 125, trait: "Emboscada" }, stone: "dark" }
+    215: { into: { id: 461, name: "Weavile", types: ["Dark", "Ice"], hp: 70, atk: 120, def: 65, spd: 125, trait: "Emboscada" }, stone: "dark" },
+    624: { into: { id: 625, name: "Bisharp", types: ["Dark", "Steel"], hp: 65, atk: 125, def: 100, spd: 70, trait: "Lamina Sombria" }, level: 52 },
+    625: { into: { id: 983, name: "Kingambit", types: ["Dark", "Steel"], hp: 100, atk: 135, def: 120, spd: 50, trait: "General Supremo" }, stone: "leader" }
   };
 
   const NODE_TYPES = [
@@ -588,14 +637,18 @@
     fallenTeam: [],
     pendingItem: null,
     pendingEvolutions: [],
+    pendingEvolutionChoices: [],
+    pendingMapFloor: null,
     routeVersion: ROUTE_VERSION,
     autoBattling: false,
+    battleSpeed: 1,
     nuzlockeMode: false,
     levelCapEnabled: true
   };
 
   const $ = (id) => document.getElementById(id);
   const nationalPokemonCache = new Map();
+  const dynamicEvolutionCache = new Map();
   let nationalDexIndex = [];
   let nationalDexLoadStarted = false;
   const sprite = (p) => `${SPRITE_BASE}${p.id}.png`;
@@ -605,7 +658,8 @@
   const itemSprite = (item) => `${ITEM_BASE}${item.sprite || item.id}.png`;
   const badgeSprite = (badge) => `${BADGE_BASE}${badge}.png`;
   const trainerSprite = (name) => `${TRAINER_BASE}${name}.png`;
-  const playerTrainerSprite = () => getArenaForFloor(state.floor || 1).trainer;
+  const PLAYER_TRAINER_SPRITE = "red";
+  const playerTrainerSprite = () => PLAYER_TRAINER_SPRITE;
   const tmSprite = (move) => `${ITEM_BASE}tm-${String(move?.type || "normal").toLowerCase()}.png`;
   const uid = (prefix = "id") => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const DEX_KEY = "oak_rogue_dex_seen";
@@ -667,6 +721,60 @@
     };
     nationalPokemonCache.set(mon.id, mon);
     return { ...mon };
+  }
+
+  function extractApiId(url, resource = "pokemon-species") {
+    return Number(String(url || "").match(new RegExp(`/${resource}/(\\d+)/?`))?.[1]) || null;
+  }
+
+  function findEvolutionNode(chain, speciesId) {
+    if (!chain) return null;
+    if (extractApiId(chain.species?.url) === speciesId) return chain;
+    for (const next of chain.evolves_to || []) {
+      const found = findEvolutionNode(next, speciesId);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  async function dynamicEvolutionOptionsFor(p) {
+    if (!p?.id) return [];
+    const local = EVOLUTIONS[p.id];
+    if (local) return local.options?.length ? local.options : [local];
+    if (dynamicEvolutionCache.has(p.id)) return dynamicEvolutionCache.get(p.id);
+    const promise = (async () => {
+      try {
+        const species = await fetchJson(`${API_BASE}/pokemon-species/${p.id}`);
+        const chainUrl = species.evolution_chain?.url;
+        if (!chainUrl) return [];
+        const chainData = await fetchJson(chainUrl);
+        const node = findEvolutionNode(chainData.chain, p.id);
+        const nextSpecies = node?.evolves_to || [];
+        const options = [];
+        for (const next of nextSpecies) {
+          const nextId = extractApiId(next.species?.url);
+          if (!nextId) continue;
+          const into = await hydrateNationalPokemon({ id: nextId });
+          if (into) options.push({ into, stone: "dynamic" });
+        }
+        return options;
+      } catch {
+        return [];
+      }
+    })();
+    dynamicEvolutionCache.set(p.id, promise);
+    const resolved = await promise;
+    dynamicEvolutionCache.set(p.id, resolved);
+    return resolved;
+  }
+
+  async function teamEvolutionOptions() {
+    const entries = await Promise.all(state.team.map(async (p, index) => ({
+      index,
+      mon: p,
+      options: await dynamicEvolutionOptionsFor(p)
+    })));
+    return entries;
   }
 
   async function randomNationalPokemon(excludedIds = new Set()) {
@@ -780,7 +888,7 @@
         <span>#${String(p.id).padStart(3, "0")}</span>
         <img src="${art}" alt="${unlocked ? p.name : ""}" onerror="this.src='${mini(p)}'">
         <strong>${unlocked ? p.name : "???"}</strong>
-        ${unlocked ? renderTypeChips(p.types || []) : "<small>Nao visto</small>"}
+        ${unlocked ? renderTypeChips(p.types || []) : "<small>Não visto</small>"}
       </button>`;
     }).join("");
   }
@@ -804,7 +912,7 @@
       chain.push(current);
       guard += 1;
     }
-    if (chain.length <= 1) return `<small>Sem evolucao registrada no Oak Rogue.</small>`;
+    if (chain.length <= 1) return `<small>Sem evolução registrada no Oak Rogue.</small>`;
     return `<div class="rogue-dex-evo">${chain.map((mon, index) => `
       <span>
         <img src="${animated(mon)}" alt="${mon.name}" onerror="this.src='${mini(mon)}'">
@@ -852,7 +960,7 @@
         </div>
         ${statBars({ ...p, level: p.level || 5, maxHp: hpMax({ ...p, level: p.level || 5 }), currentHp: hpMax({ ...p, level: p.level || 5 }) }, "dex")}
         <section>
-          <h4>Cadeia de evolucao</h4>
+          <h4>Cadeia de evolução</h4>
           ${dexEvolutionLine(p)}
         </section>
         <section>
@@ -892,13 +1000,100 @@
     return p?.heldItem?.kind === kind || hasItem(kind);
   }
 
+  function itemBonusValue(item) {
+    const values = {
+      leftovers: 0.08,
+      "shell-bell": 0.09,
+      "sitrus-berry": 0.07,
+      "oran-berry": 0.05,
+      "black-sludge": 0.1,
+      scope: 0.18,
+      "scope-lens": 0.16,
+      "razor-claw": 0.2,
+      "razor-fang": 0.14,
+      vest: 0.12,
+      "metal-coat": 0.1,
+      eviolite: 0.15,
+      "rocky-helmet": 0.13,
+      "bright-powder": 0.08,
+      "light-clay": 0.11,
+      "air-balloon": 0.09,
+      "safety-goggles": 0.1,
+      "power-belt": 0.12,
+      "metal-powder": 0.14,
+      orb: 0.16,
+      "choice-band": 0.18,
+      "choice-specs": 0.17,
+      "expert-belt": 0.14,
+      "life-orb-plus": 0.2,
+      "power-lens": 0.15,
+      charm: 1,
+      "lucky-egg": 1,
+      "amulet-coin": 1,
+      "wide-lens": 1,
+      "zoom-lens": 1,
+      metronome: 2,
+      "king-s-rock": 1,
+      sash: 1,
+      "focus-band": 1,
+      "red-card": 1,
+      "muscle-band": 0.14,
+      "wise-glasses": 0.13,
+      "black-belt": 0.15,
+      "mystic-water": 0.14,
+      charcoal: 0.16,
+      "miracle-seed": 0.14,
+      magnet: 0.15,
+      "hard-stone": 0.13,
+      "soft-sand": 0.13,
+      "poison-barb": 0.14,
+      "spell-tag": 0.15,
+      "twisted-spoon": 0.16,
+      "dragon-fang": 0.17,
+      "never-melt-ice": 0.14,
+      "silk-scarf": 0.12,
+      "power-bracer": 0.16,
+      "sharp-beak": 0.13,
+      "silver-powder": 0.13,
+      "power-weight": 0.12,
+      "big-root": 0.14,
+      "thick-club": 0.16,
+      "healthy-feather": 0.1,
+      "quick-claw": 0.15,
+      "choice-scarf": 0.18,
+      "power-anklet": 0.14,
+      "swift-feather": 0.12
+    };
+    const fallback = { heal: 0.08, crit: 0.18, atk: 0.14, spd: 0.15, def: 0.12, hp: 0.12, damage: 0.16, synergy: 1, sash: 1 };
+    return values[item?.id] ?? fallback[item?.kind] ?? 0;
+  }
+
+  function itemBonusText(item) {
+    const value = itemBonusValue(item);
+    if (["synergy", "sash"].includes(item?.kind)) return value > 1 ? `+${value}` : "1x";
+    return `+${Math.round(value * 100)}%`;
+  }
+
+  function bonusItems(kind, p = null) {
+    return [p?.heldItem, ...(state.items || [])].filter((item) => item?.kind === kind);
+  }
+
+  function statBonus(kind, p = null) {
+    return bonusItems(kind, p).reduce((total, item) => total + itemBonusValue(item), 0);
+  }
+
+  function strongestBonus(kind, p = null) {
+    return Math.max(0, ...bonusItems(kind, p).map(itemBonusValue));
+  }
+
   function countTypes() {
     const counts = {};
     state.team.forEach((p) => {
       if (p.currentHp <= 0) return;
       p.types.forEach((t) => counts[t] = (counts[t] || 0) + 1);
     });
-    if (hasItem("synergy")) Object.keys(counts).forEach((t) => counts[t] += 1);
+    const synergyBonus = Math.round(statBonus("synergy"));
+    if (synergyBonus > 0) Object.keys(counts).forEach((t) => counts[t] += synergyBonus);
     return counts;
   }
 
@@ -915,7 +1110,7 @@
   }
 
   function hpMax(p) {
-    return Math.round(scaledStat(p.hp || 1, p.level || 1, true) * (hasStatItem(p, "hp") ? 1.12 : 1));
+    return Math.round(scaledStat(p.hp || 1, p.level || 1, true) * (1 + statBonus("hp", p)));
   }
 
   function displayStats(p) {
@@ -933,6 +1128,14 @@
     return arena.levelCap || 12 + arena.badge * 6;
   }
 
+  function levelCapForArena(arena = getArena()) {
+    return arena.levelCap || 12 + arena.badge * 6;
+  }
+
+  function levelCapForFloor(floor = state.floor || 1) {
+    return levelCapForArena(getArenaForFloor(floor));
+  }
+
   function applyLevelCap(p) {
     if (!p || !state.levelCapEnabled) return;
     p.level = Math.min(p.level, currentLevelCap());
@@ -942,9 +1145,9 @@
     if (!state.nuzlockeMode) return;
     state.fallenTeam ||= [];
     state.team
-      .filter((p) => p.currentHp <= 0 && !state.fallenTeam.some((fallen) => fallen.runId === p.runId))
+      .filter((p) => p.currentHp <= 0 && !isPendingBattleFaint(p) && !state.fallenTeam.some((fallen) => fallen.runId === p.runId))
       .forEach((p) => state.fallenTeam.push({ ...p, currentHp: 0, runId: p.runId }));
-    const aliveTeam = state.team.filter((p) => p.currentHp > 0);
+    const aliveTeam = state.team.filter((p) => p.currentHp > 0 || isPendingBattleFaint(p));
     if (aliveTeam.length === state.team.length) return;
     state.team = aliveTeam;
     if (!state.battle) return;
@@ -953,7 +1156,7 @@
   }
 
   function xpToNext(p) {
-    return 70 + p.level * 18;
+    return 58 + p.level * 14;
   }
 
   function gainXp(p, amount) {
@@ -981,30 +1184,34 @@
     const aliveTeam = state.team.filter((p) => p.currentHp > 0);
     const recipients = aliveTeam.length ? aliveTeam : state.team;
     const teamAverage = averageTeamLevel();
-    const kindMultiplier = boss ? 2.25 : state.battle?.legendary ? 1.8 : state.battle?.npc ? 1.35 : 1;
-    const base = 46 + enemy.level * (boss ? 14 : state.battle?.legendary ? 12 : state.battle?.npc ? 9 : 7);
+    const arena = getArenaForFloor(state.floor || 1);
+    const mapMultiplier = arena.id === "league" ? 2.1 : 1 + Math.max(0, (arena.badge || 1) - 1) * 0.22;
+    const kindMultiplier = (boss ? 3.2 : state.battle?.legendary ? 3.4 : state.battle?.npc ? 1.9 : 1.45) * mapMultiplier;
+    const base = 72 + enemy.level * (boss ? 20 : state.battle?.legendary ? 24 : state.battle?.npc ? 14 : 11);
     const total = Math.round(base * kindMultiplier);
-    const sharedXp = Math.round(total / Math.max(1, recipients.length));
+    const partyScale = Math.max(1, Math.sqrt(recipients.length));
+    const sharedXp = Math.round(total / partyScale);
     let levels = 0;
     recipients.forEach((p) => {
       if (p.currentHp <= 0) return;
-      const activeBonus = p === activePlayer() ? Math.round(total * 0.22) : 0;
-      const catchUpBonus = p.level < teamAverage ? Math.round(sharedXp * 0.35) : 0;
+      const activeBonus = p === activePlayer() ? Math.round(total * 0.55) : Math.round(sharedXp * 0.18);
+      const levelGap = Math.max(0, teamAverage - (p.level || 1));
+      const catchUpBonus = Math.round(sharedXp * Math.min(1.1, levelGap * 0.22));
       levels += gainXp(p, sharedXp + activeBonus + catchUpBonus);
     });
     return { xp: total, levels };
   }
 
   function atkVal(p) {
-    return Math.round(scaledStat(p.atk || 1, p.level || 1) * (1 + synergyTier(p.types) * 0.05) * (hasStatItem(p, "atk") ? 1.14 : 1));
+    return Math.round(scaledStat(p.atk || 1, p.level || 1) * (1 + synergyTier(p.types) * 0.05) * (1 + statBonus("atk", p)));
   }
 
   function defVal(p) {
-    return Math.round(scaledStat(p.def || 1, p.level || 1) * (hasStatItem(p, "def") ? 1.12 : 1));
+    return Math.round(scaledStat(p.def || 1, p.level || 1) * (1 + statBonus("def", p)));
   }
 
   function speedVal(p) {
-    return Math.round(scaledStat(p.spd || 1, p.level || 1) * (hasStatItem(p, "spd") ? 1.15 : 1));
+    return Math.round(scaledStat(p.spd || 1, p.level || 1) * (1 + statBonus("spd", p)));
   }
 
   function legalMovesFor(p) {
@@ -1061,6 +1268,7 @@
     const previousScreen = state.screen;
     document.querySelectorAll(".rogue-screen").forEach((el) => el.classList.remove("is-active"));
     document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal");
+    $("choice-grid")?.classList.remove("many-evolution-options");
     document.body.classList.toggle("is-rogue-battle-open", screen === "battle");
     if ((screen === "choice" && (previousScreen === "map" || previousScreen === "choice")) || (screen === "battle" && previousScreen === "map")) {
       $("screen-map").classList.add("is-active");
@@ -1075,6 +1283,12 @@
     try {
       localStorage.setItem("oak_rogue_run", JSON.stringify(state));
     } catch {}
+  }
+
+  function applyPendingMapFloor() {
+    if (!Number.isFinite(state.pendingMapFloor)) return;
+    state.floor = state.pendingMapFloor;
+    state.pendingMapFloor = null;
   }
 
   function savedRunMode() {
@@ -1104,6 +1318,13 @@
     return fresh ? { ...fresh } : { ...item };
   }
 
+  function normalizeSavedHp(p, oldMax) {
+    if (!Number.isFinite(p.currentHp)) return p.maxHp;
+    if (p.currentHp <= 0) return 0;
+    const hpPct = oldMax ? p.currentHp / oldMax : 1;
+    return Math.max(1, Math.min(p.maxHp, Math.ceil(p.maxHp * hpPct)));
+  }
+
   function load() {
     try {
       const raw = localStorage.getItem("oak_rogue_run");
@@ -1114,10 +1335,13 @@
       if (!Array.isArray(state.items)) state.items = [];
       if (!Array.isArray(state.fallenTeam)) state.fallenTeam = [];
       if (!Array.isArray(state.pendingEvolutions)) state.pendingEvolutions = [];
+      if (!Array.isArray(state.pendingEvolutionChoices)) state.pendingEvolutionChoices = [];
+      if (!Number.isFinite(state.pendingMapFloor)) state.pendingMapFloor = null;
       state.items = state.items.map(normalizeItem).filter(Boolean);
       state.pendingItem = normalizeItem(state.pendingItem);
       state.nuzlockeMode = !!state.nuzlockeMode;
       state.levelCapEnabled = state.levelCapEnabled !== false;
+      state.battleSpeed = state.battleSpeed === 2 ? 2 : 1;
       state.autoBattling = false;
     if (!Array.isArray(state.map) || state.map.length !== RUN_FLOORS || state.routeVersion !== ROUTE_VERSION) buildMap();
       state.routeVersion = ROUTE_VERSION;
@@ -1125,9 +1349,8 @@
         p.runId ||= uid("mon");
         p.heldItem = normalizeItem(p.heldItem);
         const oldMax = p.maxHp || hpMax(p);
-        const hpPct = oldMax ? Math.max(0, p.currentHp || oldMax) / oldMax : 1;
         p.maxHp = hpMax(p);
-        p.currentHp = Math.max(p.currentHp <= 0 ? 0 : 1, Math.min(p.maxHp, Math.ceil(p.maxHp * hpPct)));
+        p.currentHp = normalizeSavedHp(p, oldMax);
         syncMoves(p);
         p.xp = p.xp || 0;
         maybeAutoEvolve(p);
@@ -1135,9 +1358,8 @@
       state.fallenTeam = state.fallenTeam.map((p) => ({ ...p, runId: p.runId || uid("mon"), currentHp: 0 }));
       state.battle?.enemyTeam?.forEach((p) => {
         const oldMax = p.maxHp || hpMax(p);
-        const hpPct = oldMax ? Math.max(0, p.currentHp || oldMax) / oldMax : 1;
         p.maxHp = hpMax(p);
-        p.currentHp = Math.max(p.currentHp <= 0 ? 0 : 1, Math.min(p.maxHp, Math.ceil(p.maxHp * hpPct)));
+        p.currentHp = normalizeSavedHp(p, oldMax);
         syncMoves(p);
       });
       if (state.battle && !Array.isArray(state.battle.enemyTeam) && state.battle.enemy) {
@@ -1148,6 +1370,11 @@
         state.battle.playerTeam = state.battle.playerTeam || state.team;
         state.battle.playerIndex = state.battle.playerTeam.findIndex((p) => p.currentHp > 0);
       }
+      state.pendingEvolutionChoices = state.pendingEvolutionChoices.filter((entry) => {
+        const p = state.team.find((mon) => mon.runId === entry.runId);
+        const evo = EVOLUTIONS[p?.id];
+        return p && p.currentHp > 0 && evo?.options?.length && (p.level || 1) >= (evo.level || Math.min(...evo.options.map((option) => option.level || 1)));
+      });
       save();
       return state.team.length > 0;
     } catch {
@@ -1208,7 +1435,7 @@
       playTone({ frequency: 262, endFrequency: 392, duration: 0.42, delay: 0.02, volume: 0.018, type: "sawtooth" });
       return;
     }
-    const effectiveBoost = detail.eff > 1 ? 1.22 : detail.eff < 1 ? 0.82 : 1;
+    const effectiveBoost = detail.eff > 1 ? 1.22 : detail.eff > 0 && detail.eff < 1 ? 0.82 : 1;
     const critBoost = detail.crit ? 1.35 : 1;
     playTone({ frequency: 180 * effectiveBoost * critBoost, endFrequency: 90, duration: 0.08, volume: detail.crit ? 0.055 : 0.04, type: "square" });
     playTone({ frequency: 620 * effectiveBoost, endFrequency: 260, duration: 0.055, delay: 0.015, volume: 0.025, type: "sawtooth" });
@@ -1235,6 +1462,7 @@
       Steel: ["Rock", "Ice", "Fairy"]
     };
     const weak = {
+      Normal: ["Rock", "Steel"],
       Fire: ["Water", "Rock", "Dragon", "Fire"],
       Water: ["Grass", "Dragon", "Water"],
       Grass: ["Fire", "Grass", "Poison", "Flying", "Bug", "Dragon", "Steel"],
@@ -1253,7 +1481,18 @@
       Poison: ["Poison", "Ground", "Rock", "Ghost"],
       Steel: ["Fire", "Water", "Electric", "Steel"]
     };
+    const immune = {
+      Normal: ["Ghost"],
+      Fighting: ["Ghost"],
+      Poison: ["Steel"],
+      Ground: ["Flying"],
+      Electric: ["Ground"],
+      Psychic: ["Dark"],
+      Ghost: ["Normal"],
+      Dragon: ["Fairy"]
+    };
     return defenderTypes.reduce((mult, t) => {
+      if (immune[type]?.includes(t)) return 0;
       if (strong[type]?.includes(t)) return mult * 1.6;
       if (weak[type]?.includes(t)) return mult * 0.65;
       return mult;
@@ -1316,7 +1555,7 @@
 
   function renderHud() {
     $("rogue-floor").textContent = `${state.floor}/${RUN_FLOORS}`;
-    const arena = getArena();
+    const arena = currentVisualArena();
     $("rogue-biome").textContent = arena.name;
     const risk = state.threat <= 1 ? "Estável" : state.threat < 2.5 ? "Perigoso" : "Crítico";
     $("rogue-threat").textContent = `${risk} · Cap ${currentLevelCap()}${state.nuzlockeMode ? " · Nuzlocke" : ""}`;
@@ -1336,7 +1575,7 @@
     if ($("item-list")) $("item-list").innerHTML = state.items.map((item) => `
       <div class="item-pill item-with-icon">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
-        <span><strong>${item.name}</strong><small>${item.text}</small></span>
+        <span><strong>${item.name}</strong><small>${itemShortText(item)}</small></span>
       </div>
     `).join("") || `<div class="item-pill"><small>Relíquias aparecem em nós especiais.</small></div>`;
     if (!Array.isArray(state.badges)) state.badges = [];
@@ -1372,9 +1611,15 @@
   function renderRouteSidebars() {
     const routeTeam = $("route-team");
     if (routeTeam) {
-      routeTeam.innerHTML = state.team.map((p, index) => `
-        <div class="route-team-mon ${p.currentHp <= 0 ? "fainted" : ""} ${index >= 3 ? "hover-up" : ""}" draggable="true" data-team-index="${index}">
-          <b class="team-order">${index + 1}</b>
+      const visualTeam = state.team
+        .map((p, index) => ({ p, index }))
+        .sort((a, b) => {
+          if ((a.p.currentHp > 0) !== (b.p.currentHp > 0)) return a.p.currentHp > 0 ? -1 : 1;
+          return a.index - b.index;
+        });
+      routeTeam.innerHTML = visualTeam.map(({ p, index }, visualIndex) => `
+        <div class="route-team-mon ${p.currentHp <= 0 ? "fainted" : ""} ${visualIndex >= 3 ? "hover-up" : ""}" draggable="true" data-team-index="${index}">
+          <b class="team-order">${visualIndex + 1}</b>
           <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
           ${p.heldItem ? `<img class="held-item-icon" src="${itemSprite(p.heldItem)}" alt="${p.heldItem.name}" title="${p.heldItem.name}">` : ""}
           <span>${p.name}</span>
@@ -1569,6 +1814,20 @@
     return nodes;
   }
 
+  function currentVisualArena() {
+    if (!state.battle) return getArena();
+    if (state.battle.arenaId) {
+      const battleArena = ARENAS.find((arena) => arena.id === state.battle.arenaId);
+      if (battleArena) return battleArena;
+    }
+    const enemyBadge = state.battle.enemy?.badge || state.battle.enemyTeam?.find((p) => p.badge)?.badge;
+    if (enemyBadge) {
+      const badgeArena = ARENAS.find((arena) => arena.badge === enemyBadge);
+      if (badgeArena) return badgeArena;
+    }
+    return getArenaForFloor(state.floor || 1);
+  }
+
   function randomStarterChoices() {
     return ["Grass", "Fire", "Water"].map((type) => {
       const candidates = STARTERS.filter((p) => p.types?.[0] === type);
@@ -1605,6 +1864,7 @@
     state.starterChoices = [];
     state.pendingEvolutions = [];
     state.routeVersion = ROUTE_VERSION;
+    state.battleSpeed = 1;
     state.nuzlockeMode = !!$("run-nuzlocke")?.checked;
     state.levelCapEnabled = state.nuzlockeMode;
     setupStarters();
@@ -1641,7 +1901,7 @@
       const sideTypes = ["battle", "item", "question", "move_tutor"];
       return [0, 1].map((branch) => {
         if (arena.badge >= 5 && branch !== centerBranch) {
-          return { type: "legendary", label: "Lendario", icon: "MB", sprite: "masterball", copy: "Uma Master Ball chama um lendario aleatorio antes do lider.", branchSeed: branch };
+          return { type: "legendary", label: "Lendário", icon: "MB", sprite: "masterball", copy: "Uma Master Ball chama um lendário aleatório antes do líder.", branchSeed: branch };
         }
         if (branch === centerBranch) {
           return { type: "camp", label: "Centro", icon: "+", sprite: "center", copy: "Cura o time e reduz risco antes do líder.", branchSeed: branch };
@@ -1736,9 +1996,9 @@
     if (node.type === "battle" || node.type === "grass" || node.type === "boss" || node.type === "legendary") await startBattle(node);
     if (node.type === "catch") await showCatch();
     if (node.type === "item") showItem();
-    if (node.type === "question") showRandomEvent();
+    if (node.type === "question") showRandomEventExpanded();
     if (node.type === "move_tutor") showMoveTutor();
-    if (node.type === "stone") showEvolutionStone();
+    if (node.type === "stone") await showEvolutionStone();
     if (node.type === "camp") showCamp();
     if (node.type === "train") showTrain();
     save();
@@ -1788,6 +2048,7 @@
   }
 
   function itemBonusLines(item) {
+    const value = itemBonusText(item);
     const lines = {
       heal: ["Sustento: cura após atacar", "HP efetivo maior em lutas longas"],
       crit: ["Critico +18%", "Mais chance de dano explosivo"],
@@ -1799,7 +2060,22 @@
       synergy: ["Sinergia +1", "Melhora consistencia do time"],
       sash: ["Sobrevive a golpe fatal 1x", "Seguro contra derrota inesperada"]
     };
-    return lines[item?.kind] || ["Bonus especial da run"];
+    const dynamicLines = {
+      heal: [`Cura ${value} apos atacar`, "HP efetivo maior em lutas longas"],
+      crit: [`Critico ${value}`, "Mais chance de dano explosivo"],
+      atk: [`ATK ${value}`, "Aumenta o dano base"],
+      spd: [`VEL ${value}`, "Ataca antes com mais frequencia"],
+      def: [`DEF ${value}`, "Reduz dano recebido"],
+      hp: [`HP ${value}`, "Mais margem para sobreviver"],
+      damage: [`Dano final ${value}`, "Finaliza lutas mais rápido"],
+      synergy: [`Sinergia ${value}`, "Melhora consistencia do time"],
+      sash: lines.sash
+    };
+    return dynamicLines[item?.kind] || ["Bonus especial da run"];
+  }
+
+  function itemShortText(item) {
+    return itemBonusLines(item)[0] || item?.text || "Bonus especial da run";
   }
 
   function itemBonusMarkup(item) {
@@ -1809,10 +2085,10 @@
   function statPreviewWithItem(p, item) {
     const before = displayStats(p);
     const after = {
-      hp: Math.round(before.hp * (item?.kind === "hp" ? 1.12 : 1)),
-      atk: Math.round(before.atk * (item?.kind === "atk" ? 1.14 : 1)),
-      def: Math.round(before.def * (item?.kind === "def" ? 1.12 : 1)),
-      spd: Math.round(before.spd * (item?.kind === "spd" ? 1.15 : 1))
+      hp: Math.round(before.hp * (item?.kind === "hp" ? 1 + itemBonusValue(item) : 1)),
+      atk: Math.round(before.atk * (item?.kind === "atk" ? 1 + itemBonusValue(item) : 1)),
+      def: Math.round(before.def * (item?.kind === "def" ? 1 + itemBonusValue(item) : 1)),
+      spd: Math.round(before.spd * (item?.kind === "spd" ? 1 + itemBonusValue(item) : 1))
     };
     return `<div class="stat-preview">
       ${[
@@ -1845,6 +2121,16 @@
     return Math.round(source.reduce((total, p) => total + (p.level || 5), 0) / source.length);
   }
 
+  function recruitLevel(floor = state.floor || 1) {
+    const arena = getArenaForFloor(floor);
+    const cap = levelCapForFloor(floor);
+    const local = Math.max(1, floor - arena.floorFrom);
+    const routeProgress = Math.floor((local - 1) / 2);
+    const teamLevel = averageTeamLevel();
+    const target = Math.max(5, Math.min(cap - 2, Math.round(teamLevel * 0.9) + routeProgress + 1));
+    return Math.max(3, target);
+  }
+
   function enemyLevel(kind = "wild", index = 0) {
     const arena = getArenaForFloor(state.floor || 1);
     const local = Math.max(1, (state.floor || 1) - arena.floorFrom);
@@ -1852,10 +2138,19 @@
     const routePressure = Math.floor((local - 1) / 3);
     const kindBoost = kind === "boss" ? 2 : kind === "npc" ? 1 : kind === "grass" ? 0 : -1;
     const threatBoost = Math.max(0, Math.floor(state.threat - 1));
-    const level = teamLevel + routePressure + kindBoost + threatBoost + index;
-    const gymSoftCap = arena.id === "league" ? 100 : 7 + (arena.badge - 1) * 5 + (kind === "boss" ? 3 : 0);
+    const arenaBaseline = arena.id === "league" ? 58 + index * 2 : 5 + (arena.badge - 1) * 4 + routePressure;
+    const level = Math.max(teamLevel, arenaBaseline) + kindBoost + threatBoost + index;
+    const gymSoftCap = arena.id === "league" ? 100 : levelCapForArena(arena) + (kind === "boss" ? 1 : -2);
     const capped = Math.min(level, gymSoftCap);
     return state.levelCapEnabled ? Math.min(capped, currentLevelCap() + (kind === "boss" ? 1 : 0)) : capped;
+  }
+
+  function legendaryLevel() {
+    const arena = getArenaForFloor(state.floor || 1);
+    const cap = levelCapForArena(arena);
+    const teamLevel = averageTeamLevel();
+    const target = Math.max(teamLevel + 3, cap - 1);
+    return state.levelCapEnabled ? Math.min(target, currentLevelCap() + 1) : target;
   }
 
   async function createEnemy(boss) {
@@ -1900,8 +2195,11 @@
   function createLegendaryTeam(node = {}) {
     const seed = (state.floor * 17 + (node.branchSeed || 0) * 31 + state.badges.length * 13 + Math.floor(Math.random() * LEGENDARY_POOL.length)) % LEGENDARY_POOL.length;
     const base = LEGENDARY_POOL[seed];
-    const enemy = maybeMarkShiny(cloneMon(base, enemyLevel("boss", 0)));
-    enemy.maxHp = Math.round(enemy.maxHp * 1.55);
+    const enemy = maybeMarkShiny(cloneMon(base, legendaryLevel()));
+    enemy.maxHp = Math.round(enemy.maxHp * 2.25);
+    enemy.atk = Math.round(enemy.atk * 1.12);
+    enemy.def = Math.round(enemy.def * 1.08);
+    enemy.spd = Math.round(enemy.spd * 1.05);
     enemy.currentHp = enemy.maxHp;
     enemy.leader = "Master Ball";
     enemy.trainer = null;
@@ -1936,7 +2234,7 @@
     const npcData = npcBattle ? await createNpcTeam(node) : null;
     const enemyTeam = bossBattle ? createLeaderTeam(node) : legendaryBattle ? createLegendaryTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
     registerDexSeenMany(enemyTeam);
-    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: bossBattle, legendary: legendaryBattle, npc: npcBattle, trainerName: npcData?.trainerName || null, trainerSpriteId: npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
+    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: bossBattle, legendary: legendaryBattle, npc: npcBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: npcData?.trainerName || null, trainerSpriteId: npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
     $("battle-title").textContent = node.type === "boss"
       ? `${state.battle.enemy.leader} enviou ${state.battle.enemy.name}`
       : node.type === "legendary"
@@ -1956,27 +2254,41 @@
   function renderBattle() {
     if (!state.battle) return;
     const playerTeam = state.battle.playerTeam || state.team;
-    const player = activePlayer() || playerTeam[state.battle.playerIndex || 0] || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
+    const currentPlayer = playerTeam[state.battle.playerIndex || 0];
+    const player = isPendingBattleFaint(currentPlayer)
+      ? currentPlayer
+      : activePlayer() || currentPlayer || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
     if (!player) return;
     renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player");
     renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy");
     animateRenderedHpBars();
     $("move-grid").innerHTML = `
       <div class="battle-auto-status">
-        <strong>Batalha automática</strong>
-        <small>Moves, energia e itens equipados resolvem o combate em tempo real.</small>
+        <span>
+          <strong>Batalha automática</strong>
+          <small>Moves, energia e itens equipados resolvem o combate em tempo real.</small>
+        </span>
+        <button class="battle-speed-toggle ${state.battleSpeed === 2 ? "is-active" : ""}" type="button" data-battle-speed="2" aria-pressed="${state.battleSpeed === 2 ? "true" : "false"}" title="Alternar velocidade 2x">2x</button>
       </div>
     `;
   }
 
   function renderBattleRoster(id, mons, active, label, trainer, side = "") {
+    const orderedMons = [...mons].sort((a, b) => {
+      if (a === active) return -1;
+      if (b === active) return 1;
+      const aAlive = a.currentHp > 0 || isPendingBattleFaint(a);
+      const bAlive = b.currentHp > 0 || isPendingBattleFaint(b);
+      if (aAlive !== bAlive) return aAlive ? -1 : 1;
+      return mons.indexOf(a) - mons.indexOf(b);
+    });
     $(id).innerHTML = `
       <div class="battle-trainer-head ${side}">
         ${trainer ? `<img src="${trainerSprite(trainer)}" alt="${label}" onerror="this.style.display='none'">` : ""}
         <span class="rogue-kicker">${label}</span>
       </div>
-      <div class="battle-stack">
-        ${mons.map((p) => renderBattleSlot(p, p === active)).join("")}
+      <div class="battle-stack count-${Math.min(6, Math.max(1, mons.length))}">
+        ${orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
       </div>
     `;
   }
@@ -1984,9 +2296,11 @@
   function renderBattleSlot(p, active) {
     const pct = Math.max(0, Math.round((p.currentHp / p.maxHp) * 100));
     const previousPct = Number.isFinite(p.renderedHpPct) ? p.renderedHpPct : pct;
+    if (pct <= 0 && previousPct > 0) markPendingBattleFaint(p);
+    const pendingFaint = pct <= 0 && isPendingBattleFaint(p);
     p.renderedHpPct = pct;
     const hpState = pct <= 25 ? "danger" : pct <= 50 ? "warn" : "ok";
-    return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 ? "fainted" : ""}" data-battle-mon="${p.name}">
+    return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}">
       <strong>${p.name} <small>Lv.${p.level}</small></strong>
       <div class="hp-bar ${hpState}" aria-label="HP"><span data-hp-target="${pct}" style="width:${previousPct}%"></span></div>
       <small>${Math.max(0, p.currentHp)}/${p.maxHp}</small>
@@ -1998,8 +2312,32 @@
     requestAnimationFrame(() => {
       document.querySelectorAll(".battle-slot .hp-bar span[data-hp-target]").forEach((bar) => {
         bar.style.width = `${bar.dataset.hpTarget}%`;
+        if (bar.dataset.hpTarget === "0") {
+          const slot = bar.closest(".battle-slot.pending-faint");
+          if (slot) {
+            window.setTimeout(() => {
+              slot.classList.remove("pending-faint");
+              slot.classList.add("fainted", "is-fainting");
+            }, 980);
+          }
+        }
       });
     });
+  }
+
+  function isPendingBattleFaint(p) {
+    return Number.isFinite(p?.pendingFaintUntil) && Date.now() < p.pendingFaintUntil;
+  }
+
+  function markPendingBattleFaint(p) {
+    if (!p || p.currentHp > 0) return;
+    p.pendingFaintUntil = Math.max(p.pendingFaintUntil || 0, Date.now() + 980);
+  }
+
+  function pendingBattleFaintDelay() {
+    const team = state.battle?.playerTeam || state.team || [];
+    const until = Math.max(0, ...team.map((p) => p?.pendingFaintUntil || 0));
+    return Math.max(0, until - Date.now());
   }
 
   function renderLeaderTeam() {
@@ -2026,13 +2364,20 @@
   }
 
   function calcDamage(attacker, defender, power, type) {
-    const base = ((atkVal(attacker) * power) / Math.max(20, defVal(defender))) * (0.86 + Math.random() * 0.24) * 28;
-    const stab = attacker.types.includes(type) ? 1.25 : 1;
+    const base = ((atkVal(attacker) * power) / Math.max(26, defVal(defender))) * (0.9 + Math.random() * 0.14) * 14;
+    const stab = attacker.types.includes(type) ? 1.12 : 1;
     const eff = effectiveness(type, defender.types);
-    const critChance = hasItem("crit") || attacker.heldItem?.kind === "crit" ? 0.24 : 0.08;
-    const crit = Math.random() < critChance ? 1.65 : 1;
-    const orb = hasStatItem(attacker, "damage") ? 1.16 : 1;
-    return { amount: Math.max(1, Math.round(base * stab * eff * crit * orb)), eff, crit: crit > 1 };
+    const critChance = Math.min(0.75, 0.08 + strongestBonus("crit", attacker));
+    const crit = Math.random() < critChance ? 1.35 : 1;
+    const orb = 1 + statBonus("damage", attacker);
+    return { amount: eff === 0 ? 0 : Math.max(1, Math.round(base * stab * eff * crit * orb)), eff, crit: crit > 1 };
+  }
+
+  function effectivenessText(eff) {
+    if (eff === 0) return " não afetou";
+    if (eff > 1) return " super efetivo";
+    if (eff < 1) return " resistido";
+    return "";
   }
 
   function chooseAutoMove(attacker, defender) {
@@ -2049,9 +2394,9 @@
     state.autoBattling = true;
     const button = document.querySelector("[data-auto-battle]");
     if (button) button.disabled = true;
-    const actionDelay = 1350;
-    const faintDelay = 1500;
-    const hpDrainDelay = 920;
+    const actionDelay = 1850;
+    const faintDelay = 1650;
+    const hpDrainDelay = 1100;
     let guard = 0;
     while (state.battle && activePlayer() && state.battle.enemy?.currentHp > 0 && guard < 80) {
       guard += 1;
@@ -2075,19 +2420,25 @@
           e.currentHp -= hit.amount;
           applyMoveEffect(pMove, p, e, hit.amount);
           p.energy = Math.min(4, p.energy + 1);
-          if (p.heldItem?.kind === "heal" || hasItem("heal")) p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.08));
+          const healBonus = strongestBonus("heal", p);
+          if (healBonus > 0) {
+            const beforeHeal = p.currentHp;
+            p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * healBonus));
+            const healed = p.currentHp - beforeHeal;
+            if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), 280);
+          }
           const enemyStatus = tickStatus(e);
-          $("battle-log").textContent = `${p.name} usou ${pMove.name}: ${hit.amount} dano${hit.crit ? " crítico" : ""}${hit.eff > 1 ? " super efetivo" : hit.eff < 1 ? " resistido" : ""}.${enemyStatus}`;
+          $("battle-log").textContent = `${p.name} usou ${pMove.name}: ${hit.amount} dano${hit.crit ? " crítico" : ""}${effectivenessText(hit.eff)}.${enemyStatus}`;
           renderBattle();
           animateBattleAction("player-card", p.name, "enemy-card", e.name, hit.amount, hit.crit, hit.eff, pType, pMove);
-          await wait(actionDelay);
+          await wait(battleDelay(actionDelay));
           if (e.currentHp <= 0) {
             handleEnemyFaint(`${p.name} derrubou ${e.name}.`);
             if (!state.battle) {
               state.autoBattling = false;
               return;
             }
-            await wait(faintDelay);
+            await wait(battleDelay(faintDelay));
           }
         } else {
           const eMove = chooseAutoMove(e, p);
@@ -2096,18 +2447,21 @@
           p.currentHp -= eHit.amount;
           applyMoveEffect(eMove, e, p, eHit.amount);
           const playerStatus = tickStatus(p);
-          $("battle-log").textContent = `${e.name} usou ${eMove.name || e.trait}: ${eHit.amount} dano${eHit.crit ? " crítico" : ""}${eHit.eff > 1 ? " super efetivo" : eHit.eff < 1 ? " resistido" : ""}.${playerStatus}`;
-          if (p.currentHp <= 0 && (p.heldItem?.kind === "sash" || hasItem("sash")) && !state.sashUsed) {
+          $("battle-log").textContent = `${e.name} usou ${eMove.name || e.trait}: ${eHit.amount} dano${eHit.crit ? " crítico" : ""}${effectivenessText(eHit.eff)}.${playerStatus}`;
+          if (p.currentHp <= 0 && statBonus("sash", p) > 0 && !state.sashUsed) {
             p.currentHp = 1;
             state.sashUsed = true;
           }
+          markPendingBattleFaint(p);
           renderBattle();
           animateBattleAction("enemy-card", e.name, "player-card", p.name, eHit.amount, eHit.crit, eHit.eff, eType, eMove);
-          await wait(actionDelay);
+          await wait(battleDelay(actionDelay));
+          const faintDelayLeft = pendingBattleFaintDelay();
+          if (faintDelayLeft > 0) await wait(faintDelayLeft);
           applyNuzlockeLosses();
           if (!activePlayer()) {
             state.autoBattling = false;
-            await wait(hpDrainDelay);
+            await wait(battleDelay(hpDrainDelay));
             endRun(false);
             return;
           }
@@ -2122,6 +2476,10 @@
 
   function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function battleDelay(ms) {
+    return Math.max(120, Math.round(ms / (state.battleSpeed === 2 ? 2 : 1)));
   }
 
   function moveEffectClass(type) {
@@ -2158,18 +2516,23 @@
     const toX = toRect.left + toRect.width / 2 - gridRect.left;
     const toY = toRect.top + toRect.height * 0.58 - gridRect.top;
     const effect = document.createElement("span");
-    effect.className = `move-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${crit ? "is-critical" : ""}`;
+    const directionClass = toX >= fromX ? "moves-right" : "moves-left";
+    effect.className = `move-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${directionClass} ${crit ? "is-critical" : ""}`;
     effect.style.setProperty("--from-x", `${fromX}px`);
     effect.style.setProperty("--from-y", `${fromY}px`);
     effect.style.setProperty("--to-x", `${toX}px`);
     effect.style.setProperty("--to-y", `${toY}px`);
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       const particle = document.createElement("i");
       particle.style.setProperty("--particle", i);
       effect.appendChild(particle);
     }
     battleGrid.appendChild(effect);
-    window.setTimeout(() => effect.remove(), 760);
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), crit ? 520 : 320);
+    window.setTimeout(() => effect.remove(), 920);
   }
 
   function animateHit(id, monName, amount, crit, eff) {
@@ -2181,16 +2544,27 @@
     void el.offsetWidth;
     el.classList.add("is-hit");
     if (crit) el.classList.add("is-critical-hit");
-    if (el.classList.contains("fainted")) {
+    if (el.classList.contains("fainted") || el.classList.contains("pending-faint")) {
       el.classList.add("is-fainting");
       playBattleSfx("faint");
     }
     const damage = document.createElement("span");
-    damage.className = `damage-pop ${crit ? "critical" : ""} ${eff > 1 ? "effective" : eff < 1 ? "resisted" : ""}`;
+    damage.className = `damage-pop ${crit ? "critical" : ""} ${eff === 0 ? "immune" : eff > 1 ? "effective" : eff < 1 ? "resisted" : ""}`;
     damage.textContent = `${crit ? "Crit! " : ""}-${amount}`;
     el.appendChild(damage);
-    window.setTimeout(() => damage.remove(), 1050);
+    window.setTimeout(() => damage.remove(), 1900);
     if (crit) window.setTimeout(() => el.classList.remove("is-critical-hit"), 620);
+  }
+
+  function animateBattlePopup(id, monName, text, kind = "info") {
+    const root = $(id);
+    const el = root?.querySelector(`[data-battle-mon="${CSS.escape(monName)}"]`) || root;
+    if (!el) return;
+    const popup = document.createElement("span");
+    popup.className = `damage-pop battle-pop-${kind}`;
+    popup.textContent = text;
+    el.appendChild(popup);
+    window.setTimeout(() => popup.remove(), 1900);
   }
 
   function applyMoveEffect(move, attacker, defender, damage) {
@@ -2240,9 +2614,15 @@
       const hit = calcDamage(p, e, 1, p.types[0]);
       e.currentHp -= hit.amount;
       p.energy = Math.min(4, p.energy + 1);
-      log = `${p.name} atacou: ${hit.amount} dano${hit.eff > 1 ? " super efetivo" : hit.eff < 1 ? " resistido" : ""}.`;
+      log = `${p.name} atacou: ${hit.amount} dano${effectivenessText(hit.eff)}.`;
     }
-    if (hasItem("heal")) p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.08));
+    const healBonus = strongestBonus("heal", p);
+    if (healBonus > 0) {
+      const beforeHeal = p.currentHp;
+      p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * healBonus));
+      const healed = p.currentHp - beforeHeal;
+      if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), 280);
+    }
     if (e.currentHp <= 0) return handleEnemyFaint(log);
     enemyTurn(log);
   }
@@ -2250,11 +2630,11 @@
   function handleEnemyFaint(prefix) {
     const battle = state.battle;
     const reward = awardBattleXp(battle.enemy, battle.boss);
-    const xpLog = ` +${reward.xp} XP${reward.levels ? `, ${reward.levels} nivel(is) ganho(s)` : ""}.`;
-    if (!battle?.boss && !battle?.npc) return winBattle(`${prefix}${xpLog}`);
+    const xpLog = ` +${reward.xp} XP${reward.levels ? `, ${reward.levels} nível(is) ganho(s)` : ""}.`;
+    if (!battle?.boss && !battle?.npc) return winBattle(`${prefix}${xpLog}`, reward);
     battle.enemy.currentHp = 0;
     const nextIndex = battle.enemyTeam.findIndex((p, index) => index > battle.enemyIndex && p.currentHp > 0);
-    if (nextIndex === -1) return winBattle(`${prefix} ${battle.enemy.name} caiu.${xpLog}`);
+    if (nextIndex === -1) return winBattle(`${prefix} ${battle.enemy.name} caiu.${xpLog}`, reward);
     battle.enemyIndex = nextIndex;
     battle.enemy = battle.enemyTeam[nextIndex];
     $("battle-title").textContent = `${battle.enemy.leader} enviou ${battle.enemy.name}`;
@@ -2286,30 +2666,52 @@
       e.currentHp -= Math.ceil(e.maxHp * 0.06);
       e.burn -= 1;
     }
-    if (p.currentHp <= 0 && hasItem("sash") && !state.sashUsed) {
+    if (p.currentHp <= 0 && statBonus("sash", p) > 0 && !state.sashUsed) {
       p.currentHp = 1;
       state.sashUsed = true;
       log += " A Faixa Foco segurou o golpe fatal.";
     }
+    markPendingBattleFaint(p);
     $("battle-log").textContent = `${log} ${e.name} respondeu com ${amount} dano.`;
     renderBattle();
     if (p.currentHp <= 0) {
       window.setTimeout(() => {
-        applyNuzlockeLosses();
-        if (!activePlayer()) return endRun(false);
-        renderBattle();
-        save();
-      }, 1800);
+        const finishFaint = () => {
+          applyNuzlockeLosses();
+          if (!activePlayer()) return endRun(false);
+          renderBattle();
+          save();
+        };
+        const faintDelayLeft = pendingBattleFaintDelay();
+        if (faintDelayLeft > 0) window.setTimeout(finishFaint, faintDelayLeft);
+        else finishFaint();
+      }, 0);
       return;
     }
     if (e.currentHp <= 0) return handleEnemyFaint(log);
     save();
   }
 
-  function winBattle(prefix) {
+  function victorySummaryMarkup({ prefix, reward, boss, defeated, defeatedName, recoveryLog, evolution }) {
+    const battleType = boss
+      ? defeated?.badge ? "Lider de ginasio" : "Liga"
+      : state.battle?.legendary ? "Lendario" : state.battle?.npc ? "Treinador" : "Rota";
+    return `
+      <div class="victory-summary">
+        <span><b>Batalha</b><strong>${battleType}</strong><small>${defeatedName || "Oponente"} derrotado</small></span>
+        <span><b>XP total</b><strong>+${reward?.xp || 0}</strong><small>${reward?.levels || 0} nível(is) ganho(s)</small></span>
+        <span><b>Recuperacao</b><strong>${boss ? "Total" : "Parcial"}</strong><small>${recoveryLog.trim()}</small></span>
+        ${evolution ? `<span><b>Evolucao</b><strong>${evolution.to.name}</strong><small>${evolution.from.name} evoluiu</small></span>` : ""}
+      </div>
+      <p class="victory-log">${prefix}</p>
+    `;
+  }
+
+  function winBattle(prefix, reward = { xp: 0, levels: 0 }) {
     const battleArena = ARENAS.find((arena) => arena.floorTo === state.floor);
     const boss = state.battle.boss || !!battleArena;
     const defeated = boss ? state.battle.enemyTeam[state.battle.enemyTeam.length - 1] : null;
+    const defeatedName = state.battle?.enemy?.name || defeated?.name || "Oponente";
     const earnedBadge = defeated?.badge && !state.badges.includes(defeated.badge) ? defeated.badge : null;
     let recoveryLog = "";
     state.team.forEach((p) => {
@@ -2329,22 +2731,22 @@
       const clearedArena = ARENAS.find((arena) => arena.badge === defeated.badge);
       const nextArena = ARENAS.find((arena) => arena.floorFrom === clearedArena?.floorTo);
       if (nextArena) {
-        state.floor = nextArena.floorFrom;
+        state.pendingMapFloor = nextArena.floorFrom;
       } else if (clearedArena) {
-        state.floor = clearedArena.floorTo;
+        state.pendingMapFloor = clearedArena.floorTo;
       }
     }
     state.battle = null;
     state.autoBattling = false;
     if (boss) state.branch = 0;
-    if (state.floor >= RUN_FLOORS) return endRun(true);
+    if ((state.pendingMapFloor || state.floor) >= RUN_FLOORS) return endRun(true);
     const evolution = state.pendingEvolutions?.shift();
     $("choice-kicker").textContent = boss ? (defeated?.badge ? "Líder derrotado" : "Liga vencida") : evolution ? "Evolução" : "Vitória";
     $("choice-title").textContent = boss ? `${defeated?.leader || "Líder"} derrotado` : evolution ? `${evolution.from.name} evoluiu` : "Rota liberada";
     $("choice-copy").textContent = boss && defeated
       ? defeated.badge
         ? `${prefix} ${defeated.leader} entregou a insígnia ${defeated.arena}. O mapa mudou para a próxima arena.${recoveryLog}`
-        : `${prefix} ${defeated.leader} caiu na Liga ${defeated.arena}. A proxima sala foi aberta.${recoveryLog}`
+        : `${prefix} ${defeated.leader} caiu na Liga ${defeated.arena}. A próxima sala foi aberta.${recoveryLog}`
       : evolution
         ? `${prefix} ${evolution.from.name} virou ${evolution.to.name}. O time ganhou experiência.${recoveryLog}`
         : `${prefix} O time ganhou experiência.${recoveryLog} Escolha quando avançar.`;
@@ -2353,6 +2755,7 @@
       ${renderEvolutionSummary(evolution)}
       <button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Voltar ao mapa e escolher o próximo andar.</small></button>
     `;
+    $("choice-copy").innerHTML = victorySummaryMarkup({ prefix, reward, boss, defeated, defeatedName, recoveryLog, evolution });
     show("choice");
     document.querySelector(".rogue-stage")?.classList.add("has-choice-modal", "has-victory-modal");
     save();
@@ -2374,7 +2777,7 @@
   }
 
   async function showCatch() {
-    const picks = (await recruitPoolExpanded(3)).map((p) => maybeMarkShiny(cloneMon(p, 4 + state.floor * 2)));
+    const picks = (await recruitPoolExpanded(3)).map((p) => maybeMarkShiny(cloneMon(p, recruitLevel())));
     registerDexSeenMany(picks);
     const teamIsFull = state.team.length >= 6;
     $("choice-kicker").textContent = "Recrutamento";
@@ -2413,6 +2816,7 @@
     $("choice-kicker").textContent = "Troca de time";
     $("choice-title").textContent = `Recrutar ${mon.name}`;
     $("choice-copy").textContent = "Escolha qual Pokémon sai do time. O novo aliado entra com HP cheio e mantém o nível da oferta.";
+    $("choice-copy").textContent = "Escolha qual Pokémon sai do time. Se ele segurar uma relíquia, ela volta para a bag.";
     $("choice-grid").innerHTML = state.team.map((p, i) => `
       <button class="choice-button pokemon-choice" type="button" data-replace-recruit="${i}">
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
@@ -2423,7 +2827,7 @@
           <span>Sai do time</span>
           ${statPreviewWithItem(p, p.heldItem)}
           ${statBars(p)}
-          <small>${p.heldItem ? `Item: ${p.heldItem.name}` : "Sem item equipado"}</small>
+          <small>${p.heldItem ? `${p.heldItem.name} volta para a bag` : "Sem item equipado"}</small>
         </span>
       </button>
     `).join("") + `
@@ -2449,10 +2853,10 @@
       <button class="choice-button item-choice" type="button" data-item="${i}">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
         <strong>${item.name}</strong>
-        <small>${item.text}</small>
+        <small>${itemShortText(item)}</small>
         <span class="choice-hover-detail">
           <span>Relíquia</span>
-          <small>${item.text}</small>
+          <small>${itemShortText(item)}</small>
           ${itemBonusMarkup(item)}
         </span>
       </button>
@@ -2465,12 +2869,27 @@
     state.pendingItem = item;
     $("choice-kicker").textContent = "Equipar item";
     $("choice-title").textContent = item.name;
-    $("choice-copy").textContent = "Escolha quem vai segurar o item ou guarde na bag para equipar depois.";
-    $("choice-grid").innerHTML = state.team.map((p, i) => `
+    $("choice-copy").textContent = itemShortText(item);
+    $("choice-grid").innerHTML = `
+      <div class="pending-item-card">
+        <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
+        <span>
+          <strong>${item.name}</strong>
+          <small>${itemShortText(item)}</small>
+        </span>
+        ${itemBonusMarkup(item)}
+      </div>
+    ` + state.team.map((p, i) => `
       <button class="choice-button pokemon-choice" type="button" data-equip="${i}">
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>${p.heldItem ? `Trocar ${p.heldItem.name}` : "Sem item equipado"}</small>
+        <span class="equipped-item-pill ${p.heldItem ? "" : "empty"}">
+          ${p.heldItem ? `<img class="animated-item" src="${itemSprite(p.heldItem)}" alt="${p.heldItem.name}">` : ""}
+          <span>
+            <b>${p.heldItem ? p.heldItem.name : "Slot livre"}</b>
+            <small>${p.heldItem ? itemShortText(p.heldItem) : "Sem relíquia equipada"}</small>
+          </span>
+        </span>
         ${renderTypeChips(p.types)}
         <span class="choice-hover-detail">
           <span>${p.heldItem ? `Atual: ${p.heldItem.name}` : "Livre"}</span>
@@ -2479,10 +2898,10 @@
         </span>
       </button>
     `).join("") + `
-      <button class="choice-button item-choice" type="button" data-store-item="1">
+      <button class="choice-button item-choice store-item-choice" type="button" data-store-item="1">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
         <strong>Guardar na bag</strong>
-        <small>Usar depois em outro Pokémon.</small>
+        <small>${itemShortText(item)}</small>
       </button>
     `;
     show("choice");
@@ -2579,7 +2998,7 @@
   function showTrain() {
     $("choice-kicker").textContent = "Treino";
     $("choice-title").textContent = "Fortalecer um parceiro";
-    $("choice-copy").textContent = "Treino da nivel e energia, mas aumenta o risco das proximas batalhas.";
+    $("choice-copy").textContent = "Treino dá nível e energia, mas aumenta o risco das próximas batalhas.";
     $("choice-grid").innerHTML = state.team.map((p, i) => `
       <button class="choice-button pokemon-choice" type="button" data-train="${i}">
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
@@ -2596,6 +3015,119 @@
     show("choice");
   }
 
+  function showRandomEventExpanded() {
+    const randomItem = () => ({ ...ITEMS[Math.floor(Math.random() * ITEMS.length)] });
+    const livingTeam = () => state.team.filter((p) => p.currentHp > 0);
+    const weakestLiving = () => [...livingTeam()].sort((a, b) => (a.level - b.level) || (a.currentHp - b.currentHp))[0];
+    const refreshLeveledMon = (p, healRatio = 1) => {
+      applyLevelCap(p);
+      p.maxHp = hpMax(p);
+      p.currentHp = Math.min(p.maxHp, Math.max(1, p.currentHp) + Math.ceil(p.maxHp * healRatio));
+      syncMoves(p);
+      maybeAutoEvolve(p);
+    };
+    const events = [
+      { name: "Fonte escondida", text: "Um brilho entre as pedras revela água limpa o bastante para recuperar o fôlego antes da próxima luta.", effect: "Cura 35% do HP máximo de todo o time.", run: () => {
+        state.team.forEach((p) => p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.35)));
+        return "Todo o time recuperou vida.";
+      } },
+      { name: "Atalho perigoso", text: "Você corta caminho por uma passagem instável. A rota fica mais segura, mas o time sai arranhado.", effect: "Risco -0.5. Cada Pokémon perde 12% do HP máximo, sem cair abaixo de 1 HP.", run: () => {
+        state.threat = Math.max(1, state.threat - 0.5);
+        state.team.forEach((p) => p.currentHp = Math.max(1, p.currentHp - Math.ceil(p.maxHp * 0.12)));
+        return "O risco da rota diminuiu, mas o time recebeu dano leve.";
+      } },
+      { name: "Treinador generoso", text: "Um treinador veterano reconhece sua run e divide macetes de ritmo para a próxima batalha.", effect: "Todos ganham +1 energia.", run: () => {
+        state.team.forEach((p) => p.energy = Math.min(4, p.energy + 1));
+        return "A energia do time subiu.";
+      } },
+      { name: "Armadilha", text: "O baú estava protegido. Você aciona o alarme, mas consegue puxar uma relíquia antes de fugir.", effect: "Risco +0.45. Ganha 1 relíquia aleatória na bag.", run: () => {
+        const item = randomItem();
+        state.threat = Math.min(3, state.threat + 0.45);
+        state.items.push(item);
+        return `${item.name} foi para a bag.`;
+      } },
+      { name: "Doce raro", text: "Um pacote lacrado aparece na trilha. O parceiro mais atrasado recebe um impulso para acompanhar o grupo.", effect: "O Pokémon vivo de menor nível ganha +2 níveis e cura totalmente.", run: () => {
+        const target = weakestLiving();
+        if (!target) return "Não havia Pokémon ativo para receber o bônus.";
+        target.level += 2;
+        refreshLeveledMon(target, 1);
+        return `${target.name} ganhou 2 níveis.`;
+      } },
+      { name: "Especialista de tipos", text: "Uma pesquisadora nota a sinergia do time e ajusta a estratégia dos Pokémon que compartilham tipos.", effect: "Pokémon com tipo repetido no time ganham +2 energia.", run: () => {
+        const counts = countTypes();
+        state.team.forEach((p) => { if (p.types.some((t) => counts[t] >= 2)) p.energy = Math.min(4, p.energy + 2); });
+        return "As linhas de tipo repetido ficaram prontas para agir.";
+      } },
+      { name: "Mercador estranho", text: "Um vendedor aparece com uma pedra remendada e jura que ela funciona. Estranhamente, funciona.", effect: "Tenta evoluir o primeiro Pokémon compatível do time.", run: () => {
+        const target = state.team.find((p) => EVOLUTIONS[p.id]);
+        if (!target) return "Ninguém no time reagiu à pedra.";
+        evolvePokemon(target);
+        return `${target.name} recebeu a pedra improvisada.`;
+      } },
+      { name: "Chuva de faíscas", text: "Faíscas cruzam o céu da rota e deixam o time em alerta, como se a batalha já tivesse começado.", effect: "Atualiza golpes do time e concede +1 energia.", run: () => {
+        state.team.forEach((p) => { syncMoves(p); p.energy = Math.min(4, p.energy + 1); });
+        return "O time revisou seus golpes e ganhou energia.";
+      } },
+      { name: "Acampamento seguro", text: "Você encontra uma clareira protegida. Dá para respirar fundo sem perder totalmente o embalo da run.", effect: "Cura 20% do time e reduz o risco em 0.25.", run: () => {
+        state.threat = Math.max(1, state.threat - 0.25);
+        state.team.forEach((p) => p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.2)));
+        return "O time descansou e a rota ficou menos perigosa.";
+      } },
+      { name: "Bolsa perdida", text: "Uma mochila abandonada guarda itens bons demais para ignorar. Mexer nela faz barulho na rota.", effect: "Ganha 2 relíquias aleatórias, mas o risco sobe +0.35.", run: () => {
+        const found = [randomItem(), randomItem()];
+        state.items.push(...found);
+        state.threat = Math.min(3, state.threat + 0.35);
+        return `${found.map((item) => item.name).join(" e ")} foram para a bag.`;
+      } },
+      { name: "Santuario antigo", text: "Um altar gasto responde ao time. A run fica mais pesada, mas seus parceiros saem revigorados.", effect: "Todos ganham +1 energia e o risco sobe +0.2.", run: () => {
+        state.threat = Math.min(3, state.threat + 0.2);
+        state.team.forEach((p) => p.energy = Math.min(4, p.energy + 1));
+        return "O time ganhou energia, mas chamou atenção na rota.";
+      } },
+      { name: "Oficina de relíquias", text: "Uma mecânica viajante ajusta a primeira relíquia solta da bag para encaixar melhor no time.", effect: "Se houver item na bag, troca o primeiro por uma nova relíquia aleatória.", run: () => {
+        if (!state.items.length) {
+          const item = randomItem();
+          state.items.push(item);
+          return `A bag estava vazia, então ${item.name} foi criada.`;
+        }
+        const oldItem = state.items.shift();
+        const item = randomItem();
+        state.items.push(item);
+        return `${oldItem.name} virou ${item.name}.`;
+      } },
+      { name: "Rival apressado", text: "Um rival passa correndo e provoca seu líder de time. A resposta vem em forma de treino rápido.", effect: "O primeiro Pokémon vivo ganha +1 nível, +1 energia e uma cura pequena.", run: () => {
+        const target = livingTeam()[0];
+        if (!target) return "O time não tinha ninguém em pé para responder.";
+        target.level += 1;
+        target.energy = Math.min(4, target.energy + 1);
+        refreshLeveledMon(target, 0.25);
+        return `${target.name} treinou no susto.`;
+      } },
+      { name: "Neblina densa", text: "A visibilidade cai e os inimigos perdem seu rastro por alguns minutos.", effect: "Risco -0.35, mas todos perdem 1 energia.", run: () => {
+        state.threat = Math.max(1, state.threat - 0.35);
+        state.team.forEach((p) => p.energy = Math.max(0, p.energy - 1));
+        return "A rota ficou mais calma, mas o time perdeu ritmo.";
+      } },
+      { name: "Fruta madura", text: "Uma árvore baixa tem frutas suficientes para salvar o Pokémon mais machucado.", effect: "O Pokémon vivo com menor porcentagem de HP cura 50%.", run: () => {
+        const target = [...livingTeam()].sort((a, b) => (a.currentHp / a.maxHp) - (b.currentHp / b.maxHp))[0];
+        if (!target) return "Não havia Pokémon ativo para comer a fruta.";
+        target.currentHp = Math.min(target.maxHp, target.currentHp + Math.ceil(target.maxHp * 0.5));
+        return `${target.name} recuperou bastante HP.`;
+      } }
+    ];
+    const event = events[Math.floor(Math.random() * events.length)];
+    const eventResult = event.run();
+    const evolution = state.pendingEvolutions?.shift();
+    if (evolution) return showEvolutionPopup(evolution);
+    $("choice-kicker").textContent = "Evento aleatorio";
+    $("choice-title").textContent = event.name;
+    $("choice-copy").innerHTML = `${event.text}<br><strong>Efeito:</strong> ${event.effect}<br><strong>Resultado:</strong> ${eventResult || "Evento aplicado."}`;
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="map"><strong>Continuar</strong><small>Voltar para a rota.</small></button>`;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-simple-modal");
+    save();
+  }
+
   function showRandomEvent() {
     const events = [
       { name: "Fonte escondida", text: "Cura 35% do time.", run: () => state.team.forEach((p) => p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.35))) },
@@ -2610,7 +3142,7 @@
         const counts = countTypes();
         state.team.forEach((p) => { if (p.types.some((t) => counts[t] >= 2)) p.energy = Math.min(4, p.energy + 2); });
       } },
-      { name: "Mercador estranho", text: "Recebe uma pedra de evolucao improvisada.", run: () => {
+      { name: "Mercador estranho", text: "Recebe uma pedra de evolução improvisada.", run: () => {
         const targetIndex = state.team.findIndex((p) => EVOLUTIONS[p.id]);
         const target = state.team[targetIndex];
         if (target && evolutionOptionsFor(target).length > 1) {
@@ -2688,7 +3220,7 @@
       <button class="choice-button" type="button" data-learn="${i}" ${canLearnMove(p, move) ? "" : "disabled"}>
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>${canLearnMove(p, move) ? (p.moves || []).map((m) => m.name).join(", ") : "Tipo ou nivel incompativel"}</small>
+        <small>${canLearnMove(p, move) ? (p.moves || []).map((m) => m.name).join(", ") : "Tipo ou nível incompatível"}</small>
       </button>
     `).join("") + (canAnyLearn ? "" : `
       <button class="choice-button" type="button" data-action="move-tutor"><strong>Escolher outro move</strong><small>Voltar para o tutor.</small></button>
@@ -2697,42 +3229,47 @@
     show("choice");
   }
 
-  function showEvolutionStone() {
-    const candidates = state.team.filter((p) => EVOLUTIONS[p.id]?.stone || EVOLUTIONS[p.id]);
-    $("choice-kicker").textContent = "Pedra de evolucao";
-    $("choice-title").textContent = "Forcar evolucao";
+  async function showEvolutionStone() {
+    $("choice-kicker").textContent = "Pedra de evolução";
+    $("choice-title").textContent = "Forçar evolução";
+    $("choice-copy").textContent = "Verificando evoluções compatíveis do time.";
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" disabled><strong>Verificando...</strong><small>Consultando cadeia de evolução.</small></button>`;
+    show("choice");
+    const entries = await teamEvolutionOptions();
+    const candidates = entries.filter((entry) => entry.options.length);
     $("choice-copy").textContent = candidates.length ? "Escolha um Pokémon compatível para evoluir agora." : "Nenhum Pokémon compatível no time. A pedra virou cura.";
     if (!candidates.length) {
       state.team.forEach((p) => p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.25)));
       $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="map"><strong>Continuar</strong><small>Time curado parcialmente.</small></button>`;
     } else {
-      $("choice-grid").innerHTML = state.team.map((p, i) => {
-        const evo = EVOLUTIONS[p.id];
-        const options = evo?.options || [];
-        return `<button class="choice-button" type="button" data-evolve="${i}" ${evo ? "" : "disabled"}>
+      $("choice-grid").innerHTML = entries.map(({ mon: p, index: i, options }) => {
+        const canEvolve = options.length > 0;
+        const evo = canEvolve ? { into: options[0].into } : null;
+        return `<button class="choice-button" type="button" data-evolve="${i}" ${canEvolve ? "" : "disabled"}>
           <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
           <strong>${p.name}</strong>
-          <small>${options.length ? "Escolher evolução" : evo ? `Evoluir para ${evo.into.name}` : "Sem evolucao disponivel"}</small>
+          <small>${options.length ? "Escolher evolução" : evo ? `Evoluir para ${evo.into.name}` : "Sem evolução disponível"}</small>
         </button>`;
       }).join("");
     }
-    show("choice");
   }
 
   function evolutionOptionsFor(p) {
     const evo = EVOLUTIONS[p?.id];
+    const dynamic = dynamicEvolutionCache.get(p?.id);
+    if (!evo && Array.isArray(dynamic)) return dynamic;
     if (!evo) return [];
     return evo.options?.length ? evo.options : [evo];
   }
 
-  function showEvolutionChoice(index) {
+  function renderEvolutionChoice(index, options) {
     const p = state.team[index];
-    const options = evolutionOptionsFor(p);
     if (!p || options.length <= 1) return false;
     state.pendingEvolutionChoiceIndex = index;
     $("choice-kicker").textContent = "Evolução";
     $("choice-title").textContent = `Escolha a evolução de ${p.name}`;
     $("choice-copy").textContent = "Cada forma muda tipo, atributos e golpes disponíveis.";
+    $("choice-grid").classList.toggle("many-evolution-options", options.length > 4);
     $("choice-grid").innerHTML = options.map((option, i) => {
       const evolved = { ...p, ...option.into, level: p.level || 1 };
       evolved.maxHp = hpMax(evolved);
@@ -2752,26 +3289,51 @@
         </button>
       `;
     }).join("") + `
-      <button class="choice-button" type="button" data-action="map">
+      <button class="choice-button" type="button" data-cancel-evolution-choice="1">
         <strong>Cancelar</strong>
         <small>Voltar para a rota sem evoluir.</small>
       </button>
     `;
     show("choice");
+    $("choice-grid").classList.toggle("many-evolution-options", options.length > 4);
     document.querySelector(".rogue-stage")?.classList.add("has-choice-modal");
     return true;
   }
 
-  function evolvePokemon(p, optionIndex = 0) {
-    const evo = EVOLUTIONS[p.id];
-    if (!evo) return false;
-    const option = evo.options?.[optionIndex] || evo;
+  async function showEvolutionChoice(index) {
+    const p = state.team[index];
+    const options = await dynamicEvolutionOptionsFor(p);
+    return renderEvolutionChoice(index, options);
+  }
+
+  function showPendingEvolutionChoice() {
+    state.pendingEvolutionChoices = state.pendingEvolutionChoices || [];
+    while (state.pendingEvolutionChoices.length) {
+      const entry = state.pendingEvolutionChoices[0];
+      const index = state.team.findIndex((p) => p.runId === entry.runId);
+      const p = state.team[index];
+      const options = evolutionOptionsFor(p);
+      const requiredLevel = options.length ? Math.min(...options.map((option) => option.level || 1)) : Infinity;
+      if (p && p.currentHp > 0 && options.length > 1 && (p.level || 1) >= requiredLevel) {
+        const shown = renderEvolutionChoice(index, options);
+        if (shown) save();
+        return shown;
+      }
+      state.pendingEvolutionChoices.shift();
+    }
+    return false;
+  }
+
+  function evolvePokemon(p, optionIndex = 0, optionsOverride = null) {
+    const options = optionsOverride || evolutionOptionsFor(p);
+    const option = options[optionIndex] || options[0];
+    if (!option?.into) return false;
     const oldHpPct = p.maxHp ? p.currentHp / p.maxHp : 1;
     const from = JSON.parse(JSON.stringify(p));
     Object.assign(p, JSON.parse(JSON.stringify(option.into)));
     p.level = p.level || 1;
     p.maxHp = hpMax(p);
-    p.currentHp = Math.max(1, Math.ceil(p.maxHp * oldHpPct));
+    p.currentHp = oldHpPct <= 0 ? 0 : Math.max(1, Math.ceil(p.maxHp * oldHpPct));
     p.energy = Math.min(4, (p.energy || 2) + 1);
     syncMoves(p);
     state.pendingEvolutions = state.pendingEvolutions || [];
@@ -2784,7 +3346,7 @@
     const hasNext = (state.pendingEvolutions?.length || 0) > 0;
     $("choice-kicker").textContent = "Evolução";
     $("choice-title").textContent = `${entry.from.name} evoluiu`;
-    $("choice-copy").textContent = `${entry.from.name} virou ${entry.to.name}. Novos atributos e golpes foram atualizados pelo nivel.`;
+    $("choice-copy").textContent = `${entry.from.name} virou ${entry.to.name}. Novos atributos e golpes foram atualizados pelo nível.`;
     $("choice-grid").innerHTML = `
       ${renderEvolutionSummary(entry)}
       <button class="choice-button" type="button" data-action="next-evolution"><strong>${hasNext ? "Próxima evolução" : "Continuar rota"}</strong><small>${hasNext ? "Ver a próxima evolução pendente." : "Voltar ao mapa."}</small></button>
@@ -2797,7 +3359,14 @@
 
   function maybeAutoEvolve(p) {
     const evo = EVOLUTIONS[p.id];
-    if (!evo?.level || p.level < evo.level) return false;
+    if (!evo?.level || p.level < evo.level || p.currentHp <= 0) return false;
+    if (evo.options?.length > 1) {
+      state.pendingEvolutionChoices = state.pendingEvolutionChoices || [];
+      if (!state.pendingEvolutionChoices.some((entry) => entry.runId === p.runId)) {
+        state.pendingEvolutionChoices.push({ runId: p.runId });
+      }
+      return "choice";
+    }
     return evolvePokemon(p);
   }
 
@@ -2808,6 +3377,7 @@
     mon.runId ||= uid("mon");
     state.team.push(mon);
     const evolved = maybeAutoEvolve(mon);
+    if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
     renderMap();
     save();
@@ -2816,11 +3386,18 @@
   function replacePokemon(index) {
     const mon = state.pendingRecruit;
     if (!mon || index < 0 || index >= state.team.length || state.team.some((p, i) => i !== index && (p.id === mon.id || p.name === mon.name))) return renderMap();
+    const replaced = state.team[index];
+    if (replaced?.heldItem) {
+      state.items.push({ ...replaced.heldItem });
+      replaced.heldItem = null;
+    }
     registerDexSeen(mon);
     mon.runId ||= uid("mon");
+    mon.heldItem = mon.heldItem || null;
     state.team.splice(index, 1, mon);
     state.pendingRecruit = null;
     const evolved = maybeAutoEvolve(mon);
+    if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
     renderMap();
     save();
@@ -2840,7 +3417,7 @@
     show("end");
   }
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
     if (button.id === "start-run" || button.id === "restart-run") newRun();
@@ -2853,22 +3430,39 @@
       if (savedRunMode() !== selectedRunMode()) return updateContinueRunButton();
       if (!load()) return updateContinueRunButton();
       if (!state.map.length) buildMap();
+      if (showPendingEvolutionChoice()) return;
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
+      if (!state.battle) applyPendingMapFloor();
       state.battle ? (renderBattle(), show("battle")) : renderMap();
     }
     if (button.dataset.starter) chooseStarter(Number(button.dataset.starter));
-    if (button.dataset.floor) enterNode(Number(button.dataset.floor), Number(button.dataset.branch));
+    if (button.dataset.floor) await enterNode(Number(button.dataset.floor), Number(button.dataset.branch));
     if (button.dataset.autoBattle) runAutoBattle();
+    if (button.dataset.battleSpeed) {
+      state.battleSpeed = state.battleSpeed === 2 ? 1 : 2;
+      renderBattle();
+      save();
+    }
     if (button.dataset.move) playerMove(button.dataset.move);
     if (button.dataset.action === "map") {
       if (state.screen === "battle" && state.battle && !state.battle.boss) state.battle = null;
+      applyPendingMapFloor();
       state.pendingEvolutionChoiceIndex = null;
+      if (showPendingEvolutionChoice()) return;
       renderMap();
     }
     if (button.dataset.action === "next-evolution") {
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
+      if (showPendingEvolutionChoice()) return;
+      renderMap();
+      save();
+    }
+    if (button.dataset.cancelEvolutionChoice) {
+      const p = state.team[Number(state.pendingEvolutionChoiceIndex)];
+      state.pendingEvolutionChoices = (state.pendingEvolutionChoices || []).filter((entry) => entry.runId !== p?.runId);
+      state.pendingEvolutionChoiceIndex = null;
       renderMap();
       save();
     }
@@ -2914,8 +3508,9 @@
     if (button.dataset.evolve) {
       const index = Number(button.dataset.evolve);
       const p = state.team[index];
-      if (p && evolutionOptionsFor(p).length > 1) return showEvolutionChoice(index);
-      if (p) evolvePokemon(p);
+      const options = p ? await dynamicEvolutionOptionsFor(p) : [];
+      if (p && options.length > 1) return await showEvolutionChoice(index);
+      if (p) evolvePokemon(p, 0, options);
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
       renderMap();
@@ -2924,7 +3519,9 @@
     if (button.dataset.evolutionOption) {
       const index = Number(state.pendingEvolutionChoiceIndex);
       const p = state.team[index];
-      if (p) evolvePokemon(p, Number(button.dataset.evolutionOption));
+      const options = p ? await dynamicEvolutionOptionsFor(p) : [];
+      if (p) evolvePokemon(p, Number(button.dataset.evolutionOption), options);
+      state.pendingEvolutionChoices = (state.pendingEvolutionChoices || []).filter((entry) => entry.runId !== p?.runId);
       state.pendingEvolutionChoiceIndex = null;
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
@@ -2940,6 +3537,7 @@
       p.energy = Math.min(4, p.energy + 2);
       state.threat = Math.min(3, state.threat + 0.5);
       const evolved = maybeAutoEvolve(p);
+      if (evolved === "choice") return showPendingEvolutionChoice();
       if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
       renderMap();
       save();
