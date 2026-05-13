@@ -63,6 +63,19 @@
     { id: 215, name: "Sneasel", types: ["Dark", "Ice"], hp: 52, atk: 82, def: 45, spd: 105, trait: "Emboscada" }
   ];
 
+  const LEGENDARY_POOL = [
+    { id: 144, name: "Articuno", types: ["Ice", "Flying"], hp: 90, atk: 95, def: 105, spd: 85, trait: "Nevasca" },
+    { id: 145, name: "Zapdos", types: ["Electric", "Flying"], hp: 90, atk: 125, def: 90, spd: 100, trait: "Trovao" },
+    { id: 146, name: "Moltres", types: ["Fire", "Flying"], hp: 90, atk: 125, def: 90, spd: 90, trait: "Chama Solar" },
+    { id: 150, name: "Mewtwo", types: ["Psychic"], hp: 106, atk: 154, def: 90, spd: 130, trait: "Genetica" },
+    { id: 243, name: "Raikou", types: ["Electric"], hp: 90, atk: 115, def: 85, spd: 115, trait: "Relampago" },
+    { id: 244, name: "Entei", types: ["Fire"], hp: 115, atk: 115, def: 85, spd: 100, trait: "Vulcao" },
+    { id: 245, name: "Suicune", types: ["Water"], hp: 100, atk: 90, def: 115, spd: 85, trait: "Aurora" },
+    { id: 249, name: "Lugia", types: ["Psychic", "Flying"], hp: 106, atk: 100, def: 130, spd: 110, trait: "Guardiao" },
+    { id: 250, name: "Ho-Oh", types: ["Fire", "Flying"], hp: 106, atk: 130, def: 110, spd: 90, trait: "Arco-iris" },
+    { id: 384, name: "Rayquaza", types: ["Dragon", "Flying"], hp: 105, atk: 150, def: 90, spd: 95, trait: "Ceu Delta" }
+  ];
+
   const GYM_POOLS = {
     rock: [
       { id: 27, name: "Sandshrew", types: ["Ground"], hp: 55, atk: 75, def: 85, spd: 40, trait: "Areia" },
@@ -395,14 +408,107 @@
     7: { into: { id: 8, name: "Wartortle", types: ["Water"], hp: 66, atk: 63, def: 80, spd: 58, trait: "Guarda" }, level: 16 },
     8: { into: { id: 9, name: "Blastoise", types: ["Water"], hp: 84, atk: 88, def: 105, spd: 78, trait: "Canhao" }, level: 36 },
     25: { into: { id: 26, name: "Raichu", types: ["Electric"], hp: 66, atk: 90, def: 55, spd: 110, trait: "Voltagem" }, stone: "thunder" },
+    27: { into: { id: 28, name: "Sandslash", types: ["Ground"], hp: 75, atk: 100, def: 110, spd: 65, trait: "Areia" }, level: 22 },
+    37: { into: { id: 38, name: "Ninetales", types: ["Fire"], hp: 73, atk: 90, def: 75, spd: 100, trait: "Raposa" }, stone: "fire" },
+    39: { into: { id: 40, name: "Wigglytuff", types: ["Normal", "Fairy"], hp: 140, atk: 85, def: 45, spd: 45, trait: "Encore" }, stone: "moon" },
+    41: { into: { id: 42, name: "Golbat", types: ["Poison", "Flying"], hp: 75, atk: 80, def: 70, spd: 90, trait: "Morcego" }, level: 22 },
+    42: { into: { id: 169, name: "Crobat", types: ["Poison", "Flying"], hp: 85, atk: 90, def: 80, spd: 130, trait: "Morcego" }, level: 36 },
+    43: { into: { id: 44, name: "Gloom", types: ["Grass", "Poison"], hp: 60, atk: 75, def: 70, spd: 40, trait: "Po" }, level: 21 },
+    44: {
+      options: [
+        { into: { id: 45, name: "Vileplume", types: ["Grass", "Poison"], hp: 75, atk: 100, def: 85, spd: 50, trait: "Esporos" }, stone: "leaf" },
+        { into: { id: 182, name: "Bellossom", types: ["Grass"], hp: 75, atk: 90, def: 95, spd: 50, trait: "Danca" }, stone: "sun" }
+      ],
+      stone: "choice"
+    },
+    50: { into: { id: 51, name: "Dugtrio", types: ["Ground"], hp: 35, atk: 100, def: 50, spd: 120, trait: "Tunel" }, level: 26 },
+    54: { into: { id: 55, name: "Golduck", types: ["Water"], hp: 80, atk: 95, def: 78, spd: 85, trait: "Enxaqueca" }, level: 33 },
     58: { into: { id: 59, name: "Arcanine", types: ["Fire"], hp: 90, atk: 110, def: 80, spd: 95, trait: "Brasa" }, stone: "fire" },
+    60: { into: { id: 61, name: "Poliwhirl", types: ["Water"], hp: 65, atk: 65, def: 65, spd: 90, trait: "Bolhas" }, level: 25 },
+    61: {
+      options: [
+        { into: { id: 62, name: "Poliwrath", types: ["Water", "Fighting"], hp: 90, atk: 95, def: 95, spd: 70, trait: "Punho" }, stone: "water" },
+        { into: { id: 186, name: "Politoed", types: ["Water"], hp: 90, atk: 90, def: 75, spd: 70, trait: "Chuva" }, stone: "king" }
+      ],
+      stone: "choice"
+    },
     63: { into: { id: 64, name: "Kadabra", types: ["Psychic"], hp: 40, atk: 105, def: 35, spd: 105, trait: "Foco" }, level: 16 },
     64: { into: { id: 65, name: "Alakazam", types: ["Psychic"], hp: 55, atk: 135, def: 45, spd: 120, trait: "Foco" }, level: 36 },
     66: { into: { id: 67, name: "Machoke", types: ["Fighting"], hp: 80, atk: 100, def: 70, spd: 45, trait: "Punho" }, level: 28 },
+    67: { into: { id: 68, name: "Machamp", types: ["Fighting"], hp: 90, atk: 130, def: 80, spd: 55, trait: "Forca" }, level: 40 },
+    69: { into: { id: 70, name: "Weepinbell", types: ["Grass", "Poison"], hp: 65, atk: 90, def: 50, spd: 55, trait: "Cipo" }, level: 21 },
+    70: { into: { id: 71, name: "Victreebel", types: ["Grass", "Poison"], hp: 80, atk: 105, def: 65, spd: 70, trait: "Cipo" }, stone: "leaf" },
     74: { into: { id: 75, name: "Graveler", types: ["Rock", "Ground"], hp: 65, atk: 95, def: 115, spd: 35, trait: "Casca" }, level: 25 },
+    75: { into: { id: 76, name: "Golem", types: ["Rock", "Ground"], hp: 80, atk: 120, def: 130, spd: 45, trait: "Casca" }, level: 40 },
+    77: { into: { id: 78, name: "Rapidash", types: ["Fire"], hp: 65, atk: 100, def: 70, spd: 105, trait: "Galope" }, level: 40 },
+    81: { into: { id: 82, name: "Magneton", types: ["Electric", "Steel"], hp: 50, atk: 105, def: 95, spd: 70, trait: "Ima" }, level: 30 },
+    82: { into: { id: 462, name: "Magnezone", types: ["Electric", "Steel"], hp: 70, atk: 130, def: 115, spd: 60, trait: "Ima" }, stone: "thunder" },
+    88: { into: { id: 89, name: "Muk", types: ["Poison"], hp: 105, atk: 105, def: 75, spd: 50, trait: "Lodo" }, level: 38 },
+    90: { into: { id: 91, name: "Cloyster", types: ["Water", "Ice"], hp: 50, atk: 95, def: 180, spd: 70, trait: "Concha" }, stone: "water" },
     92: { into: { id: 93, name: "Haunter", types: ["Ghost", "Poison"], hp: 45, atk: 105, def: 45, spd: 95, trait: "Assombro" }, level: 25 },
+    93: { into: { id: 94, name: "Gengar", types: ["Ghost", "Poison"], hp: 60, atk: 130, def: 60, spd: 110, trait: "Assombro" }, level: 40 },
+    96: { into: { id: 97, name: "Hypno", types: ["Psychic"], hp: 85, atk: 83, def: 80, spd: 67, trait: "Hipnose" }, level: 26 },
+    98: { into: { id: 99, name: "Kingler", types: ["Water"], hp: 55, atk: 130, def: 115, spd: 75, trait: "Pinca" }, level: 28 },
+    100: { into: { id: 101, name: "Electrode", types: ["Electric"], hp: 60, atk: 80, def: 70, spd: 150, trait: "Estouro" }, level: 30 },
+    102: { into: { id: 103, name: "Exeggutor", types: ["Grass", "Psychic"], hp: 95, atk: 125, def: 85, spd: 55, trait: "Oraculo" }, stone: "leaf" },
+    104: { into: { id: 105, name: "Marowak", types: ["Ground"], hp: 60, atk: 80, def: 110, spd: 45, trait: "Osso" }, level: 28 },
+    109: { into: { id: 110, name: "Weezing", types: ["Poison"], hp: 65, atk: 90, def: 120, spd: 60, trait: "Gas" }, level: 35 },
+    111: { into: { id: 112, name: "Rhydon", types: ["Ground", "Rock"], hp: 105, atk: 130, def: 120, spd: 40, trait: "Chifre" }, level: 42 },
+    112: { into: { id: 464, name: "Rhyperior", types: ["Ground", "Rock"], hp: 115, atk: 140, def: 130, spd: 40, trait: "Terremoto" }, stone: "protector" },
+    120: { into: { id: 121, name: "Starmie", types: ["Water", "Psychic"], hp: 60, atk: 100, def: 85, spd: 115, trait: "Estrela" }, stone: "water" },
+    123: { into: { id: 212, name: "Scizor", types: ["Bug", "Steel"], hp: 70, atk: 130, def: 100, spd: 65, trait: "Corte Metal" }, stone: "metal" },
+    125: { into: { id: 466, name: "Electivire", types: ["Electric"], hp: 75, atk: 123, def: 67, spd: 95, trait: "Descarga" }, stone: "thunder" },
+    126: { into: { id: 467, name: "Magmortar", types: ["Fire"], hp: 75, atk: 125, def: 67, spd: 83, trait: "Magma" }, stone: "fire" },
     147: { into: { id: 148, name: "Dragonair", types: ["Dragon"], hp: 61, atk: 84, def: 65, spd: 70, trait: "Escalar" }, level: 30 },
     148: { into: { id: 149, name: "Dragonite", types: ["Dragon", "Flying"], hp: 91, atk: 134, def: 95, spd: 80, trait: "Escalar" }, level: 55 },
+    152: { into: { id: 153, name: "Bayleef", types: ["Grass"], hp: 60, atk: 62, def: 80, spd: 60, trait: "Folha" }, level: 16 },
+    153: { into: { id: 154, name: "Meganium", types: ["Grass"], hp: 80, atk: 82, def: 100, spd: 80, trait: "Folha Solar" }, level: 32 },
+    155: { into: { id: 156, name: "Quilava", types: ["Fire"], hp: 58, atk: 75, def: 58, spd: 80, trait: "Brasa" }, level: 14 },
+    156: { into: { id: 157, name: "Typhlosion", types: ["Fire"], hp: 78, atk: 109, def: 78, spd: 100, trait: "Erupcao" }, level: 36 },
+    158: { into: { id: 159, name: "Croconaw", types: ["Water"], hp: 65, atk: 80, def: 80, spd: 58, trait: "Mordida" }, level: 18 },
+    159: { into: { id: 160, name: "Feraligatr", types: ["Water"], hp: 85, atk: 105, def: 100, spd: 78, trait: "Mandibula" }, level: 30 },
+    252: { into: { id: 253, name: "Grovyle", types: ["Grass"], hp: 50, atk: 85, def: 45, spd: 95, trait: "Agilidade" }, level: 16 },
+    253: { into: { id: 254, name: "Sceptile", types: ["Grass"], hp: 70, atk: 105, def: 65, spd: 120, trait: "Lamina" }, level: 36 },
+    255: { into: { id: 256, name: "Combusken", types: ["Fire", "Fighting"], hp: 60, atk: 85, def: 60, spd: 55, trait: "Chama" }, level: 16 },
+    256: { into: { id: 257, name: "Blaziken", types: ["Fire", "Fighting"], hp: 80, atk: 120, def: 70, spd: 80, trait: "Impeto" }, level: 36 },
+    258: { into: { id: 259, name: "Marshtomp", types: ["Water", "Ground"], hp: 70, atk: 85, def: 70, spd: 50, trait: "Lama" }, level: 16 },
+    259: { into: { id: 260, name: "Swampert", types: ["Water", "Ground"], hp: 100, atk: 110, def: 90, spd: 60, trait: "Pantano" }, level: 36 },
+    387: { into: { id: 388, name: "Grotle", types: ["Grass"], hp: 75, atk: 89, def: 85, spd: 36, trait: "Raiz" }, level: 18 },
+    388: { into: { id: 389, name: "Torterra", types: ["Grass", "Ground"], hp: 95, atk: 109, def: 105, spd: 56, trait: "Continente" }, level: 32 },
+    390: { into: { id: 391, name: "Monferno", types: ["Fire", "Fighting"], hp: 64, atk: 78, def: 52, spd: 81, trait: "Impeto" }, level: 14 },
+    391: { into: { id: 392, name: "Infernape", types: ["Fire", "Fighting"], hp: 76, atk: 104, def: 71, spd: 108, trait: "Punho Flamejante" }, level: 36 },
+    393: { into: { id: 394, name: "Prinplup", types: ["Water"], hp: 64, atk: 81, def: 68, spd: 50, trait: "Orgulho" }, level: 16 },
+    394: { into: { id: 395, name: "Empoleon", types: ["Water", "Steel"], hp: 84, atk: 111, def: 88, spd: 60, trait: "Imperador" }, level: 36 },
+    495: { into: { id: 496, name: "Servine", types: ["Grass"], hp: 60, atk: 60, def: 75, spd: 83, trait: "Elegancia" }, level: 17 },
+    496: { into: { id: 497, name: "Serperior", types: ["Grass"], hp: 75, atk: 75, def: 95, spd: 113, trait: "Nobreza" }, level: 36 },
+    498: { into: { id: 499, name: "Pignite", types: ["Fire", "Fighting"], hp: 90, atk: 93, def: 55, spd: 55, trait: "Carga" }, level: 17 },
+    499: { into: { id: 500, name: "Emboar", types: ["Fire", "Fighting"], hp: 110, atk: 123, def: 65, spd: 65, trait: "Investida" }, level: 36 },
+    501: { into: { id: 502, name: "Dewott", types: ["Water"], hp: 75, atk: 75, def: 60, spd: 60, trait: "Concha" }, level: 17 },
+    502: { into: { id: 503, name: "Samurott", types: ["Water"], hp: 95, atk: 108, def: 85, spd: 70, trait: "Lamina" }, level: 36 },
+    650: { into: { id: 651, name: "Quilladin", types: ["Grass"], hp: 61, atk: 78, def: 95, spd: 57, trait: "Casca" }, level: 16 },
+    651: { into: { id: 652, name: "Chesnaught", types: ["Grass", "Fighting"], hp: 88, atk: 107, def: 122, spd: 64, trait: "Escudo" }, level: 36 },
+    653: { into: { id: 654, name: "Braixen", types: ["Fire"], hp: 59, atk: 85, def: 58, spd: 73, trait: "Mente" }, level: 16 },
+    654: { into: { id: 655, name: "Delphox", types: ["Fire", "Psychic"], hp: 75, atk: 114, def: 72, spd: 104, trait: "Oraculo" }, level: 36 },
+    656: { into: { id: 657, name: "Frogadier", types: ["Water"], hp: 54, atk: 83, def: 52, spd: 97, trait: "Ninja" }, level: 16 },
+    657: { into: { id: 658, name: "Greninja", types: ["Water", "Dark"], hp: 72, atk: 108, def: 67, spd: 122, trait: "Sombra" }, level: 36 },
+    722: { into: { id: 723, name: "Dartrix", types: ["Grass", "Flying"], hp: 78, atk: 75, def: 75, spd: 52, trait: "Pluma" }, level: 17 },
+    723: { into: { id: 724, name: "Decidueye", types: ["Grass", "Ghost"], hp: 78, atk: 107, def: 75, spd: 70, trait: "Arqueiro" }, level: 34 },
+    725: { into: { id: 726, name: "Torracat", types: ["Fire"], hp: 65, atk: 85, def: 50, spd: 90, trait: "Garra" }, level: 17 },
+    726: { into: { id: 727, name: "Incineroar", types: ["Fire", "Dark"], hp: 95, atk: 115, def: 90, spd: 60, trait: "Intimidar" }, level: 34 },
+    728: { into: { id: 729, name: "Brionne", types: ["Water"], hp: 60, atk: 91, def: 69, spd: 50, trait: "Cancao" }, level: 17 },
+    729: { into: { id: 730, name: "Primarina", types: ["Water", "Fairy"], hp: 80, atk: 126, def: 74, spd: 60, trait: "Sereia" }, level: 34 },
+    810: { into: { id: 811, name: "Thwackey", types: ["Grass"], hp: 70, atk: 85, def: 70, spd: 80, trait: "Ritmo" }, level: 16 },
+    811: { into: { id: 812, name: "Rillaboom", types: ["Grass"], hp: 100, atk: 125, def: 90, spd: 85, trait: "Tambor" }, level: 35 },
+    813: { into: { id: 814, name: "Raboot", types: ["Fire"], hp: 65, atk: 86, def: 60, spd: 94, trait: "Arranque" }, level: 16 },
+    814: { into: { id: 815, name: "Cinderace", types: ["Fire"], hp: 80, atk: 116, def: 75, spd: 119, trait: "Artilheiro" }, level: 35 },
+    816: { into: { id: 817, name: "Drizzile", types: ["Water"], hp: 65, atk: 85, def: 55, spd: 90, trait: "Disparo" }, level: 16 },
+    817: { into: { id: 818, name: "Inteleon", types: ["Water"], hp: 70, atk: 125, def: 65, spd: 120, trait: "Mira" }, level: 35 },
+    906: { into: { id: 907, name: "Floragato", types: ["Grass"], hp: 61, atk: 80, def: 63, spd: 83, trait: "Flor" }, level: 16 },
+    907: { into: { id: 908, name: "Meowscarada", types: ["Grass", "Dark"], hp: 76, atk: 110, def: 70, spd: 123, trait: "Mascara" }, level: 36 },
+    909: { into: { id: 910, name: "Crocalor", types: ["Fire"], hp: 81, atk: 75, def: 78, spd: 49, trait: "Fornalha" }, level: 16 },
+    910: { into: { id: 911, name: "Skeledirge", types: ["Fire", "Ghost"], hp: 104, atk: 110, def: 100, spd: 66, trait: "Cancao Flamejante" }, level: 36 },
+    912: { into: { id: 913, name: "Quaxwell", types: ["Water"], hp: 70, atk: 85, def: 65, spd: 65, trait: "Passo" }, level: 16 },
+    913: { into: { id: 914, name: "Quaquaval", types: ["Water", "Fighting"], hp: 85, atk: 120, def: 80, spd: 85, trait: "Danca" }, level: 36 },
     133: {
       options: [
         { into: { id: 134, name: "Vaporeon", types: ["Water"], hp: 130, atk: 80, def: 70, spd: 65, trait: "Absorver Agua" }, stone: "water" },
@@ -427,6 +533,7 @@
     { type: "question", label: "Evento", icon: "?", sprite: "question", copy: "Evento aleatório de risco/recompensa." },
     { type: "move_tutor", label: "Tutor", icon: "M", sprite: "tm", copy: "Desbloqueia habilidade ou move." },
     { type: "stone", label: "Pedra", icon: "E", sprite: "stone", copy: "Força evolução compatível." },
+    { type: "legendary", label: "Lendario", icon: "MB", sprite: "masterball", copy: "Uma Master Ball desperta um lendario aleatorio." },
     { type: "camp", label: "Centro", icon: "+", sprite: "center", copy: "Cura o time e reduz risco." },
     { type: "train", label: "Treino", icon: "T", sprite: "npc", copy: "Fortalece um membro." }
   ];
@@ -874,8 +981,8 @@
     const aliveTeam = state.team.filter((p) => p.currentHp > 0);
     const recipients = aliveTeam.length ? aliveTeam : state.team;
     const teamAverage = averageTeamLevel();
-    const kindMultiplier = boss ? 2.25 : state.battle?.npc ? 1.35 : 1;
-    const base = 46 + enemy.level * (boss ? 14 : state.battle?.npc ? 9 : 7);
+    const kindMultiplier = boss ? 2.25 : state.battle?.legendary ? 1.8 : state.battle?.npc ? 1.35 : 1;
+    const base = 46 + enemy.level * (boss ? 14 : state.battle?.legendary ? 12 : state.battle?.npc ? 9 : 7);
     const total = Math.round(base * kindMultiplier);
     const sharedXp = Math.round(total / Math.max(1, recipients.length));
     let levels = 0;
@@ -1376,6 +1483,9 @@
     if (node.sprite === "stone") {
       return `<img class="node-sprite node-item animated-item" src="${ITEM_BASE}fire-stone.png" alt="Pedra">`;
     }
+    if (node.sprite === "masterball") {
+      return `<img class="node-sprite node-item animated-item" src="${ITEM_BASE}master-ball.png" alt="Master Ball">`;
+    }
     if (node.sprite === "center") return trainerNode("pokemoncenterlady", "Centro Pokémon", "center-trainer-node");
     if (node.sprite === "npc") {
       const npcs = gymNpcs(floor);
@@ -1530,6 +1640,9 @@
       const centerBranch = Math.floor(Math.random() * 2);
       const sideTypes = ["battle", "item", "question", "move_tutor"];
       return [0, 1].map((branch) => {
+        if (arena.badge >= 5 && branch !== centerBranch) {
+          return { type: "legendary", label: "Lendario", icon: "MB", sprite: "masterball", copy: "Uma Master Ball chama um lendario aleatorio antes do lider.", branchSeed: branch };
+        }
         if (branch === centerBranch) {
           return { type: "camp", label: "Centro", icon: "+", sprite: "center", copy: "Cura o time e reduz risco antes do líder.", branchSeed: branch };
         }
@@ -1620,7 +1733,7 @@
     state.floor = floor;
     state.branch = branch;
     if (node.type === "boss" || ARENAS.some((arena) => arena.floorTo === floor)) return startBattle({ ...node, type: "boss" });
-    if (node.type === "battle" || node.type === "grass" || node.type === "boss") await startBattle(node);
+    if (node.type === "battle" || node.type === "grass" || node.type === "boss" || node.type === "legendary") await startBattle(node);
     if (node.type === "catch") await showCatch();
     if (node.type === "item") showItem();
     if (node.type === "question") showRandomEvent();
@@ -1784,6 +1897,19 @@
     });
   }
 
+  function createLegendaryTeam(node = {}) {
+    const seed = (state.floor * 17 + (node.branchSeed || 0) * 31 + state.badges.length * 13 + Math.floor(Math.random() * LEGENDARY_POOL.length)) % LEGENDARY_POOL.length;
+    const base = LEGENDARY_POOL[seed];
+    const enemy = maybeMarkShiny(cloneMon(base, enemyLevel("boss", 0)));
+    enemy.maxHp = Math.round(enemy.maxHp * 1.55);
+    enemy.currentHp = enemy.maxHp;
+    enemy.leader = "Master Ball";
+    enemy.trainer = null;
+    enemy.teamIndex = 0;
+    enemy.legendary = true;
+    return [enemy];
+  }
+
   async function createNpcTeam(node) {
     const npcs = gymNpcs(state.floor);
     const npc = npcs[(state.floor + (node.branchSeed || 0)) % Math.max(1, npcs.length)];
@@ -1805,13 +1931,16 @@
   async function startBattle(node) {
     if (!activePlayer()) return endRun(false);
     const bossBattle = node.type === "boss" || ARENAS.some((arena) => arena.floorTo === state.floor);
+    const legendaryBattle = node.type === "legendary";
     const npcBattle = node.type === "battle";
     const npcData = npcBattle ? await createNpcTeam(node) : null;
-    const enemyTeam = bossBattle ? createLeaderTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
+    const enemyTeam = bossBattle ? createLeaderTeam(node) : legendaryBattle ? createLegendaryTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
     registerDexSeenMany(enemyTeam);
-    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: bossBattle, npc: npcBattle, trainerName: npcData?.trainerName || null, trainerSpriteId: npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
+    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: bossBattle, legendary: legendaryBattle, npc: npcBattle, trainerName: npcData?.trainerName || null, trainerSpriteId: npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
     $("battle-title").textContent = node.type === "boss"
       ? `${state.battle.enemy.leader} enviou ${state.battle.enemy.name}`
+      : node.type === "legendary"
+        ? `A Master Ball revelou ${state.battle.enemy.name}`
       : node.type === "battle"
         ? `${state.battle.trainerName} desafiou você`
         : `${state.battle.enemy.name} apareceu no mato`;
@@ -1830,7 +1959,7 @@
     const player = activePlayer() || playerTeam[state.battle.playerIndex || 0] || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
     if (!player) return;
     renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player");
-    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy");
+    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy");
     animateRenderedHpBars();
     $("move-grid").innerHTML = `
       <div class="battle-auto-status">
@@ -2810,6 +2939,8 @@
       p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.35));
       p.energy = Math.min(4, p.energy + 2);
       state.threat = Math.min(3, state.threat + 0.5);
+      const evolved = maybeAutoEvolve(p);
+      if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
       renderMap();
       save();
     }
