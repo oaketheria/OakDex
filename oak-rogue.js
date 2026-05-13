@@ -379,7 +379,19 @@
     92: { into: { id: 93, name: "Haunter", types: ["Ghost", "Poison"], hp: 45, atk: 105, def: 45, spd: 95, trait: "Assombro" }, level: 25 },
     147: { into: { id: 148, name: "Dragonair", types: ["Dragon"], hp: 61, atk: 84, def: 65, spd: 70, trait: "Escalar" }, level: 30 },
     148: { into: { id: 149, name: "Dragonite", types: ["Dragon", "Flying"], hp: 91, atk: 134, def: 95, spd: 80, trait: "Escalar" }, level: 55 },
-    133: { into: { id: 134, name: "Vaporeon", types: ["Water"], hp: 130, atk: 80, def: 70, spd: 65, trait: "Adaptar" }, stone: "water" },
+    133: {
+      options: [
+        { into: { id: 134, name: "Vaporeon", types: ["Water"], hp: 130, atk: 80, def: 70, spd: 65, trait: "Absorver Agua" }, stone: "water" },
+        { into: { id: 135, name: "Jolteon", types: ["Electric"], hp: 65, atk: 110, def: 60, spd: 130, trait: "Voltagem" }, stone: "thunder" },
+        { into: { id: 136, name: "Flareon", types: ["Fire"], hp: 65, atk: 130, def: 70, spd: 65, trait: "Chama" }, stone: "fire" },
+        { into: { id: 196, name: "Espeon", types: ["Psychic"], hp: 65, atk: 130, def: 60, spd: 110, trait: "Sincronia" }, stone: "sun" },
+        { into: { id: 197, name: "Umbreon", types: ["Dark"], hp: 95, atk: 65, def: 110, spd: 65, trait: "Muralha" }, stone: "moon" },
+        { into: { id: 470, name: "Leafeon", types: ["Grass"], hp: 65, atk: 110, def: 130, spd: 95, trait: "Folhagem" }, stone: "leaf" },
+        { into: { id: 471, name: "Glaceon", types: ["Ice"], hp: 65, atk: 130, def: 110, spd: 65, trait: "Nevasca" }, stone: "ice" },
+        { into: { id: 700, name: "Sylveon", types: ["Fairy"], hp: 95, atk: 110, def: 65, spd: 60, trait: "Encanto" }, stone: "shiny" }
+      ],
+      stone: "choice"
+    },
     215: { into: { id: 461, name: "Weavile", types: ["Dark", "Ice"], hp: 70, atk: 120, def: 65, spd: 125, trait: "Emboscada" }, stone: "dark" }
   };
 
@@ -645,8 +657,18 @@
     const chain = [p];
     let current = p;
     let guard = 0;
-    while (EVOLUTIONS[current.id]?.into && guard < 4) {
-      current = { ...EVOLUTIONS[current.id].into, level: EVOLUTIONS[chain[chain.length - 1].id].level };
+    while ((EVOLUTIONS[current.id]?.into || EVOLUTIONS[current.id]?.options?.length) && guard < 4) {
+      const evo = EVOLUTIONS[current.id];
+      if (evo.options?.length) {
+        return `<div class="rogue-dex-evo">${[p, ...evo.options.map((option) => option.into)].map((mon, index) => `
+          <span>
+            <img src="${animated(mon)}" alt="${mon.name}" onerror="this.src='${mini(mon)}'">
+            <strong>${baseDexName(mon)}</strong>
+            ${index > 0 ? `<small>Escolha</small>` : ""}
+          </span>
+        `).join("")}</div>`;
+      }
+      current = { ...evo.into, level: evo.level };
       chain.push(current);
       guard += 1;
     }
@@ -2189,18 +2211,17 @@
   async function showCatch() {
     const picks = (await recruitPoolExpanded(3)).map((p) => maybeMarkShiny(cloneMon(p, 4 + state.floor * 2)));
     registerDexSeenMany(picks);
+    const teamIsFull = state.team.length >= 6;
     $("choice-kicker").textContent = "Recrutamento";
-    $("choice-title").textContent = state.team.length >= 6 ? "Time completo" : "Um aliado pode entrar";
-    $("choice-copy").textContent = state.team.length >= 6
-      ? "Seu time já tem 6 Pokémon. Siga a rota sem recrutar agora."
+    $("choice-title").textContent = teamIsFull ? "Time completo" : "Um aliado pode entrar";
+    $("choice-copy").textContent = teamIsFull
+      ? "Seu time já tem 6 Pokémon. Escolha um aliado novo para trocar ou siga a rota."
       : "Tipos repetidos ativam sinergias, mas cobertura de tipo salva runs.";
-    $("choice-grid").innerHTML = state.team.length >= 6
-      ? `<button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Limite de 6 Pokémon atingido.</small></button>`
-      : picks.map((p, i) => `
+    const recruitChoices = picks.map((p, i) => `
       <button class="choice-button pokemon-choice" type="button" data-catch="${i}">
         <img src="${animated(p)}" alt="" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>Lv.${p.level} · ${p.trait}</small>
+        <small>${teamIsFull ? "Trocar por alguém do time" : `Lv.${p.level} · ${p.trait}`}</small>
         ${renderTypeChips(p.types)}
         <span class="choice-hover-detail">
           <span>${p.trait}</span>
@@ -2209,8 +2230,48 @@
           <small>HP ${p.maxHp}/${p.maxHp} · Energia ${p.energy}</small>
         </span>
       </button>
-    `).join("") || `<button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Nenhum Pokémon novo apareceu.</small></button>`;
+    `).join("");
+    $("choice-grid").innerHTML = recruitChoices
+      ? `${recruitChoices}
+        <button class="choice-button" type="button" data-action="map">
+          <strong>Continuar rota</strong>
+          <small>${teamIsFull ? "Manter seu time atual." : "Pular este recrutamento."}</small>
+        </button>`
+      : `<button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Nenhum Pokémon novo apareceu.</small></button>`;
     state.offer = picks;
+    show("choice");
+  }
+
+  function showRecruitReplace(mon) {
+    if (!mon) return renderMap();
+    state.pendingRecruit = mon;
+    $("choice-kicker").textContent = "Troca de time";
+    $("choice-title").textContent = `Recrutar ${mon.name}`;
+    $("choice-copy").textContent = "Escolha qual Pokémon sai do time. O novo aliado entra com HP cheio e mantém o nível da oferta.";
+    $("choice-grid").innerHTML = state.team.map((p, i) => `
+      <button class="choice-button pokemon-choice" type="button" data-replace-recruit="${i}">
+        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
+        <strong>${p.name}</strong>
+        <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
+        ${renderTypeChips(p.types)}
+        <span class="choice-hover-detail">
+          <span>Sai do time</span>
+          ${statPreviewWithItem(p, p.heldItem)}
+          ${statBars(p)}
+          <small>${p.heldItem ? `Item: ${p.heldItem.name}` : "Sem item equipado"}</small>
+        </span>
+      </button>
+    `).join("") + `
+      <button class="choice-button pokemon-choice" type="button" data-action="catch">
+        <img src="${animated(mon)}" alt="${mon.name}" onerror="this.src='${mini(mon)}'">
+        <strong>Voltar</strong>
+        <small>Escolher outro recruta.</small>
+      </button>
+      <button class="choice-button" type="button" data-action="map">
+        <strong>Continuar rota</strong>
+        <small>Cancelar recrutamento.</small>
+      </button>
+    `;
     show("choice");
   }
 
@@ -2385,7 +2446,12 @@
         state.team.forEach((p) => { if (p.types.some((t) => counts[t] >= 2)) p.energy = Math.min(4, p.energy + 2); });
       } },
       { name: "Mercador estranho", text: "Recebe uma pedra de evolucao improvisada.", run: () => {
-        const target = state.team.find((p) => EVOLUTIONS[p.id]);
+        const targetIndex = state.team.findIndex((p) => EVOLUTIONS[p.id]);
+        const target = state.team[targetIndex];
+        if (target && evolutionOptionsFor(target).length > 1) {
+          showEvolutionChoice(targetIndex);
+          return "evolution-choice";
+        }
         if (target) evolvePokemon(target);
       } },
       { name: "Chuva de faíscas", text: "Todos aprendem Ataque Rapido elemental.", run: () => {
@@ -2395,7 +2461,8 @@
       } }
     ];
     const event = events[Math.floor(Math.random() * events.length)];
-    event.run();
+    const eventResult = event.run();
+    if (eventResult === "evolution-choice") return;
     const evolution = state.pendingEvolutions?.shift();
     if (evolution) return showEvolutionPopup(evolution);
     $("choice-kicker").textContent = "Evento aleatório";
@@ -2476,22 +2543,67 @@
     } else {
       $("choice-grid").innerHTML = state.team.map((p, i) => {
         const evo = EVOLUTIONS[p.id];
+        const options = evo?.options || [];
         return `<button class="choice-button" type="button" data-evolve="${i}" ${evo ? "" : "disabled"}>
           <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
           <strong>${p.name}</strong>
-          <small>${evo ? `Evoluir para ${evo.into.name}` : "Sem evolucao disponivel"}</small>
+          <small>${options.length ? "Escolher evolução" : evo ? `Evoluir para ${evo.into.name}` : "Sem evolucao disponivel"}</small>
         </button>`;
       }).join("");
     }
     show("choice");
   }
 
-  function evolvePokemon(p) {
+  function evolutionOptionsFor(p) {
+    const evo = EVOLUTIONS[p?.id];
+    if (!evo) return [];
+    return evo.options?.length ? evo.options : [evo];
+  }
+
+  function showEvolutionChoice(index) {
+    const p = state.team[index];
+    const options = evolutionOptionsFor(p);
+    if (!p || options.length <= 1) return false;
+    state.pendingEvolutionChoiceIndex = index;
+    $("choice-kicker").textContent = "Evolução";
+    $("choice-title").textContent = `Escolha a evolução de ${p.name}`;
+    $("choice-copy").textContent = "Cada forma muda tipo, atributos e golpes disponíveis.";
+    $("choice-grid").innerHTML = options.map((option, i) => {
+      const evolved = { ...p, ...option.into, level: p.level || 1 };
+      evolved.maxHp = hpMax(evolved);
+      evolved.currentHp = evolved.maxHp;
+      evolved.moves = legalMovesFor(evolved);
+      return `
+        <button class="choice-button pokemon-choice" type="button" data-evolution-option="${i}">
+          <img src="${animated(evolved)}" alt="${evolved.name}" onerror="this.src='${mini(evolved)}'">
+          <strong>${evolved.name}</strong>
+          <small>${evolved.trait}</small>
+          ${renderTypeChips(evolved.types)}
+          <span class="choice-hover-detail">
+            <span>${evolved.trait}</span>
+            ${statBars(evolved)}
+            <small>HP ${evolved.maxHp} · Energia ${evolved.energy || p.energy || 2}</small>
+          </span>
+        </button>
+      `;
+    }).join("") + `
+      <button class="choice-button" type="button" data-action="map">
+        <strong>Cancelar</strong>
+        <small>Voltar para a rota sem evoluir.</small>
+      </button>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-choice-modal");
+    return true;
+  }
+
+  function evolvePokemon(p, optionIndex = 0) {
     const evo = EVOLUTIONS[p.id];
     if (!evo) return false;
+    const option = evo.options?.[optionIndex] || evo;
     const oldHpPct = p.maxHp ? p.currentHp / p.maxHp : 1;
     const from = JSON.parse(JSON.stringify(p));
-    Object.assign(p, JSON.parse(JSON.stringify(evo.into)));
+    Object.assign(p, JSON.parse(JSON.stringify(option.into)));
     p.level = p.level || 1;
     p.maxHp = hpMax(p);
     p.currentHp = Math.max(1, Math.ceil(p.maxHp * oldHpPct));
@@ -2525,10 +2637,24 @@
   }
 
   function addPokemon(mon) {
-    if (!mon || state.team.length >= 6 || state.team.some((p) => p.id === mon.id || p.name === mon.name)) return renderMap();
+    if (!mon || state.team.some((p) => p.id === mon.id || p.name === mon.name)) return renderMap();
+    if (state.team.length >= 6) return showRecruitReplace(mon);
     registerDexSeen(mon);
     mon.runId ||= uid("mon");
     state.team.push(mon);
+    const evolved = maybeAutoEvolve(mon);
+    if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
+    renderMap();
+    save();
+  }
+
+  function replacePokemon(index) {
+    const mon = state.pendingRecruit;
+    if (!mon || index < 0 || index >= state.team.length || state.team.some((p, i) => i !== index && (p.id === mon.id || p.name === mon.name))) return renderMap();
+    registerDexSeen(mon);
+    mon.runId ||= uid("mon");
+    state.team.splice(index, 1, mon);
+    state.pendingRecruit = null;
     const evolved = maybeAutoEvolve(mon);
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
     renderMap();
@@ -2572,6 +2698,7 @@
     if (button.dataset.move) playerMove(button.dataset.move);
     if (button.dataset.action === "map") {
       if (state.screen === "battle" && state.battle && !state.battle.boss) state.battle = null;
+      state.pendingEvolutionChoiceIndex = null;
       renderMap();
     }
     if (button.dataset.action === "next-evolution") {
@@ -2581,7 +2708,9 @@
       save();
     }
     if (button.dataset.action === "move-tutor") showMoveTutor();
+    if (button.dataset.action === "catch") showCatch();
     if (button.dataset.catch) addPokemon(state.offer[Number(button.dataset.catch)]);
+    if (button.dataset.replaceRecruit) replacePokemon(Number(button.dataset.replaceRecruit));
     if (button.dataset.item) {
       showEquipItem({ ...state.offer[Number(button.dataset.item)] });
     }
@@ -2618,8 +2747,20 @@
       save();
     }
     if (button.dataset.evolve) {
-      const p = state.team[Number(button.dataset.evolve)];
+      const index = Number(button.dataset.evolve);
+      const p = state.team[index];
+      if (p && evolutionOptionsFor(p).length > 1) return showEvolutionChoice(index);
       if (p) evolvePokemon(p);
+      const evolution = state.pendingEvolutions?.shift();
+      if (evolution) return showEvolutionPopup(evolution);
+      renderMap();
+      save();
+    }
+    if (button.dataset.evolutionOption) {
+      const index = Number(state.pendingEvolutionChoiceIndex);
+      const p = state.team[index];
+      if (p) evolvePokemon(p, Number(button.dataset.evolutionOption));
+      state.pendingEvolutionChoiceIndex = null;
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
       renderMap();
