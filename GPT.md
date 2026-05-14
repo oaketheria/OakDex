@@ -203,6 +203,7 @@ Funcionalidades principais:
 - Cards de batalha devem mostrar os tipos do Pokémon com marcadores compactos, sem aumentar o card, deslocar sprites ou tirar o VS do centro.
 - A seleção de torre na tela inicial usa carrossel com setas e arraste horizontal.
 - Temporariamente, somente a Torre Curta fica disponível; as demais torres devem permanecer visíveis, bloqueadas e sem iniciar ao clicar.
+- Eventos da torre podem oferecer tutor técnico; na torre, apenas Pokémon vivos devem ser considerados para aprender moves.
 - Mapa ramificado por arenas, oito ginásios e Liga.
 - Combate automático com velocidade, energia, moves, itens, status, XP, evolução e troca automática de ativo.
 - SFX do Oak Rogue usam Web Audio local para início de batalha, golpes, queda e evolução.

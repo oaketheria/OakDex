@@ -3615,6 +3615,7 @@
       <button class="choice-button" type="button" data-tower-event="heal"><strong>Fonte segura</strong><small>Cura 45% do HP do time vivo.</small></button>
       <button class="choice-button" type="button" data-tower-event="relic"><strong>Baú de relíquia</strong><small>Escolha 1 entre 3 relíquias.</small></button>
       <button class="choice-button" type="button" data-tower-event="recruit"><strong>Sinal aliado</strong><small>Escolha 1 entre 3 Pokémon para recrutar.</small></button>
+      <button class="choice-button" type="button" data-tower-event="tutor"><strong>Tutor técnico</strong><small>Ensine um move compatível a um Pokémon vivo.</small></button>
       <button class="choice-button" type="button" data-tower-event="risk"><strong>Pacto de risco</strong><small>Próximo inimigo mais forte, time ganha nível e energia.</small></button>
     `;
     show("choice");
@@ -3636,6 +3637,7 @@
     }
     if (type === "relic") return showItem();
     if (type === "recruit") return showCatch();
+    if (type === "tutor") return showMoveTutor();
     if (type === "risk") {
       state.threat = Math.min(3, state.threat + 0.45);
       state.team.forEach((p) => {
@@ -3722,10 +3724,11 @@
   }
 
   function showMoveTutor() {
+    const tutorTeam = state.tower?.active ? state.team.filter((p) => p.currentHp > 0) : state.team;
     const fallbackMoves = MOVES
       .filter((move) => !move.type || move.type === "Normal")
       .map((move) => ({ ...move, level: 1 }));
-    const teamTypes = [...new Set(state.team.flatMap((p) => p.types || []))];
+    const teamTypes = [...new Set(tutorTeam.flatMap((p) => p.types || []))];
     const typedPool = teamTypes.flatMap((type) => [
       ...(TYPE_MOVES[type] || []),
       ...MOVES.filter((move) => move.type === type)
@@ -3735,12 +3738,12 @@
       if (!uniqueTyped.some((entry) => entry.id === move.id)) uniqueTyped.push({ ...move });
     });
     let moves = uniqueTyped
-      .filter((move) => state.team.some((p) => canLearnMove(p, move)))
+      .filter((move) => tutorTeam.some((p) => canLearnMove(p, move)))
       .sort(() => Math.random() - 0.5)
       .slice(0, 3);
     if (moves.length < 3) {
       const filler = fallbackMoves
-        .filter((move) => state.team.some((p) => canLearnMove(p, move)) && !moves.some((entry) => entry.id === move.id))
+        .filter((move) => tutorTeam.some((p) => canLearnMove(p, move)) && !moves.some((entry) => entry.id === move.id))
         .sort(() => Math.random() - 0.5)
         .slice(0, 3 - moves.length);
       moves = [...moves, ...filler];
@@ -3754,27 +3757,28 @@
         <img class="animated-item" src="${tmSprite(move)}" alt="${move.name}" onerror="this.src='${ITEM_BASE}tm-normal.png'">
         <strong>${move.name}</strong>
         <span class="move-cd-pill">CD ${moveCooldown(move)}</span>
-        <small>${move.type || "Tipo do usuario"} · poder ${Math.round(move.power * 100)} · custo ${move.cost}</small>
+        <small>${move.type || "Tipo do usuário"} · poder ${Math.round(move.power * 100)} · custo ${move.cost}</small>
       </button>
-    `).join("") : `<button class="choice-button item-choice" type="button" data-action="map"><img class="animated-item" src="${ITEM_BASE}tm-normal.png" alt=""><strong>Continuar rota</strong><small>Nenhum move novo compatível agora.</small></button>`;
+    `).join("") : `<button class="choice-button item-choice" type="button" data-action="${state.tower?.active ? "tower-next" : "map"}"><img class="animated-item" src="${ITEM_BASE}tm-normal.png" alt=""><strong>${state.tower?.active ? "Continuar subida" : "Continuar rota"}</strong><small>Nenhum move novo compatível agora.</small></button>`;
     show("choice");
   }
 
   function showMoveLearner(move) {
     state.pendingMove = move;
-    const canAnyLearn = state.team.some((p) => canLearnMove(p, move));
+    const canLearnFromTutor = (p) => (!state.tower?.active || p.currentHp > 0) && canLearnMove(p, move);
+    const canAnyLearn = state.team.some((p) => canLearnFromTutor(p));
     $("choice-kicker").textContent = "Aprender move";
     $("choice-title").textContent = move.name;
     $("choice-copy").textContent = canAnyLearn ? "Escolha quem aprende. Cada Pokémon pode carregar até 4 moves." : "Nenhum Pokémon do time pode aprender esse move agora.";
     $("choice-grid").innerHTML = state.team.map((p, i) => `
-      <button class="choice-button" type="button" data-learn="${i}" ${canLearnMove(p, move) ? "" : "disabled"}>
+      <button class="choice-button" type="button" data-learn="${i}" ${canLearnFromTutor(p) ? "" : "disabled"}>
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>${canLearnMove(p, move) ? (p.moves || []).map((m) => m.name).join(", ") : "Tipo ou nível incompatível"}</small>
+        <small>${canLearnFromTutor(p) ? (p.moves || []).map((m) => m.name).join(", ") : p.currentHp <= 0 && state.tower?.active ? "Derrotado na torre" : "Tipo ou nível incompatível"}</small>
       </button>
     `).join("") + (canAnyLearn ? "" : `
       <button class="choice-button" type="button" data-action="move-tutor"><strong>Escolher outro move</strong><small>Voltar para o tutor.</small></button>
-      <button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Pular este tutor.</small></button>
+      <button class="choice-button" type="button" data-action="${state.tower?.active ? "tower-next" : "map"}"><strong>${state.tower?.active ? "Continuar subida" : "Continuar rota"}</strong><small>Pular este tutor.</small></button>
     `);
     show("choice");
   }
@@ -4078,12 +4082,16 @@
     }
     if (button.dataset.learn) {
       const p = state.team[Number(button.dataset.learn)];
-      if (p && state.pendingMove && canLearnMove(p, state.pendingMove)) {
+      if (p && state.pendingMove && (!state.tower?.active || p.currentHp > 0) && canLearnMove(p, state.pendingMove)) {
         p.moves = p.moves || legalMovesFor(p);
         const move = { ...state.pendingMove, type: state.pendingMove.type || p.types[0] };
         if (p.moves.length >= 4) p.moves.shift();
         if (!p.moves.some((entry) => entry.id === move.id)) p.moves.push(move);
         state.pendingMove = null;
+      }
+      if (state.tower?.active) {
+        save();
+        return towerNextStep();
       }
       renderMap();
       save();

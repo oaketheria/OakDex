@@ -160,6 +160,7 @@ Recursos:
 - Cards de batalha exibem os tipos do Pokémon como marcadores compactos, sem alterar o tamanho do card nem o alinhamento do VS.
 - A seleção de torre na tela inicial usa carrossel com setas e arraste horizontal.
 - Por enquanto, apenas a Torre Curta fica disponível; as demais torres aparecem bloqueadas no carrossel.
+- Eventos da torre incluem tutor técnico para ensinar moves compatíveis aos Pokémon vivos antes do próximo andar.
 - Sons via Web Audio para início de batalha, golpes, queda de Pokémon e evolução.
 - Animações de batalha ficam contidas no modal para não criar scroll temporário na página.
 - Relíquias separadas por efeito: dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia e sobrevivência.
