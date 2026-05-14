@@ -156,6 +156,10 @@ Recursos:
 - No Nuzlocke, Pokémon derrotados saem imediatamente do time e deixam de ocupar espaço no popup de batalha.
 - Baixas do Nuzlocke ficam registradas em `fallenTeam` e voltam a aparecer na tela de Run perdida.
 - Combate automático com ordem por velocidade, energia, moves, itens equipados, críticos, efeitos de status e troca automática do ativo.
+- Batalha da torre renderiza apenas o Pokémon ativo em campo; o restante do time aparece como Pokébolas animadas, com Pokébolas cinzas para derrotados.
+- Cards de batalha exibem os tipos do Pokémon como marcadores compactos, sem alterar o tamanho do card nem o alinhamento do VS.
+- A seleção de torre na tela inicial usa carrossel com setas e arraste horizontal.
+- Por enquanto, apenas a Torre Curta fica disponível; as demais torres aparecem bloqueadas no carrossel.
 - Sons via Web Audio para início de batalha, golpes, queda de Pokémon e evolução.
 - Animações de batalha ficam contidas no modal para não criar scroll temporário na página.
 - Relíquias separadas por efeito: dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia e sobrevivência.

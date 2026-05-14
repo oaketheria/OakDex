@@ -639,6 +639,8 @@
     pendingEvolutions: [],
     pendingEvolutionChoices: [],
     pendingMapFloor: null,
+    tower: null,
+    lastTowerMode: null,
     routeVersion: ROUTE_VERSION,
     autoBattling: false,
     battleSpeed: 1,
@@ -664,7 +666,17 @@
   const uid = (prefix = "id") => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const DEX_KEY = "oak_rogue_dex_seen";
   const SHINY_DEX_KEY = "oak_rogue_dex_shiny_seen";
+  const UNLOCKS_KEY = "oak_rogue_unlocks";
+  const TOWER_DEBUG_UNLOCK_ALL = false;
+  const TEMP_AVAILABLE_TOWER_MODES = new Set(["short"]);
   const SHINY_RATE = 0.035;
+  const TOWER_MODES = [
+    { id: "short", title: "Torre Curta", floors: 50, requirement: "nuzlockeCleared", unlockText: "Vença uma run Nuzlocke para abrir.", reward: "Libera Torre Liga." },
+    { id: "league", title: "Torre Liga", floors: 100, requirement: "towerShortCleared", unlockText: "Complete a Torre Curta para abrir.", reward: "Libera Torre Nacional." },
+    { id: "national", title: "Torre Nacional", floors: 151, requirement: "towerLeagueCleared", unlockText: "Complete a Torre Liga para abrir.", reward: "Libera Torre Infinita e Nacional Completa." },
+    { id: "complete", title: "Nacional Completa", floors: NATIONAL_DEX_LIMIT, requirement: "towerNationalCleared", unlockText: "Complete a Torre Nacional para abrir.", reward: "Desafio extra com a Pokédex completa." },
+    { id: "infinite", title: "Torre Infinita", floors: null, requirement: "towerNationalCleared", unlockText: "Complete a Torre Nacional para abrir.", reward: "Recorde salvo por maior andar." }
+  ];
   let rogueAudioContext = null;
 
   async function fetchJson(url) {
@@ -1266,16 +1278,23 @@
 
   function show(screen) {
     const previousScreen = state.screen;
+    if (screen !== "battle") {
+      applyTowerBattleInlineLayout(false);
+    }
     document.querySelectorAll(".rogue-screen").forEach((el) => el.classList.remove("is-active"));
-    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal");
+    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal", "has-tower-event-modal");
     $("choice-grid")?.classList.remove("many-evolution-options");
     document.body.classList.toggle("is-rogue-battle-open", screen === "battle");
+    document.body.classList.toggle("is-tower-battle", screen === "battle" && !!state.tower?.active);
     if ((screen === "choice" && (previousScreen === "map" || previousScreen === "choice")) || (screen === "battle" && previousScreen === "map")) {
       $("screen-map").classList.add("is-active");
       document.querySelector(".rogue-stage")?.classList.add(screen === "choice" ? "has-choice-modal" : "has-battle-modal");
     }
     $(`screen-${screen}`).classList.add("is-active");
     state.screen = screen;
+    if (screen === "battle") {
+      applyTowerBattleInlineLayout(!!state.tower?.active || !!state.battle?.tower);
+    }
     renderHud();
   }
 
@@ -1283,6 +1302,147 @@
     try {
       localStorage.setItem("oak_rogue_run", JSON.stringify(state));
     } catch {}
+  }
+
+  function defaultUnlocks() {
+    return {
+      nuzlockeCleared: false,
+      towerShortCleared: false,
+      towerLeagueCleared: false,
+      towerNationalCleared: false,
+      towerCompleteCleared: false,
+      bestInfiniteFloor: 0
+    };
+  }
+
+  function loadUnlocks() {
+    try {
+      return { ...defaultUnlocks(), ...JSON.parse(localStorage.getItem(UNLOCKS_KEY) || "{}") };
+    } catch {
+      return defaultUnlocks();
+    }
+  }
+
+  function saveUnlocks(unlocks) {
+    try {
+      localStorage.setItem(UNLOCKS_KEY, JSON.stringify({ ...defaultUnlocks(), ...unlocks }));
+    } catch {}
+  }
+
+  function unlockLabelFor(mode, unlocked, unlocks) {
+    if (unlocked) return mode.id === "infinite" && unlocks.bestInfiniteFloor ? `Recorde: ${unlocks.bestInfiniteFloor}` : mode.reward;
+    return mode.unlockText;
+  }
+
+  function isTowerModeUnlocked(mode, unlocks = loadUnlocks()) {
+    if (!TEMP_AVAILABLE_TOWER_MODES.has(mode.id)) return false;
+    return TOWER_DEBUG_UNLOCK_ALL || mode.id === "short" || !!unlocks[mode.requirement];
+  }
+
+  function renderTowerModes() {
+    const grid = $("tower-mode-grid");
+    if (!grid) return;
+    const unlocks = loadUnlocks();
+    grid.innerHTML = TOWER_MODES.map((mode) => {
+      const unlocked = isTowerModeUnlocked(mode, unlocks);
+      const floorLabel = mode.floors ? `${mode.floors}` : "∞";
+      return `
+        <button class="tower-mode-card ${unlocked ? "is-unlocked" : "is-locked"}" type="button" data-tower-mode="${mode.id}" ${unlocked ? "" : "aria-disabled=\"true\""}>
+          <span class="tower-lock" aria-hidden="true">${unlocked ? "OK" : "X"}</span>
+          <strong>${mode.title}</strong>
+          <small>${floorLabel}</small>
+        </button>
+      `;
+    }).join("");
+    setupTowerCarousel();
+  }
+
+  function scrollTowerCarousel(direction) {
+    const grid = $("tower-mode-grid");
+    const card = grid?.querySelector(".tower-mode-card");
+    if (!grid || !card) return;
+    const gap = 8;
+    grid.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: "smooth" });
+  }
+
+  function setupTowerCarousel() {
+    const grid = $("tower-mode-grid");
+    if (!grid || grid.dataset.carouselReady) return;
+    grid.dataset.carouselReady = "true";
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let dragMoved = false;
+    grid.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      dragMoved = false;
+      dragStartX = event.clientX;
+      dragStartScroll = grid.scrollLeft;
+      grid.setPointerCapture?.(event.pointerId);
+    });
+    grid.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 4) dragMoved = true;
+      grid.scrollLeft = dragStartScroll - delta;
+    });
+    const endDrag = (event) => {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("button[data-tower-mode]");
+      const shouldOpen = !dragMoved && target && grid.contains(target);
+      dragging = false;
+      window.setTimeout(() => { dragMoved = false; }, 0);
+      if (shouldOpen) handleTowerMode(target.dataset.towerMode);
+    };
+    grid.addEventListener("pointerup", endDrag);
+    grid.addEventListener("pointercancel", endDrag);
+    grid.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-tower-mode]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
+  }
+
+  function registerNuzlockeClear() {
+    if (!state.nuzlockeMode) return;
+    const unlocks = loadUnlocks();
+    if (unlocks.nuzlockeCleared) return;
+    unlocks.nuzlockeCleared = true;
+    saveUnlocks(unlocks);
+    renderTowerModes();
+  }
+
+  function registerTowerClear() {
+    if (!state.tower?.active) return;
+    const unlocks = loadUnlocks();
+    if (state.tower.mode === "short") unlocks.towerShortCleared = true;
+    if (state.tower.mode === "league") unlocks.towerLeagueCleared = true;
+    if (state.tower.mode === "national") unlocks.towerNationalCleared = true;
+    if (state.tower.mode === "complete") unlocks.towerCompleteCleared = true;
+    if (state.tower.mode === "infinite") unlocks.bestInfiniteFloor = Math.max(unlocks.bestInfiniteFloor || 0, state.floor || 0);
+    saveUnlocks(unlocks);
+    renderTowerModes();
+  }
+
+  function showTowerLocked(mode) {
+    $("choice-kicker").textContent = "Torre bloqueada";
+    $("choice-title").textContent = mode.title;
+    $("choice-copy").textContent = mode.unlockText;
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="title"><strong>Voltar</strong><small>Retornar ao menu inicial.</small></button>`;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-simple-modal");
+  }
+
+  function showTowerPreview(mode) {
+    void startTowerRun(mode);
+  }
+
+  function handleTowerMode(id) {
+    const mode = TOWER_MODES.find((entry) => entry.id === id);
+    if (!mode) return;
+    const unlocks = loadUnlocks();
+    if (!isTowerModeUnlocked(mode, unlocks)) return showTowerLocked(mode);
+    showTowerPreview(mode);
   }
 
   function applyPendingMapFloor() {
@@ -1295,6 +1455,7 @@
     try {
       const saved = JSON.parse(localStorage.getItem("oak_rogue_run") || "null");
       if (!saved?.team?.length) return null;
+      if (saved.tower?.active) return "tower";
       return saved.nuzlockeMode ? "nuzlocke" : "normal";
     } catch {
       return null;
@@ -1309,7 +1470,10 @@
     const button = $("continue-run");
     if (!button) return;
     const savedMode = savedRunMode();
-    button.hidden = !savedMode || savedMode !== selectedRunMode();
+    button.hidden = !savedMode || (savedMode !== "tower" && savedMode !== selectedRunMode());
+    if (!button.hidden) {
+      button.textContent = savedMode === "tower" ? "Continuar torre" : "Continuar run";
+    }
   }
 
   function normalizeItem(item) {
@@ -1337,6 +1501,7 @@
       if (!Array.isArray(state.pendingEvolutions)) state.pendingEvolutions = [];
       if (!Array.isArray(state.pendingEvolutionChoices)) state.pendingEvolutionChoices = [];
       if (!Number.isFinite(state.pendingMapFloor)) state.pendingMapFloor = null;
+      state.pendingTowerEvent = !!state.pendingTowerEvent;
       state.items = state.items.map(normalizeItem).filter(Boolean);
       state.pendingItem = normalizeItem(state.pendingItem);
       state.nuzlockeMode = !!state.nuzlockeMode;
@@ -1835,6 +2000,24 @@
     }).filter(Boolean);
   }
 
+  async function randomTowerStarterChoices() {
+    await loadNationalDexIndex();
+    const picks = [];
+    const used = new Set();
+    while (picks.length < 3) {
+      const mon = await randomNationalPokemon(used);
+      if (!mon) break;
+      used.add(mon.id);
+      picks.push(mon);
+    }
+    return picks.length === 3 ? picks : [...STARTERS].sort(() => Math.random() - 0.5).slice(0, 3);
+  }
+
+  function towerTotalFloors(mode) {
+    if (mode.id === "complete") return Math.max(NATIONAL_DEX_LIMIT, nationalDexIndex.length || NATIONAL_DEX_LIMIT);
+    return mode.floors || Infinity;
+  }
+
   function setupStarters() {
     state.starterChoices = randomStarterChoices();
     $("starter-grid").innerHTML = state.starterChoices.map((p) => `
@@ -1847,6 +2030,55 @@
         <small>HP ${p.hp} · ATK ${p.atk} · DEF ${p.def} · VEL ${p.spd}</small>
       </button>
     `).join("");
+  }
+
+  async function setupTowerStarters() {
+    try {
+      state.starterChoices = await randomTowerStarterChoices();
+    } catch {
+      state.starterChoices = [...STARTERS].sort(() => Math.random() - 0.5).slice(0, 3);
+    }
+    $("starter-grid").innerHTML = state.starterChoices.map((p) => `
+      <button class="starter-card" type="button" data-starter="${p.id}">
+        <span class="rogue-kicker">Torre</span>
+        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${sprite(p)}'">
+        <strong>${p.name}</strong>
+        ${renderTypeChips(p.types)}
+        <p>${p.trait || "Registro nacional"}</p>
+        <small>HP ${p.hp} · ATK ${p.atk} · DEF ${p.def} · VEL ${p.spd}</small>
+      </button>
+    `).join("");
+  }
+
+  async function startTowerRun(mode) {
+    state.floor = 0;
+    state.branch = 0;
+    state.threat = 1;
+    state.team = [];
+    state.items = [];
+    state.fallenTeam = [];
+    state.map = [];
+    state.battle = null;
+    state.sashUsed = false;
+    state.badges = [];
+    state.offer = [];
+    state.starterChoices = [];
+    state.pendingItem = null;
+    state.pendingEvolutions = [];
+    state.pendingEvolutionChoices = [];
+    state.pendingMapFloor = null;
+    state.tower = { active: true, mode: mode.id, title: mode.title, totalFloors: towerTotalFloors(mode), clearsUnlock: mode.id };
+    state.lastTowerMode = mode.id;
+    state.routeVersion = ROUTE_VERSION;
+    state.battleSpeed = 1;
+    state.nuzlockeMode = false;
+    state.levelCapEnabled = false;
+    $("screen-starters")?.querySelector(".rogue-kicker") && ($("screen-starters").querySelector(".rogue-kicker").textContent = "Subir Torre");
+    $("screen-starters")?.querySelector("h2") && ($("screen-starters").querySelector("h2").textContent = `Escolha o inicial da ${mode.title}`);
+    show("starters");
+    $("starter-grid").innerHTML = `<button class="starter-card" type="button" disabled><span class="rogue-kicker">Torre</span><strong>Carregando...</strong><p>Preparando escolhas iniciais.</p></button>`;
+    await setupTowerStarters();
+    save();
   }
 
   function newRun() {
@@ -1863,21 +2095,31 @@
     state.offer = [];
     state.starterChoices = [];
     state.pendingEvolutions = [];
+    state.pendingEvolutionChoices = [];
+    state.pendingMapFloor = null;
+    state.tower = null;
+    state.lastTowerMode = null;
     state.routeVersion = ROUTE_VERSION;
     state.battleSpeed = 1;
     state.nuzlockeMode = !!$("run-nuzlocke")?.checked;
     state.levelCapEnabled = state.nuzlockeMode;
+    $("screen-starters")?.querySelector(".rogue-kicker") && ($("screen-starters").querySelector(".rogue-kicker").textContent = "Laboratório do Professor Oak");
+    $("screen-starters")?.querySelector("h2") && ($("screen-starters").querySelector("h2").textContent = "Escolha seu Pokémon inicial");
     setupStarters();
     show("starters");
   }
 
-  function chooseStarter(id) {
+  async function chooseStarter(id) {
     const starter = (state.starterChoices?.length ? state.starterChoices : STARTERS).find((p) => p.id === id);
-    if (!starter) return setupStarters();
+    if (!starter) return state.tower?.active ? setupTowerStarters() : setupStarters();
     state.team = [maybeMarkShiny(cloneMon(starter, 5))];
     state.starterChoices = [];
     state.team[0].runId ||= uid("mon");
     registerDexSeen(state.team[0]);
+    if (state.tower?.active) {
+      save();
+      return startTowerFloor(1);
+    }
     buildMap();
     renderMap();
     save();
@@ -2174,6 +2416,26 @@
     return enemy;
   }
 
+  function towerEnemyLevel() {
+    const floor = Math.max(1, state.floor || 1);
+    return Math.max(5, Math.round(averageTeamLevel() + floor * 0.42));
+  }
+
+  async function createTowerEnemy() {
+    const floor = Math.max(1, state.floor || 1);
+    const rareFloor = floor % 10 === 0;
+    let base = rareFloor && Math.random() < 0.55
+      ? LEGENDARY_POOL[Math.floor(Math.random() * LEGENDARY_POOL.length)]
+      : await randomNationalPokemon() || randomPool(1, false, floor)[0];
+    const enemy = maybeMarkShiny(cloneMon(base, towerEnemyLevel()));
+    if (rareFloor && !enemy.legendary) enemy.shiny = true;
+    enemy.maxHp = Math.round(enemy.maxHp * (rareFloor ? 1.85 : 1 + Math.min(0.65, floor * 0.006)));
+    enemy.currentHp = enemy.maxHp;
+    enemy.leader = rareFloor ? "Encontro raro" : "Torre";
+    enemy.legendary = rareFloor && LEGENDARY_POOL.some((mon) => mon.id === base.id);
+    return enemy;
+  }
+
   function createLeaderTeam(node = {}) {
     const arenaIndex = ARENAS.findIndex((arena) => arena.floorTo === state.floor);
     const bossIndex = Number.isFinite(node.bossIndex) ? node.bossIndex : arenaIndex;
@@ -2228,14 +2490,17 @@
 
   async function startBattle(node) {
     if (!activePlayer()) return endRun(false);
+    const towerBattle = !!state.tower?.active;
     const bossBattle = node.type === "boss" || ARENAS.some((arena) => arena.floorTo === state.floor);
     const legendaryBattle = node.type === "legendary";
     const npcBattle = node.type === "battle";
     const npcData = npcBattle ? await createNpcTeam(node) : null;
-    const enemyTeam = bossBattle ? createLeaderTeam(node) : legendaryBattle ? createLegendaryTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
+    const enemyTeam = towerBattle ? [await createTowerEnemy()] : bossBattle ? createLeaderTeam(node) : legendaryBattle ? createLegendaryTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
     registerDexSeenMany(enemyTeam);
-    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: bossBattle, legendary: legendaryBattle, npc: npcBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: npcData?.trainerName || null, trainerSpriteId: npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
-    $("battle-title").textContent = node.type === "boss"
+    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: !towerBattle && bossBattle, legendary: towerBattle ? !!enemyTeam[0].legendary : legendaryBattle, npc: !towerBattle && npcBattle, tower: towerBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: towerBattle ? "Torre" : npcData?.trainerName || null, trainerSpriteId: towerBattle ? null : npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
+    $("battle-title").textContent = towerBattle
+      ? `${state.tower.title} · Andar ${state.floor}`
+      : node.type === "boss"
       ? `${state.battle.enemy.leader} enviou ${state.battle.enemy.name}`
       : node.type === "legendary"
         ? `A Master Ball revelou ${state.battle.enemy.name}`
@@ -2253,15 +2518,18 @@
 
   function renderBattle() {
     if (!state.battle) return;
+    const isTowerBattle = !!state.tower?.active || !!state.battle.tower;
+    document.querySelector(".battle-grid")?.classList.toggle("tower-battle-grid", isTowerBattle);
     const playerTeam = state.battle.playerTeam || state.team;
     const currentPlayer = playerTeam[state.battle.playerIndex || 0];
     const player = isPendingBattleFaint(currentPlayer)
       ? currentPlayer
       : activePlayer() || currentPlayer || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
     if (!player) return;
-    renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player");
+    renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player", isTowerBattle);
     renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy");
     animateRenderedHpBars();
+    applyTowerBattleInlineLayout(isTowerBattle);
     $("move-grid").innerHTML = `
       <div class="battle-auto-status">
         <span>
@@ -2273,7 +2541,7 @@
     `;
   }
 
-  function renderBattleRoster(id, mons, active, label, trainer, side = "") {
+  function renderBattleRoster(id, mons, active, label, trainer, side = "", useTeamBalls = false) {
     const orderedMons = [...mons].sort((a, b) => {
       if (a === active) return -1;
       if (b === active) return 1;
@@ -2288,9 +2556,134 @@
         <span class="rogue-kicker">${label}</span>
       </div>
       <div class="battle-stack count-${Math.min(6, Math.max(1, mons.length))}">
-        ${orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
+        ${useTeamBalls ? renderBattleSlot(active || orderedMons[0], true) : orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
+        ${useTeamBalls ? renderBattleTeamBalls(mons, active) : ""}
       </div>
     `;
+  }
+
+  function renderBattleTeamBalls(mons, active) {
+    return `<div class="battle-team-balls" aria-label="Pokemon do time">
+      ${mons.map((p, index) => {
+        const fainted = p.currentHp <= 0 && !isPendingBattleFaint(p);
+        const pendingFaint = p.currentHp <= 0 && isPendingBattleFaint(p);
+        const activeClass = p === active ? "is-active" : "";
+        const faintedClass = fainted ? "is-fainted" : pendingFaint ? "is-pending-faint" : "";
+        return `<span class="battle-team-ball ${activeClass} ${faintedClass}" title="${index + 1}. ${p.name}${fainted || pendingFaint ? " derrotado" : ""}" aria-label="${index + 1}. ${p.name}${fainted || pendingFaint ? " derrotado" : ""}">
+          <img class="animated-item" src="${ITEM_BASE}poke-ball.png" alt="">
+        </span>`;
+      }).join("")}
+    </div>`;
+  }
+
+  function applyTowerBattleInlineLayout(isTowerBattle) {
+    const grid = document.querySelector(".battle-grid");
+    const screen = $("screen-battle");
+    if (!grid) return;
+    if (!isTowerBattle) {
+      grid.removeAttribute("style");
+      screen?.removeAttribute("style");
+      document.querySelector(".tower-vs-badge")?.removeAttribute("style");
+      return;
+    }
+    if (screen) {
+      Object.assign(screen.style, {
+        position: "fixed",
+        top: "0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+        width: "100vw",
+        height: "100vh",
+        zIndex: "80",
+        display: "grid",
+        alignItems: "center",
+        justifyItems: "center",
+        padding: "14px",
+        background: "rgba(3, 9, 13, 0.48)",
+        backdropFilter: "blur(3px)"
+      });
+    }
+    Object.assign(grid.style, {
+      position: "fixed",
+      left: "50%",
+      top: "50%",
+      zIndex: "81",
+      margin: "0",
+      transform: "translate(-50%, -50%)",
+      width: "min(1040px, calc(100vw - 32px))",
+      height: "auto",
+      minHeight: "0",
+      maxHeight: "calc(100vh - 28px)",
+      gridTemplateColumns: "1fr 1fr",
+      gridTemplateRows: "auto auto auto",
+      gap: "10px",
+      padding: "12px",
+      borderRadius: "12px",
+      border: "2px solid rgba(95, 255, 211, 0.35)",
+      boxShadow: "0 18px 40px rgba(0,0,0,0.42)",
+      background: "linear-gradient(180deg, rgba(8, 18, 27, 0.98), rgba(9, 28, 28, 0.98))"
+    });
+    const vsBadge = document.querySelector(".tower-vs-badge");
+    if (vsBadge) {
+      positionTowerVsBadge();
+    }
+    document.querySelectorAll(".battle-roster").forEach((el) => Object.assign(el.style, {
+      minHeight: "0",
+      padding: "7px",
+      display: "grid",
+      gridTemplateRows: "40px 1fr",
+      borderWidth: "1px",
+      borderRadius: "9px",
+      background: "linear-gradient(180deg, rgba(14, 33, 43, 0.98), rgba(8, 22, 25, 0.98))"
+    }));
+    document.querySelectorAll(".battle-trainer-head").forEach((el) => Object.assign(el.style, {
+      minHeight: "40px",
+      height: "40px",
+      marginBottom: "7px"
+    }));
+    document.querySelectorAll(".battle-stack").forEach((el) => Object.assign(el.style, {
+      display: "grid",
+      gridTemplateColumns: "1fr",
+      gridAutoRows: "auto",
+      alignContent: "stretch",
+      width: "100%",
+      gap: "8px"
+    }));
+    document.querySelectorAll(".battle-slot").forEach((el) => Object.assign(el.style, {
+      width: "100%",
+      minHeight: "210px",
+      padding: "12px",
+      gridTemplateColumns: "minmax(0, 1fr) minmax(170px, 42%)",
+      borderWidth: "1px",
+      borderRadius: "8px",
+      background: "linear-gradient(180deg, rgba(22, 43, 55, 0.96), rgba(13, 58, 45, 0.92))"
+    }));
+    document.querySelectorAll(".battle-slot .pokemon-anim").forEach((el) => Object.assign(el.style, {
+      right: "22px",
+      bottom: "16px",
+      width: "clamp(140px, 13vw, 190px)",
+      height: "clamp(116px, 11vw, 158px)"
+    }));
+    positionTowerVsBadge();
+  }
+
+  function positionTowerVsBadge() {
+    const grid = document.querySelector(".battle-grid");
+    const vsBadge = document.querySelector(".tower-vs-badge");
+    const playerCard = $("player-card");
+    const enemyCard = $("enemy-card");
+    if (!grid || !vsBadge || !playerCard || !enemyCard) return;
+    const gridBox = grid.getBoundingClientRect();
+    const playerBox = playerCard.getBoundingClientRect();
+    const enemyBox = enemyCard.getBoundingClientRect();
+    const rosterTop = Math.min(playerBox.top, enemyBox.top);
+    const rosterBottom = Math.max(playerBox.bottom, enemyBox.bottom);
+    const centerY = rosterTop + (rosterBottom - rosterTop) / 2 - gridBox.top;
+    Object.assign(vsBadge.style, {
+      display: "grid",
+      top: `${centerY}px`
+    });
   }
 
   function renderBattleSlot(p, active) {
@@ -2302,9 +2695,17 @@
     const hpState = pct <= 25 ? "danger" : pct <= 50 ? "warn" : "ok";
     return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}">
       <strong>${p.name} <small>Lv.${p.level}</small></strong>
+      ${renderBattleTypeBadges(p.types || [])}
       <div class="hp-bar ${hpState}" aria-label="HP"><span data-hp-target="${pct}" style="width:${previousPct}%"></span></div>
       <small>${Math.max(0, p.currentHp)}/${p.maxHp}</small>
       <img class="pokemon-anim" src="${animated(p)}" alt="${p.name}" onerror="this.src='${sprite(p)}'">
+    </div>`;
+  }
+
+  function renderBattleTypeBadges(types) {
+    if (!types?.length) return "";
+    return `<div class="battle-type-row" aria-label="Tipos">
+      ${types.slice(0, 2).map((type) => `<span class="battle-type-chip" style="--type-color:${TYPE_COLOR[type] || "#dfe7ea"}">${type}</span>`).join("")}
     </div>`;
   }
 
@@ -2693,7 +3094,9 @@
   }
 
   function victorySummaryMarkup({ prefix, reward, boss, defeated, defeatedName, recoveryLog, evolution }) {
-    const battleType = boss
+    const battleType = state.battle?.tower
+      ? "Torre"
+      : boss
       ? defeated?.badge ? "Lider de ginasio" : "Liga"
       : state.battle?.legendary ? "Lendario" : state.battle?.npc ? "Treinador" : "Rota";
     return `
@@ -2708,6 +3111,7 @@
   }
 
   function winBattle(prefix, reward = { xp: 0, levels: 0 }) {
+    if (state.battle?.tower) return winTowerBattle(prefix, reward);
     const battleArena = ARENAS.find((arena) => arena.floorTo === state.floor);
     const boss = state.battle.boss || !!battleArena;
     const defeated = boss ? state.battle.enemyTeam[state.battle.enemyTeam.length - 1] : null;
@@ -2934,6 +3338,7 @@
     state.items.push({ ...state.pendingItem });
     state.pendingItem = null;
     state.pendingEquipIndex = null;
+    if (state.tower?.active) return towerNextStep();
     renderMap();
     save();
   }
@@ -2946,6 +3351,7 @@
     p.heldItem = { ...state.pendingItem };
     state.pendingItem = null;
     state.pendingEquipIndex = null;
+    if (state.tower?.active) return towerNextStep();
     renderMap();
     save();
   }
@@ -3126,6 +3532,150 @@
     show("choice");
     document.querySelector(".rogue-stage")?.classList.add("has-simple-modal");
     save();
+  }
+
+  function towerProgressLabel() {
+    if (!state.tower?.active) return "";
+    if (!Number.isFinite(state.tower.totalFloors)) return `Andar ${state.floor}`;
+    return `Andar ${state.floor}/${state.tower.totalFloors}`;
+  }
+
+  function towerNextStep() {
+    if (!state.tower?.active) return renderMap();
+    state.pendingTowerEvent = false;
+    if (Number.isFinite(state.tower.totalFloors) && state.floor >= state.tower.totalFloors) return endRun(true);
+    const nextFloor = state.floor + 1;
+    return startTowerFloor(nextFloor);
+  }
+
+  async function startTowerFloor(floor) {
+    state.floor = floor;
+    state.branch = 0;
+    state.pendingMapFloor = null;
+    save();
+    await startBattle({ type: "tower" });
+  }
+
+  function winTowerBattle(prefix, reward = { xp: 0, levels: 0 }) {
+    const defeatedName = state.battle?.enemy?.name || "Oponente";
+    const rare = state.floor % 10 === 0;
+    let recoveryLog = "";
+    state.team.forEach((p) => {
+      if (p.currentHp > 0) {
+        p.energy = Math.min(4, p.energy + 1);
+        p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * (rare ? 0.34 : 0.16)));
+      }
+    });
+    recoveryLog = rare ? " O time recuperou bem após o encontro raro." : " O time recuperou um pouco de HP.";
+    state.threat = Math.min(3, state.threat + 0.12);
+    state.battle = null;
+    state.autoBattling = false;
+    if (Number.isFinite(state.tower.totalFloors) && state.floor >= state.tower.totalFloors) return endRun(true);
+    if (state.floor > 0 && state.floor % 5 === 0) {
+      state.pendingTowerEvent = true;
+      save();
+      return showTowerEvent();
+    }
+    const evolution = state.pendingEvolutions?.shift();
+    $("choice-kicker").textContent = rare ? "Encontro raro vencido" : "Andar vencido";
+    $("choice-title").textContent = towerProgressLabel();
+    $("choice-copy").innerHTML = victorySummaryMarkup({ prefix, reward, boss: false, defeatedName, recoveryLog, evolution });
+    $("choice-grid").innerHTML = `
+      ${renderEvolutionSummary(evolution)}
+      <button class="choice-button" type="button" data-action="tower-next"><strong>Subir</strong><small>Avançar para o próximo andar.</small></button>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-choice-modal", "has-victory-modal");
+    save();
+  }
+
+  function showTowerEventOld() {
+    const eventType = state.floor % 15 === 0 ? "recruit" : state.floor % 10 === 5 ? "item" : "choice";
+    if (eventType === "recruit") return showCatch();
+    if (eventType === "item") return showItem();
+    const heal = Math.ceil(averageTeamLevel() * 1.8);
+    state.team.forEach((p) => {
+      if (p.currentHp > 0) p.currentHp = Math.min(p.maxHp, p.currentHp + heal);
+    });
+    $("choice-kicker").textContent = "Evento da Torre";
+    $("choice-title").textContent = `Andar ${state.floor}`;
+    $("choice-copy").textContent = "Uma sala segura apareceu entre os andares. O time recuperou HP antes da próxima batalha.";
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="tower-next"><strong>Continuar subida</strong><small>Ir para o próximo andar.</small></button>`;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-simple-modal");
+    save();
+  }
+
+  function showTowerEvent() {
+    state.pendingTowerEvent = true;
+    $("choice-kicker").textContent = "Evento da Torre";
+    $("choice-title").textContent = `Andar ${state.floor}`;
+    $("choice-copy").textContent = "Uma sala muda o ritmo da subida. Escolha uma vantagem antes do próximo andar.";
+    $("choice-grid").innerHTML = `
+      <button class="choice-button" type="button" data-tower-event="heal"><strong>Fonte segura</strong><small>Cura 45% do HP do time vivo.</small></button>
+      <button class="choice-button" type="button" data-tower-event="relic"><strong>Baú de relíquia</strong><small>Escolha 1 entre 3 relíquias.</small></button>
+      <button class="choice-button" type="button" data-tower-event="recruit"><strong>Sinal aliado</strong><small>Escolha 1 entre 3 Pokémon para recrutar.</small></button>
+      <button class="choice-button" type="button" data-tower-event="risk"><strong>Pacto de risco</strong><small>Próximo inimigo mais forte, time ganha nível e energia.</small></button>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-simple-modal", "has-tower-event-modal");
+    save();
+  }
+
+  function applyTowerEvent(type) {
+    state.pendingTowerEvent = false;
+    if (type === "heal") {
+      state.team.forEach((p) => {
+        if (p.currentHp > 0) {
+          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.45));
+          p.energy = Math.min(4, p.energy + 1);
+        }
+      });
+      save();
+      return towerNextStep();
+    }
+    if (type === "relic") return showItem();
+    if (type === "recruit") return showCatch();
+    if (type === "risk") {
+      state.threat = Math.min(3, state.threat + 0.45);
+      state.team.forEach((p) => {
+        if (p.currentHp > 0) {
+          p.level += 1;
+          p.energy = Math.min(4, p.energy + 2);
+          p.maxHp = hpMax(p);
+          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.2));
+          syncMoves(p);
+          maybeAutoEvolve(p);
+        }
+      });
+      const evolution = state.pendingEvolutions?.shift();
+      if (evolution) return showEvolutionPopup(evolution);
+      save();
+    }
+    return towerNextStep();
+  }
+
+  function continueTowerRun() {
+    if (!state.tower?.active) return false;
+    if (state.battle) {
+      renderBattle();
+      show("battle");
+      return true;
+    }
+    if (state.pendingTowerEvent) {
+      showTowerEvent();
+      return true;
+    }
+    $("choice-kicker").textContent = "Subir Torre";
+    $("choice-title").textContent = state.tower.title || "Torre";
+    $("choice-copy").textContent = Number.isFinite(state.floor) && state.floor > 0
+      ? `Você parou após o andar ${state.floor}. Continue a subida para o próximo desafio.`
+      : "Sua subida está pronta para começar.";
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="tower-next"><strong>Continuar subida</strong><small>Retomar a Torre de onde parou.</small></button>`;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-choice-modal", "has-simple-modal");
+    save();
+    return true;
   }
 
   function showRandomEvent() {
@@ -3379,6 +3929,7 @@
     const evolved = maybeAutoEvolve(mon);
     if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
+    if (state.tower?.active) return towerNextStep();
     renderMap();
     save();
   }
@@ -3399,20 +3950,33 @@
     const evolved = maybeAutoEvolve(mon);
     if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
+    if (state.tower?.active) return towerNextStep();
     renderMap();
     save();
   }
 
   function endRun(won) {
+    if (won) registerNuzlockeClear();
+    if (won) registerTowerClear();
+    const towerTitle = state.tower?.title || "Torre";
+    if (state.tower?.active) state.lastTowerMode = state.tower.mode;
+    state.battle = null;
+    state.autoBattling = false;
+    applyTowerBattleInlineLayout(false);
     document.querySelector(".end-panel")?.classList.toggle("is-win", won);
     document.querySelector(".end-panel")?.classList.toggle("is-loss", !won);
-    $("end-kicker").textContent = won ? "Campeao da torre" : "Expedicao encerrada";
+    $("end-kicker").textContent = won ? "Campeão da torre" : "Expedição encerrada";
     $("end-title").textContent = won ? "Você venceu" : "Run perdida";
-    $("end-copy").textContent = won
+    $("end-copy").textContent = state.tower?.active
+      ? won
+        ? `${towerTitle} concluída. A próxima torre fica marcada para teste e progressão.`
+        : `A subida terminou no andar ${state.floor}. Ajuste o time e tente de novo.`
+      : won
       ? "Seu time atravessou os oito ginásios e derrotou Giovanni. A Liga agora pode virar a próxima camada."
       : "O time caiu. Ajuste sinergias, preserve energia e respeite matchups de tipo na próxima tentativa.";
     const finalTeam = won ? state.team : [...(state.fallenTeam || []), ...state.team];
     $("end-team").innerHTML = finalTeam.map((p) => `<div class="team-row ${p.currentHp <= 0 ? "fainted" : ""}"><img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'"><div><strong>${p.name}</strong><small>Lv.${p.level}</small></div></div>`).join("");
+    $("restart-run").textContent = state.tower?.active ? "Tentar torre de novo" : "Jogar de novo";
     clearSave();
     show("end");
   }
@@ -3420,15 +3984,24 @@
   document.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
-    if (button.id === "start-run" || button.id === "restart-run") newRun();
+    if (button.id === "start-run") newRun();
+    if (button.id === "restart-run") {
+      if (state.lastTowerMode) {
+        const mode = TOWER_MODES.find((entry) => entry.id === state.lastTowerMode) || TOWER_MODES[0];
+        return startTowerRun(mode);
+      }
+      newRun();
+    }
     if (button.id === "route-dex-open") setRogueDexOpen(true);
     if (button.id === "rogue-dex-close") setRogueDexOpen(false);
     if (button.dataset.dexTab) setRogueDexTab(button.dataset.dexTab);
     if (button.dataset.dexMon) showDexDetail(Number(button.dataset.dexMon));
     if (button.dataset.dexDetailClose) hideDexDetail();
     if (button.id === "continue-run") {
-      if (savedRunMode() !== selectedRunMode()) return updateContinueRunButton();
+      const mode = savedRunMode();
+      if (mode !== "tower" && mode !== selectedRunMode()) return updateContinueRunButton();
       if (!load()) return updateContinueRunButton();
+      if (state.tower?.active) return continueTowerRun();
       if (!state.map.length) buildMap();
       if (showPendingEvolutionChoice()) return;
       const evolution = state.pendingEvolutions?.shift();
@@ -3436,7 +4009,7 @@
       if (!state.battle) applyPendingMapFloor();
       state.battle ? (renderBattle(), show("battle")) : renderMap();
     }
-    if (button.dataset.starter) chooseStarter(Number(button.dataset.starter));
+    if (button.dataset.starter) await chooseStarter(Number(button.dataset.starter));
     if (button.dataset.floor) await enterNode(Number(button.dataset.floor), Number(button.dataset.branch));
     if (button.dataset.autoBattle) runAutoBattle();
     if (button.dataset.battleSpeed) {
@@ -3450,8 +4023,18 @@
       applyPendingMapFloor();
       state.pendingEvolutionChoiceIndex = null;
       if (showPendingEvolutionChoice()) return;
+      if (state.tower?.active) return towerNextStep();
       renderMap();
     }
+    if (button.dataset.action === "tower-next") return towerNextStep();
+    if (button.dataset.towerEvent) return applyTowerEvent(button.dataset.towerEvent);
+    if (button.dataset.towerCarousel) return scrollTowerCarousel(button.dataset.towerCarousel === "next" ? 1 : -1);
+    if (button.dataset.action === "title") {
+      show("title");
+      renderTowerModes();
+      updateContinueRunButton();
+    }
+    if (button.dataset.towerMode) handleTowerMode(button.dataset.towerMode);
     if (button.dataset.action === "next-evolution") {
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
@@ -3599,6 +4182,7 @@
 
   setupStarters();
   updateContinueRunButton();
+  renderTowerModes();
   void loadNationalDexIndex();
   renderDexBadge();
   renderHud();

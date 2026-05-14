@@ -13,7 +13,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./mascot.css" />
-    <link rel="stylesheet" href="./oak-rogue.css" />
+    <link rel="stylesheet" href="./oak-rogue.css?v=20260513-tower-event" />
   </head>
   <body class="oak-rogue-page">
     <div class="rogue-shell">
@@ -49,7 +49,7 @@
                 <h1>Oak Rogue</h1>
                 <p>Uma rota roguelike pelos oito ginásios: escolha encontros, equipe itens, evolua no tempo certo e sobreviva aos líderes.</p>
                 <div class="run-mode-grid" aria-label="Escolha o modo da run">
-                  <label class="run-mode-card">
+                  <label class="run-mode-card run-card-main">
                     <input id="run-normal" name="run-mode" type="radio" value="normal" checked />
                     <span>
                       <strong>Modo normal</strong>
@@ -61,7 +61,7 @@
                       <li>Melhor para testar rotas e itens</li>
                     </ul>
                   </label>
-                  <label class="run-mode-card featured">
+                  <label class="run-mode-card featured run-card-main">
                     <input id="run-nuzlocke" name="run-mode" type="radio" value="nuzlocke" />
                     <span>
                       <strong>Nuzlocke</strong>
@@ -78,6 +78,17 @@
                   <button class="rogue-primary" id="start-run" type="button">Começar jornada</button>
                   <button class="rogue-secondary" id="continue-run" type="button" hidden>Continuar run</button>
                 </div>
+                <section class="tower-launch-panel" aria-label="Subir Torre">
+                  <div class="tower-launch-head">
+                    <span class="rogue-kicker">Pós-Nuzlocke</span>
+                    <h2>Subir Torre</h2>
+                  </div>
+                  <div class="tower-carousel" aria-label="Torres disponíveis">
+                    <button class="tower-carousel-nav" type="button" data-tower-carousel="prev" aria-label="Torre anterior">‹</button>
+                    <div class="tower-mode-grid" id="tower-mode-grid"></div>
+                    <button class="tower-carousel-nav" type="button" data-tower-carousel="next" aria-label="Próxima torre">›</button>
+                  </div>
+                </section>
               </div>
             </div>
           </section>
@@ -157,6 +168,7 @@
                 <h2 id="battle-title">Batalha</h2>
                 <p id="battle-log" aria-live="polite"></p>
               </div>
+              <div class="tower-vs-badge" aria-hidden="true">VS</div>
               <article class="battle-roster player" id="player-card"></article>
               <article class="battle-roster enemy" id="enemy-card"></article>
               <div class="move-grid" id="move-grid"></div>
@@ -178,6 +190,6 @@
     </div>
 
     <script src="./mascot.js"></script>
-    <script src="./oak-rogue.js"></script>
+    <script src="./oak-rogue.js?v=20260513-tower-event"></script>
   </body>
 </html>

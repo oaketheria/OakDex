@@ -198,6 +198,11 @@ Funcionalidades principais:
 - Baixas do Nuzlocke devem ser preservadas em `state.fallenTeam` para a tela final de derrota.
 - O popup de batalha deve renderizar apenas o time vivo no lado do jogador para não ocupar espaço com derrotados.
 - Antes de remover o último Pokémon derrotado, renderizar HP 0 e animação de queda.
+- Na batalha da torre, o lado do jogador deve mostrar somente o Pokémon ativo em campo; o time reserva aparece como Pokébolas animadas abaixo do card.
+- Pokébolas de Pokémon derrotados devem ficar cinzas, e o próximo Pokémon vivo deve entrar automaticamente.
+- Cards de batalha devem mostrar os tipos do Pokémon com marcadores compactos, sem aumentar o card, deslocar sprites ou tirar o VS do centro.
+- A seleção de torre na tela inicial usa carrossel com setas e arraste horizontal.
+- Temporariamente, somente a Torre Curta fica disponível; as demais torres devem permanecer visíveis, bloqueadas e sem iniciar ao clicar.
 - Mapa ramificado por arenas, oito ginásios e Liga.
 - Combate automático com velocidade, energia, moves, itens, status, XP, evolução e troca automática de ativo.
 - SFX do Oak Rogue usam Web Audio local para início de batalha, golpes, queda e evolução.
@@ -315,6 +320,8 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - Em Nuzlocke, manter derrotados fora do time e fora do popup de batalha.
 - Preservar `fallenTeam` para mostrar os mortos quando a run for perdida.
 - Manter overflow/containment das animações de batalha para evitar scroll.
+- Na torre, preservar o layout com um Pokémon ativo por lado, Pokébolas animadas do time abaixo do jogador e VS centralizado entre os cards.
+- Ao mexer na tela inicial, manter o carrossel de torres com clique funcional na Torre Curta, setas, arraste e bloqueio das outras torres.
 - Ao adicionar relíquias, classificar corretamente entre dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia ou sobrevivência.
 - Manter OakBit contextual no Oak Rogue ao mudar telas ou textos principais.
 - Conferir preview de atributos e `node --check oak-rogue.js`.
