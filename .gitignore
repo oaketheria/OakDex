@@ -17,3 +17,12 @@ tools/firered-extraction/*.sav
 
 socialrom_repo/
 _backups/
+
+# Raw animation source packs kept only for local extraction/reference
+assets/battle-animations/downloads/
+assets/battle-animations/gen3-pack/
+assets/battle-animations/real/graphics/*-strip.png
+assets/battle-animations/real/graphics/*.png
+!assets/battle-animations/real/graphics/*-trim.png
+assets/battle-animations/red-back-sheet.png
+assets/battle-animations/red-back-throw.gif

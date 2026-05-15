@@ -52,6 +52,38 @@
         <section class="patch-notes-timeline" aria-label="Histórico de atualizações">
           <article class="patch-note-card">
             <div class="patch-note-meta">
+              <span>v1.5.0</span>
+              <strong>Oak Rogue expandido</strong>
+            </div>
+            <div class="patch-note-content">
+              <h2>Shinies, formas regionais, Torre e animações reais</h2>
+              <p>Atualização focada em evoluções, sprites, Pokédex da run, batalha automática, Torre, carrosséis e regras de moves no Oak Rogue.</p>
+              <ul>
+                <li>Shinies agora preservam a forma shiny ao evoluir, incluindo evoluções automáticas, por escolha e por eventos.</li>
+                <li>Adicionada correção para saves antigos recuperarem a flag shiny quando a pré-evolução shiny já estava registrada.</li>
+                <li>Adicionadas formas regionais e especiais de Alola, Galar, Hisui, Paldea, Pikachu com boné, Rotom, Deoxys e outras variações.</li>
+                <li>Adicionada aba de variações na Pokédex da run.</li>
+                <li>Corrigidos sprites de formas especiais, incluindo Tauros de Paldea Combat, Blaze e Aqua.</li>
+                <li>Pokébolas do time agora variam conforme raridade, lendário ou shiny.</li>
+                <li>Adicionadas animações e áudios reais de golpes em <code>assets/battle-animations/real/</code>.</li>
+                <li>Golpes do tipo Normal deixaram de ser cobertura padrão para todos os Pokémon; agora entram automaticamente apenas em Pokémon do tipo Normal.</li>
+                <li><code>Desespero</code> deixou de ser golpe comum e passou a existir apenas como fallback interno extremo.</li>
+                <li>Batalhas começam em 2x e ativam 3x automaticamente após 15 segundos na mesma batalha.</li>
+                <li>O 3x não continua ativo ao iniciar uma nova batalha e não pode ser desligado manualmente depois de ativado automaticamente.</li>
+                <li>Ajustada a animação de entrada do treinador, Pokébola e Pokémon para não ficar cortada em 2x.</li>
+                <li>Corrigida a animação da barra de vida para evitar loop de encher e diminuir.</li>
+                <li>Recrutamento na Torre agora adiciona Pokémon quando há espaço vivo no time, sem substituir Pokémon vivos indevidamente.</li>
+                <li>A regra de segunda chance da Torre foi ajustada para remover derrotados após o limite permitido.</li>
+                <li>Preparação da Torre, equipar relíquias, aprender moves e substituição por recrutamento usam carrosséis horizontais mais consistentes.</li>
+                <li>Corrigidos cliques em cards de carrossel após telas de tutor, recrutamento e preparação de equipe.</li>
+                <li>Relíquias podem ser movidas entre Pokémon por arraste na Torre, com slots ocupados mais discretos.</li>
+                <li>Atualizados <code>README.md</code> e <code>GPT.md</code> com português revisado e documentação atual do Oak Rogue.</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="patch-note-card">
+            <div class="patch-note-meta">
               <span>v1.4.1</span>
               <strong>Segurança e documentação</strong>
             </div>

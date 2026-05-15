@@ -12,8 +12,8 @@ OakRom é um projeto web vanilla com servidor Node.js simples. Ele combina:
 - Pokédex integrada ao emulador.
 - OakDuo com dois emuladores lado a lado, fluxo por papel e conexão manual WebRTC.
 - Mascote OakBit com menu, tutorial, atalhos e comportamento contextual.
-- Oak Challenge para runs Pokémon/Nuzlocke/Hackroms com overlay OBS.
-- Oak Rogue com roguelike de ginásios, modo Normal/Nuzlocke, combate automático, mapa ramificado e relíquias.
+- Oak Challenge para runs Pokémon, Nuzlocke e hackroms com overlay OBS.
+- Oak Rogue com roguelike de ginásios, modo Normal/Nuzlocke, combate automático, mapa ramificado, Torre, relíquias, shinies, formas regionais e Pokédex da run.
 
 Não há React, Vue, bundler ou build step.
 
@@ -48,7 +48,7 @@ Servidor padrão:
 - `rom-page.js`: textos, rota da ROM e modo foco da página dedicada.
 - `rom-page.css`: layout da página dedicada da ROM.
 - `emulator.html`: tela completa do emulador antigo/launcher.
-- `emulator.js`: boot do EmulatorJS, biblioteca local, fullscreen, saves, Pokédex integrada e eventos do OakBit.
+- `emulator.js`: boot do EmulatorJS, biblioteca local, tela cheia, saves, Pokédex integrada e eventos do OakBit.
 - `emulator.css`: layout do emulador e Pokédex integrada.
 - `oakduo.html`: tela OakDuo com setup por papel, dois emuladores, sala, conexão manual, OakBit e Pokédex integrada.
 - `oakduo.js`: lógica de sala, papel do jogador, WebRTC, transmissão remota, nova sala, Pokédex integrada e sincronização de ROM remota.
@@ -57,8 +57,8 @@ Servidor padrão:
 - `oak-challenge.js`: lógica de runs, time/box, PokeAPI, rotas, overlay OBS, EmulatorJS direto no overlay e Pokédex integrada.
 - `oak-challenge.css`: layout do Oak Challenge, HUD de streamer, overlay OBS, painéis e tutorial.
 - `oak-rogue.html`: tela Oak Rogue com escolha de modo, mapa, batalha, escolhas, Pokédex da run e fim da expedição.
-- `oak-rogue.js`: lógica do roguelike, Nuzlocke, saves por modo, combate automático, relíquias, mapa, eventos, recrutamento e chefes.
-- `oak-rogue.css`: layout do Oak Rogue, cards de rota, batalha, popups, relíquias e responsividade.
+- `oak-rogue.js`: lógica do roguelike, Nuzlocke, saves por modo, combate automático, relíquias, mapa, eventos, recrutamento, shinies, formas regionais, Torre e chefes.
+- `oak-rogue.css`: layout do Oak Rogue, cards de rota, batalha, popups, carrosséis, relíquias e responsividade.
 - `pokedex.html`: Pokédex principal e modo embed.
 - `app.js`: lógica da Pokédex, busca, voz, cries e `postMessage`.
 - `pokedex.css`: visual da Pokédex e overrides do modo embed.
@@ -92,6 +92,52 @@ Conferir:
 git status --short --ignored
 ```
 
+## Oak Rogue
+
+Oak Rogue é a experiência roguelike de Pokémon do projeto, separada do emulador e do Oak Challenge.
+
+Funcionalidades principais:
+
+- Tela inicial com modos Normal e Nuzlocke.
+- Saves vinculados ao modo escolhido; não permitir continuar uma run Normal como Nuzlocke nem o inverso.
+- No Nuzlocke, Pokémon derrotados devem sair imediatamente de `state.team` e de `state.battle.playerTeam`.
+- Baixas do Nuzlocke devem ser preservadas em `state.fallenTeam` para a tela final de derrota.
+- Torre com escolha de ordem, Bag, relíquias, tutor técnico, recrutamento, eventos e segunda chance até o andar 10.
+- Após o limite da segunda chance da Torre, Pokémon derrotados não devem continuar ocupando espaço no time.
+- Batalhas da Torre/Nuzlocke mostram um Pokémon ativo por lado, reservas como Pokébolas animadas e VS centralizado.
+- Pokébolas de Pokémon derrotados devem ficar cinzas, e o próximo Pokémon vivo deve entrar automaticamente.
+- Cards de batalha devem mostrar tipos como marcadores compactos, sem deslocar sprites nem tirar o VS do centro.
+- Animações reais de golpes usam assets locais em `assets/battle-animations/real/graphics` e `assets/battle-animations/real/audio`.
+- O áudio dos golpes deve ser interrompido ou fadeado para não continuar depois do impacto.
+- Velocidade de batalha começa em 2x e ativa 3x automaticamente após 15 segundos na mesma batalha.
+- O 3x não deve continuar ativo em uma nova batalha.
+- Depois que 3x é ativado automaticamente, o botão de velocidade não deve desativar o 3x.
+- Golpes do tipo Normal só devem entrar automaticamente para Pokémon que possuem tipo Normal.
+- `Desespero` não deve ser golpe comum de todos; deve existir apenas como fallback interno extremo.
+- Shinies devem manter a forma shiny ao evoluir, inclusive em evoluções automáticas, por escolha e por eventos.
+- A Pokédex da run deve registrar vistos, capturados, shinies e variações.
+- Formas regionais e especiais devem usar `spriteSlug` compatível com sprites animados do Showdown quando existirem.
+- Ao adicionar formas novas, conferir se o slug existe em `https://play.pokemonshowdown.com/sprites/ani/`.
+- A seleção de modos e torres usa carrossel horizontal por arraste do mouse.
+- Temporariamente, somente a Torre Curta fica disponível; as demais torres devem aparecer bloqueadas.
+- O botão de começar/continuar deve acompanhar o card correspondente.
+- Telas internas da Torre com vários Pokémon, como preparar ordem, equipar relíquia e aprender move, devem usar carrossel horizontal por arraste.
+- O clique em cards de carrossel deve continuar funcionando quando não houver arraste real.
+- A tela de preparação da Torre deve permitir abrir a Bag e equipar relíquias antes do próximo andar.
+- Eventos da Torre podem oferecer tutor técnico; na Torre, apenas Pokémon vivos devem ser considerados para aprender moves.
+- O tutor ignora restrição de level, mas `canLearnMove` deve manter a regra de tipo: o move só pode ser aprendido se o tipo do golpe estiver nos tipos do Pokémon.
+- Relíquias usam efeitos `damage`, `atk`, `spd`, `def`, `hp`, `heal`, `crit`, `synergy` e `sash`.
+- `damage` é dano final; `atk`, `spd`, `def` e `hp` alteram atributos separados.
+- Cada Pokémon pode equipar até `MAX_HELD_ITEMS = 2` relíquias.
+- Manter compatibilidade com saves antigos usando `heldItem` como espelho do primeiro slot e `heldItems` como fonte dos slots.
+- Ao substituir um Pokémon do time, devolver todas as relíquias equipadas para a Bag.
+- Slots de relíquias devem ser compactos, com tooltip legível fora do card/carrossel para evitar clipping.
+- Cards de batalha devem mostrar mini ícones das relíquias equipadas sem ocupar a área principal do sprite.
+- Preview de relíquias deve mostrar HP, ATK, DEF e VEL separadamente.
+- OakBit tem tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run, Torre e Nuzlocke.
+- Textos visíveis do Oak Rogue devem ficar em português revisado, com acentos e termos consistentes.
+- Validar mudanças com `node --check oak-rogue.js`.
+
 ## OakDuo
 
 OakDuo fica em `oakduo.html` e usa dois `emulator.html?duo=1&player=<n>` dentro de iframes.
@@ -102,7 +148,6 @@ Funcionalidades:
 - Setup por papel: `Criar oferta` seleciona o Jogador 1/lado esquerdo; `Entrar na sala` seleciona o Jogador 2/lado direito.
 - Cada navegador escolhe ROM, controla e transmite apenas o próprio lado.
 - O lado remoto deve aparecer como `Recebendo` quando a transmissão do outro navegador chega.
-- Separador central fino, sem informações duplicadas.
 - Card de sala com código, jogador no controle, nova sala, copiar convite e tela cheia.
 - Botão `Nova sala` gera outro código, atualiza a URL, limpa códigos WebRTC antigos e desconecta a sessão anterior.
 - Conexão manual por WebRTC: Jogador 1 cria oferta, Jogador 2 gera resposta e Jogador 1 conclui a conexão.
@@ -130,7 +175,7 @@ Funcionalidades:
 
 - Topo e ações em blocos compactos para evitar barras vazias grandes.
 - Menu da tela controlado pelo OakBit.
-- Fullscreen.
+- Tela cheia.
 - Pokédex integrada.
 - Controles atualizados por console/core.
 - Retomada automática de ROM local depois do F5 quando existe vínculo salvo.
@@ -156,8 +201,8 @@ Observações técnicas:
 - ROMs, saves e BIOS ficam apenas no navegador do usuário via IndexedDB.
 - ROMs e saves locais no workspace, como `fire-red.gba` e `fire-red.sav`, devem ficar ignorados pelo Git.
 - O EmulatorJS depende de CDN.
-- O fullscreen usa a interface do projeto.
-- No fullscreen, OakBit usa Pixel como modo seguro; o modelo 3D fica bloqueado.
+- A tela cheia usa a interface do projeto.
+- No modo tela cheia, OakBit usa Pixel como modo seguro; o modelo 3D fica bloqueado.
 - A Pokédex integrada usa `pokedex.html?embed=1` dentro de iframe.
 
 ## Oak Challenge
@@ -186,35 +231,6 @@ Overlay OBS:
 - Narração da lore no overlay é feita por `postMessage` da Pokédex embed para o Oak Challenge.
 - OakBit aparece no overlay, abre a Pokédex integrada e possui tutorial rápido específico.
 
-## Oak Rogue
-
-Oak Rogue é a experiência roguelike de Pokémon do projeto, separada do emulador e do Oak Challenge.
-
-Funcionalidades principais:
-
-- Tela inicial com modos Normal e Nuzlocke.
-- Saves ficam vinculados ao modo escolhido; não permitir continuar uma run Normal como Nuzlocke nem o inverso.
-- No Nuzlocke, Pokémon derrotados devem sair imediatamente de `state.team` e de `state.battle.playerTeam`.
-- Baixas do Nuzlocke devem ser preservadas em `state.fallenTeam` para a tela final de derrota.
-- O popup de batalha deve renderizar apenas o time vivo no lado do jogador para não ocupar espaço com derrotados.
-- Antes de remover o último Pokémon derrotado, renderizar HP 0 e animação de queda.
-- Na batalha da torre, o lado do jogador deve mostrar somente o Pokémon ativo em campo; o time reserva aparece como Pokébolas animadas abaixo do card.
-- Pokébolas de Pokémon derrotados devem ficar cinzas, e o próximo Pokémon vivo deve entrar automaticamente.
-- Cards de batalha devem mostrar os tipos do Pokémon com marcadores compactos, sem aumentar o card, deslocar sprites ou tirar o VS do centro.
-- A seleção de torre na tela inicial usa carrossel com setas e arraste horizontal.
-- Temporariamente, somente a Torre Curta fica disponível; as demais torres devem permanecer visíveis, bloqueadas e sem iniciar ao clicar.
-- Eventos da torre podem oferecer tutor técnico; na torre, apenas Pokémon vivos devem ser considerados para aprender moves.
-- Mapa ramificado por arenas, oito ginásios e Liga.
-- Combate automático com velocidade, energia, moves, itens, status, XP, evolução e troca automática de ativo.
-- SFX do Oak Rogue usam Web Audio local para início de batalha, golpes, queda e evolução.
-- Efeitos de batalha devem ficar contidos no modal e não podem criar scroll temporário na página.
-- Relíquias separadas por efeito: `damage`, `atk`, `spd`, `def`, `hp`, `heal`, `crit`, `synergy` e `sash`.
-- `damage` é dano final; `atk`, `spd`, `def` e `hp` alteram atributos separados.
-- Preview de relíquias deve mostrar HP, ATK, DEF e VEL separadamente.
-- OakBit tem tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
-- Textos visíveis do Oak Rogue devem ficar em português revisado, com acentos e termos consistentes.
-- Validar mudanças com `node --check oak-rogue.js`.
-
 ## OakBit
 
 OakBit é o mascote assistente do projeto.
@@ -226,14 +242,14 @@ Recursos:
 - Tutorial flutuante contextual.
 - Tutorial específico para OakDuo com passos contextuais: setup por papel, códigos WebRTC, ROM, transmissão, estado `Recebendo` e Pokédex.
 - Tutorial específico no Oak Challenge.
-- Tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run e Nuzlocke.
+- Tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run, Torre e Nuzlocke.
 - Modos: `library`, `emulator`, `pokedex`, `system-alert`.
 - Energia persistente.
 - Memória contextual da sessão.
 - Skins: `normal`, `shiny`, `tech`, `night` e `secret`.
 - Modelo Pixel e modelo 3D experimental.
 - Botão de restauração quando oculto.
-- Migra para o elemento fullscreen quando necessário.
+- Migra para o elemento em tela cheia quando necessário.
 
 Ao mexer no OakBit, verificar:
 
@@ -241,7 +257,7 @@ Ao mexer no OakBit, verificar:
 - `mascot.css`
 - `mascot-3d.js`
 - `oakduo.js` se envolver tela cheia, Pokédex ou voz no OakDuo
-- `emulator.js` se envolver emulador/fullscreen/Pokédex
+- `emulator.js` se envolver emulador/tela cheia/Pokédex
 - `home-library.js` se a mudança aparecer no dashboard
 
 ## Pokédex
@@ -291,8 +307,8 @@ No deploy, a narração pode cair para voz nativa do navegador.
 
 - Verificar `rom.html`, `rom-page.js`, `rom-page.css`, `emulator.js` e `emulator.css`.
 - Preservar boot do EmulatorJS.
-- Preservar fullscreen e Pokédex integrada.
-- Testar OakBit em fullscreen.
+- Preservar tela cheia e Pokédex integrada.
+- Testar OakBit em tela cheia.
 - Conferir controles por console.
 - Conferir que a importação de BIOS PS1 não aparece em sistemas que não sejam PS1.
 
@@ -321,8 +337,8 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - Em Nuzlocke, manter derrotados fora do time e fora do popup de batalha.
 - Preservar `fallenTeam` para mostrar os mortos quando a run for perdida.
 - Manter overflow/containment das animações de batalha para evitar scroll.
-- Na torre, preservar o layout com um Pokémon ativo por lado, Pokébolas animadas do time abaixo do jogador e VS centralizado entre os cards.
-- Ao mexer na tela inicial, manter o carrossel de torres com clique funcional na Torre Curta, setas, arraste e bloqueio das outras torres.
+- Na Torre, preservar o layout com um Pokémon ativo por lado, Pokébolas animadas do time abaixo do jogador e VS centralizado entre os cards.
+- Ao mexer na tela inicial, manter o carrossel de torres com clique funcional na Torre Curta, arraste e bloqueio das outras torres.
 - Ao adicionar relíquias, classificar corretamente entre dano final, ataque, velocidade, defesa, HP, cura, crítico, sinergia ou sobrevivência.
 - Manter OakBit contextual no Oak Rogue ao mudar telas ou textos principais.
 - Conferir preview de atributos e `node --check oak-rogue.js`.
@@ -343,7 +359,7 @@ No deploy, a narração pode cair para voz nativa do navegador.
 - IndexedDB pode ser bloqueado pelo navegador.
 - SpeechRecognition varia por navegador/permissão.
 - O modelo 3D do OakBit depende de Three.js via CDN e não deve ser requisito para jogar.
-- Mudanças no fullscreen podem afetar OakBit, Pokédex integrada e controles do EmulatorJS ao mesmo tempo.
+- Mudanças na tela cheia podem afetar OakBit, Pokédex integrada e controles do EmulatorJS ao mesmo tempo.
 - No overlay OBS, re-renderizar a cena inteira pode derrubar o EmulatorJS.
 - Backups não incluem ROMs nem BIOS.
 

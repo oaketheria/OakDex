@@ -13,7 +13,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./mascot.css" />
-    <link rel="stylesheet" href="./oak-rogue.css?v=20260513-tower-event" />
+    <link rel="stylesheet" href="./oak-rogue.css?v=20260514-battle-sendout-fx" />
   </head>
   <body class="oak-rogue-page">
     <div class="rogue-shell">
@@ -48,47 +48,43 @@
                 <span class="rogue-kicker">Professor Oak apresenta</span>
                 <h1>Oak Rogue</h1>
                 <p>Uma rota roguelike pelos oito ginásios: escolha encontros, equipe itens, evolua no tempo certo e sobreviva aos líderes.</p>
-                <div class="run-mode-grid" aria-label="Escolha o modo da run">
-                  <label class="run-mode-card run-card-main">
-                    <input id="run-normal" name="run-mode" type="radio" value="normal" checked />
-                    <span>
-                      <strong>Modo normal</strong>
-                      <small>Derrotados voltam depois da luta.</small>
-                    </span>
-                    <ul>
-                      <li>Sem perda permanente do time</li>
-                      <li>Level cap livre</li>
-                      <li>Melhor para testar rotas e itens</li>
-                    </ul>
-                  </label>
-                  <label class="run-mode-card featured run-card-main">
-                    <input id="run-nuzlocke" name="run-mode" type="radio" value="nuzlocke" />
-                    <span>
-                      <strong>Nuzlocke</strong>
-                      <small>Regras duras do desafio.</small>
-                    </span>
-                    <ul>
-                      <li>Quem cai sai do time</li>
-                      <li>Level cap por ginásio ativado</li>
-                      <li>Escolhas de rota importam mais</li>
-                    </ul>
-                  </label>
-                </div>
-                <div class="rogue-title-actions">
-                  <button class="rogue-primary" id="start-run" type="button">Começar jornada</button>
-                  <button class="rogue-secondary" id="continue-run" type="button" hidden>Continuar run</button>
-                </div>
-                <section class="tower-launch-panel" aria-label="Subir Torre">
-                  <div class="tower-launch-head">
-                    <span class="rogue-kicker">Pós-Nuzlocke</span>
-                    <h2>Subir Torre</h2>
+                <div class="run-mode-carousel" aria-label="Escolha o modo da run">
+                  <div class="run-mode-grid">
+                    <article class="run-mode-card run-card-main">
+                      <input id="run-normal" name="run-mode" type="radio" value="normal" checked />
+                      <span>
+                        <strong>Modo normal</strong>
+                        <small>Derrotados voltam depois da luta.</small>
+                      </span>
+                      <ul>
+                        <li>Sem perda permanente do time</li>
+                        <li>Level cap livre</li>
+                        <li>Melhor para testar rotas e itens</li>
+                      </ul>
+                      <span class="run-card-actions">
+                        <button class="run-card-primary" type="button" data-start-mode="normal">Começar Normal</button>
+                        <button class="run-card-secondary" type="button" data-continue-mode="normal" hidden>Continuar Normal</button>
+                      </span>
+                    </article>
+                    <article class="run-mode-card featured run-card-main">
+                      <input id="run-nuzlocke" name="run-mode" type="radio" value="nuzlocke" />
+                      <span>
+                        <strong>Nuzlocke</strong>
+                        <small>Regras duras do desafio.</small>
+                      </span>
+                      <ul>
+                        <li>Quem cai sai do time</li>
+                        <li>Level cap por ginásio ativado</li>
+                        <li>Escolhas de rota importam mais</li>
+                      </ul>
+                      <span class="run-card-actions">
+                        <button class="run-card-primary" type="button" data-start-mode="nuzlocke">Começar Nuzlocke</button>
+                        <button class="run-card-secondary" type="button" data-continue-mode="nuzlocke" hidden>Continuar Nuzlocke</button>
+                      </span>
+                    </article>
+                    <div id="tower-mode-grid"></div>
                   </div>
-                  <div class="tower-carousel" aria-label="Torres disponíveis">
-                    <button class="tower-carousel-nav" type="button" data-tower-carousel="prev" aria-label="Torre anterior">‹</button>
-                    <div class="tower-mode-grid" id="tower-mode-grid"></div>
-                    <button class="tower-carousel-nav" type="button" data-tower-carousel="next" aria-label="Próxima torre">›</button>
-                  </div>
-                </section>
+                </div>
               </div>
             </div>
           </section>
@@ -137,6 +133,7 @@
               <nav class="rogue-dex-tabs" aria-label="Abas da Pokédex">
                 <button class="is-active" type="button" data-dex-tab="normal">Pokédex</button>
                 <button type="button" data-dex-tab="shiny">Shiny</button>
+                <button type="button" data-dex-tab="variations">Variações</button>
               </nav>
               <div class="rogue-dex-progress">
                 <strong id="rogue-dex-generation">Gen I - 0%</strong>
@@ -190,6 +187,6 @@
     </div>
 
     <script src="./mascot.js"></script>
-    <script src="./oak-rogue.js?v=20260513-tower-event"></script>
+    <script src="./oak-rogue.js?v=20260514-battle-sendout-fx"></script>
   </body>
 </html>

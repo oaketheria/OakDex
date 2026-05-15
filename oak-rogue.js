@@ -4,11 +4,120 @@
   const SPRITE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/";
   const MINI_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
   const ANIM_BASE = "https://play.pokemonshowdown.com/sprites/ani/";
+  const ANIM_SHINY_BASE = "https://play.pokemonshowdown.com/sprites/ani-shiny/";
   const ITEM_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/";
   const BADGE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/";
   const TRAINER_BASE = "https://play.pokemonshowdown.com/sprites/trainers/";
+  const TRAINER_BACK_BASE = "https://play.pokemonshowdown.com/sprites/trainers-back/";
+  const PLAYER_TRAINER_BACK_SPRITE = "assets/battle-animations/red-back-sheet-transparent.png";
   const API_BASE = "https://pokeapi.co/api/v2";
   const NATIONAL_DEX_LIMIT = 1025;
+  const MAX_HELD_ITEMS = 2;
+  const BATTLE_SENDOUT_DURATION = 2360;
+  const BATTLE_AUTO_3X_AFTER_MS = 15000;
+  const TOWER_BAG_POSITION_KEY = "oak_rogue_tower_bag_position_v2";
+  const REAL_MOVE_ANIMS = {
+    "air-slash": { image: "air-cutter-trim.png", audio: "air-cutter.ogg", frames: 5, w: 80, h: 80, scale: 1.45 },
+    "aqua-tail": { image: "clamp-trim.png", audio: "clamp.ogg", frames: 3, w: 52, h: 140, scale: 1.06, variant: "sweep" },
+    "aura-sphere": { image: "bulk-up-trim.png", audio: "bulk-up.ogg", frames: 4, w: 48, h: 48, scale: 2.0 },
+    bite: { image: "bite-trim.png", audio: "bite.ogg", frames: 3, w: 140, h: 80, scale: 1.25 },
+    "body-slam": { image: "stomp-trim.png", audio: "stomp.ogg", frames: 2, w: 80, h: 80, scale: 1.45 },
+    bubble: { image: "lovely-kiss-trim.png", audio: "lovely-kiss.ogg", frames: 2, w: 76, h: 60, scale: 1.65 },
+    "bullet-punch": { image: "comet-punch-trim.png", audio: "comet-punch.ogg", frames: 2, w: 64, h: 64, scale: 1.65 },
+    burn: { image: "barrier-trim.png", audio: "barrier.ogg", frames: 10, w: 100, h: 144, scale: 0.98 },
+    burst: { image: "protect-trim.png", audio: "protect.ogg", frames: 10, w: 142, h: 136, scale: 1.05 },
+    confusion: { image: "calm-mind-trim.png", audio: "calm-mind.ogg", frames: 1, w: 132, h: 132, scale: 1.05, variant: "pulse" },
+    "dazzling-gleam": { image: "magic-coat-trim.png", audio: "magic-coat.ogg", frames: 10, w: 100, h: 144, scale: 1.08, variant: "flare" },
+    "disarming-voice": { image: "growl-trim.png", audio: "supersonic.ogg", frames: 4, w: 76, h: 60, scale: 1.6 },
+    "double-spark": { image: "thunder-punch-trim.png", audio: "thunder-punch.ogg", frames: 10, w: 80, h: 80, scale: 1.55 },
+    "dragon-pulse": { image: "mind-reader-trim.png", audio: "mind-reader.ogg", frames: 5, w: 140, h: 140, scale: 1.02 },
+    "draining-kiss": { image: "sweet-kiss-trim.png", audio: "sweet-kiss.ogg", frames: 2, w: 78, h: 66, scale: 1.85, variant: "float" },
+    "earth-power": { image: "bone-rush-trim.png", audio: "bone-rush.ogg", frames: 2, w: 76, h: 56, scale: 1.75 },
+    ember: { image: "ember-trim.png", audio: "ember.ogg", frames: 5, w: 64, h: 64, scale: 1.85 },
+    "fire-fang": { image: "crush-claw-trim.png", audio: "crush-claw.ogg", frames: 5, w: 74, h: 74, scale: 1.55 },
+    flail: { image: "flail-trim.png", audio: "flail.ogg", frames: 2, w: 80, h: 80, scale: 1.6 },
+    flamethrower: { image: "magic-coat-trim.png", audio: "magic-coat.ogg", frames: 10, w: 100, h: 144, scale: 1.0 },
+    "flame-wheel": { image: "bounce-trim.png", audio: "bounce.ogg", frames: 2, w: 100, h: 132, scale: 1.05, variant: "flare" },
+    focus: { image: "focus-energy-trim.png", audio: "focus-energy.ogg", frames: 4, w: 38, h: 80, scale: 1.75 },
+    foresight: { image: "foresight-trim.png", audio: "foresight.ogg", frames: 10, w: 60, h: 60, scale: 1.5 },
+    "fairy-wind": { image: "gust-trim.png", audio: "gust.ogg", frames: 10, w: 80, h: 142, scale: 1.08, variant: "float" },
+    "fury-cutter": { image: "fury-swipes-trim.png", audio: "fury-swipes.ogg", frames: 4, w: 78, h: 78, scale: 1.4 },
+    "guard-break": { image: "rock-smash-trim.png", audio: "rock-smash.ogg", frames: 3, w: 80, h: 80, scale: 1.45 },
+    gust: { image: "gust-trim.png", audio: "gust.ogg", frames: 10, w: 80, h: 142, scale: 1.0, variant: "sweep" },
+    "acid-spray": { image: "toxic-trim.png", audio: "toxic.ogg", frames: 5, w: 48, h: 68, scale: 1.7, variant: "spray" },
+    "ancient-power": { image: "defense-curl-trim.png", audio: "defense-curl.ogg", frames: 7, w: 32, h: 72, scale: 1.7 },
+    blizzard: { image: "gust-trim.png", audio: "gust.ogg", frames: 10, w: 80, h: 142, scale: 1.22, variant: "storm" },
+    "bug-bite": { image: "vise-grip-trim.png", audio: "vise-grip.ogg", frames: 4, w: 68, h: 68, scale: 1.55, variant: "snap" },
+    "charge-beam": { image: "lock-on-trim.png", audio: "lock-on.ogg", frames: 10, w: 60, h: 60, scale: 1.5 },
+    charm: { image: "charm-trim.png", audio: "charm.ogg", frames: 2, w: 76, h: 76, scale: 1.7 },
+    crunch: { image: "bite-trim.png", audio: "bite.ogg", frames: 3, w: 140, h: 80, scale: 1.35, variant: "snap" },
+    "dark-pulse": { image: "mean-look-trim.png", audio: "night-shade.ogg", frames: 1, w: 92, h: 84, scale: 1.65, variant: "pulse" },
+    detect: { image: "detect-trim.png", audio: "detect.ogg", frames: 4, w: 80, h: 80, scale: 1.45 },
+    "double-kick": { image: "double-kick-trim.png", audio: "double-kick.ogg", frames: 2, w: 80, h: 80, scale: 1.55 },
+    "double-slap": { image: "double-slap-trim.png", audio: "double-slap.ogg", frames: 2, w: 80, h: 80, scale: 1.55 },
+    "dragon-claw": { image: "scratch-trim.png", audio: "scratch.ogg", frames: 5, w: 74, h: 76, scale: 1.55 },
+    "dragon-tail": { image: "vise-grip-trim.png", audio: "vise-grip.ogg", frames: 4, w: 68, h: 68, scale: 1.4, variant: "sweep" },
+    endure: { image: "endure-trim.png", audio: "endure.ogg", frames: 10, w: 100, h: 144, scale: 1.02 },
+    "false-swipe": { image: "false-swipe-trim.png", audio: "false-swipe.ogg", frames: 5, w: 76, h: 76, scale: 1.45 },
+    "ice-beam": { image: "light-screen-trim.png", audio: "light-screen.ogg", frames: 15, w: 100, h: 144, scale: 1.0 },
+    "ice-fang": { image: "clamp-trim.png", audio: "clamp.ogg", frames: 3, w: 52, h: 140, scale: 1.12, variant: "snap" },
+    "ice-shard": { image: "sharpen-trim.png", audio: "sharpen.ogg", frames: 5, w: 80, h: 72, scale: 1.45, variant: "sweep" },
+    "icicle-spear": { image: "sharpen-trim.png", audio: "sharpen.ogg", frames: 5, w: 80, h: 72, scale: 1.65, variant: "lunge" },
+    "powder-snow": { image: "sleep-powder-trim.png", audio: "sleep-powder.ogg", frames: 10, w: 30, h: 48, scale: 2.15, variant: "float" },
+    "icy-wind": { image: "gust-trim.png", audio: "gust.ogg", frames: 10, w: 80, h: 142, scale: 1.12, variant: "drift" },
+    "karate-chop": { image: "karate-chop-trim.png", audio: "karate-chop.ogg", frames: 2, w: 80, h: 80, scale: 1.45 },
+    "flash-cannon": { image: "mirror-coat-trim.png", audio: "mirror-coat.ogg", frames: 15, w: 100, h: 144, scale: 1.0, variant: "beam" },
+    "headbutt": { image: "headbutt-trim.png", audio: "headbutt.ogg", frames: 1, w: 80, h: 80, scale: 1.55 },
+    "hex": { image: "spore-trim.png", audio: "night-shade.ogg", frames: 1, w: 40, h: 40, scale: 2.4 },
+    "iron-head": { image: "block-trim.png", audio: "block.ogg", frames: 1, w: 140, h: 140, scale: 1.0 },
+    "low-kick": { image: "low-kick-trim.png", audio: "low-kick.ogg", frames: 2, w: 80, h: 80, scale: 1.5 },
+    leech: { image: "needle-arm-trim.png", audio: "needle-arm.ogg", frames: 3, w: 80, h: 80, scale: 1.45 },
+    leer: { image: "leer-trim.png", audio: "leer.ogg", frames: 4, w: 76, h: 60, scale: 1.55 },
+    lick: { image: "lick-trim.png", audio: "lick.ogg", frames: 5, w: 48, h: 80, scale: 1.75 },
+    "mega-drain": { image: "milk-drink-trim.png", audio: "milk-drink.ogg", frames: 2, w: 132, h: 132, scale: 1.05 },
+    "magnitude": { image: "belly-drum-trim.png", audio: "belly-drum.ogg", frames: 10, w: 76, h: 74, scale: 1.18 },
+    moonblast: { image: "sweet-kiss-trim.png", audio: "sweet-kiss.ogg", frames: 2, w: 78, h: 66, scale: 1.7, variant: "pulse" },
+    "mud-slap": { image: "dig-trim.png", audio: "dig.ogg", frames: 3, w: 144, h: 64, scale: 1.12 },
+    "metal-claw": { image: "metal-claw-trim.png", audio: "metal-claw.ogg", frames: 5, w: 74, h: 74, scale: 1.55 },
+    metronome: { image: "metronome-trim.png", audio: "metronome.ogg", frames: 10, w: 78, h: 78, scale: 1.35 },
+    "night-shade": { image: "mean-look-trim.png", audio: "night-shade.ogg", frames: 1, w: 92, h: 84, scale: 1.5, variant: "fade" },
+    "night-slash": { image: "slash-trim.png", audio: "slash.ogg", frames: 4, w: 80, h: 80, scale: 1.45 },
+    "ominous-wind": { image: "cotton-spore-trim.png", audio: "cotton-spore.ogg", frames: 1, w: 40, h: 40, scale: 2.35 },
+    "peck": { image: "peck-trim.png", audio: "peck.ogg", frames: 1, w: 52, h: 52, scale: 1.85 },
+    "petal-storm": { image: "sleep-powder-trim.png", audio: "sleep-powder.ogg", frames: 10, w: 30, h: 48, scale: 2.3, variant: "storm" },
+    "pound": { image: "pound-trim.png", audio: "pound.ogg", frames: 1, w: 80, h: 80, scale: 1.55 },
+    "play-rough": { image: "crush-claw-trim.png", audio: "crush-claw.ogg", frames: 5, w: 74, h: 74, scale: 1.62, variant: "bounce" },
+    "poison-sting": { image: "poison-powder-trim.png", audio: "poison-powder.ogg", frames: 10, w: 30, h: 48, scale: 2.2 },
+    psybeam: { image: "supersonic-trim.png", audio: "supersonic.ogg", frames: 1, w: 48, h: 80, scale: 1.8 },
+    psyshock: { image: "mirror-coat-trim.png", audio: "mirror-coat.ogg", frames: 15, w: 100, h: 144, scale: 1.0, variant: "pulse" },
+    pulse: { image: "conversion-trim.png", audio: "conversion.ogg", frames: 5, w: 48, h: 48, scale: 2.0 },
+    quick: { image: "assist-trim.png", audio: "assist.ogg", frames: 1, w: 66, h: 66, scale: 1.7 },
+    "rock-throw": { image: "rock-throw-trim.png", audio: "rock-throw.ogg", frames: 2, w: 44, h: 46, scale: 2.15 },
+    "rock-smash": { image: "rock-smash-trim.png", audio: "rock-smash.ogg", frames: 3, w: 80, h: 80, scale: 1.5, variant: "drop" },
+    "seed-bomb": { image: "recycle-trim.png", audio: "recycle.ogg", frames: 1, w: 112, h: 108, scale: 1.15 },
+    "silver-wind": { image: "safeguard-trim.png", audio: "safeguard.ogg", frames: 1, w: 140, h: 40, scale: 1.65 },
+    "snarl": { image: "roar-trim.png", audio: "roar.ogg", frames: 4, w: 76, h: 60, scale: 1.55 },
+    "stomping-tantrum": { image: "stomp-trim.png", audio: "stomp.ogg", frames: 2, w: 80, h: 80, scale: 1.6, variant: "quake" },
+    shadow: { image: "mean-look-trim.png", audio: "mean-look.ogg", frames: 1, w: 92, h: 84, scale: 1.45, variant: "lunge" },
+    "shadow-ball": { image: "shadow-ball-trim.png", audio: "shadow-ball.ogg", frames: 1, w: 80, h: 80, scale: 1.42 },
+    sludge: { image: "toxic-trim.png", audio: "toxic.ogg", frames: 5, w: 48, h: 68, scale: 1.85 },
+    "smelling-salts": { image: "smelling-salts-trim.png", audio: "smelling-salts.ogg", frames: 2, w: 80, h: 80, scale: 1.55 },
+    spark: { image: "thunder-wave-trim.png", audio: "thunder-wave.ogg", frames: 4, w: 144, h: 48, scale: 1.15 },
+    "stone-edge": { image: "bone-club-trim.png", audio: "bone-club.ogg", frames: 2, w: 80, h: 80, scale: 1.55 },
+    "stored-power": { image: "calm-mind-trim.png", audio: "calm-mind.ogg", frames: 1, w: 132, h: 132, scale: 1.2 },
+    struggle: { image: "struggle-trim.png", audio: "struggle.ogg", frames: 3, w: 80, h: 80, scale: 1.5 },
+    surf: { image: "reflect-trim.png", audio: "reflect.ogg", frames: 15, w: 100, h: 144, scale: 1.0 },
+    tackle: { image: "tackle-trim.png", audio: "tackle.ogg", frames: 1, w: 80, h: 80, scale: 1.45 },
+    thundershock: { image: "thunder-shock-trim.png", audio: "thunder-shock.ogg", frames: 10, w: 42, h: 48, scale: 2.35 },
+    twister: { image: "constrict-trim.png", audio: "constrict.ogg", frames: 4, w: 138, h: 80, scale: 1.02 },
+    venoshock: { image: "stun-spore-trim.png", audio: "stun-spore.ogg", frames: 10, w: 30, h: 48, scale: 2.25 },
+    "vine-whip": { image: "vine-whip-trim.png", audio: "vine-whip.ogg", frames: 4, w: 74, h: 70, scale: 1.55 },
+    "volt-switch": { image: "baton-pass-trim.png", audio: "baton-pass.ogg", frames: 1, w: 48, h: 48, scale: 2.0 },
+    "wing-attack": { image: "bounce-trim.png", audio: "bounce.ogg", frames: 2, w: 100, h: 132, scale: 1.0, variant: "sweep" },
+    "water-pulse": { image: "health-up-trim.png", audio: "health-up.ogg", frames: 10, w: 76, h: 76, scale: 1.45 },
+    wave: { image: "soft-boiled-trim.png", audio: "soft-boiled.ogg", frames: 4, w: 132, h: 132, scale: 1.02 },
+    "x-scissor": { image: "cut-trim.png", audio: "cut.ogg", frames: 4, w: 80, h: 80, scale: 1.45 }
+  };
 
   const TYPE_COLOR = {
     Grass: "#7ee081", Fire: "#ff8a5c", Water: "#6bb7ff", Electric: "#ffe16b",
@@ -368,6 +477,7 @@
     ],
     Poison: [
       { id: "poison-sting", name: "Agulha Venenosa", type: "Poison", power: 0.9, cost: 0, level: 1 },
+      { id: "acid-spray", name: "Jato Acido", type: "Poison", power: 1.05, cost: 1, level: 10 },
       { id: "sludge", name: "Lodo", type: "Poison", power: 1.14, cost: 1, burn: true, level: 14 },
       { id: "venoshock", name: "Veneno Choque", type: "Poison", power: 1.36, cost: 2, burn: true, level: 28 }
     ],
@@ -386,58 +496,193 @@
     Electric: [
       { id: "thundershock", name: "Choque do Trovao", type: "Electric", power: 0.96, cost: 0, level: 1, extra: 0.2 },
       { id: "spark", name: "Centelha", type: "Electric", power: 1.18, cost: 1, extra: 0.32, level: 13 },
+      { id: "charge-beam", name: "Raio Carga", type: "Electric", power: 1.24, cost: 1, extra: 0.35, level: 22 },
       { id: "volt-switch", name: "Troca Volt", type: "Electric", power: 1.34, cost: 2, extra: 0.45, level: 28 }
     ],
     Psychic: [
       { id: "confusion", name: "Confusao", type: "Psychic", power: 1.0, cost: 0, level: 1 },
+      { id: "stored-power", name: "Poder Guardado", type: "Psychic", power: 1.12, cost: 1, level: 10 },
+      { id: "foresight", name: "Clarividencia", type: "Psychic", power: 1.16, cost: 1, extra: 0.12, level: 14 },
       { id: "psybeam", name: "Raio Psiquico", type: "Psychic", power: 1.22, cost: 1, level: 16 },
       { id: "psyshock", name: "Psicochoque", type: "Psychic", power: 1.38, cost: 2, level: 30 }
     ],
     Rock: [
       { id: "rock-throw", name: "Pedrada", type: "Rock", power: 1.0, cost: 0, level: 1 },
+      { id: "rock-smash", name: "Quebra Rocha", type: "Rock", power: 1.14, cost: 1, level: 12 },
+      { id: "ancient-power", name: "Poder Ancestral", type: "Rock", power: 1.26, cost: 1, extra: 0.18, level: 22 },
       { id: "stone-edge", name: "Gume de Pedra", type: "Rock", power: 1.42, cost: 2, level: 30 }
     ],
     Ground: [
       { id: "mud-slap", name: "Tapa de Lama", type: "Ground", power: 0.96, cost: 0, level: 1 },
+      { id: "stomping-tantrum", name: "Birra Pisoteante", type: "Ground", power: 1.18, cost: 1, level: 14 },
+      { id: "magnitude", name: "Magnitude", type: "Ground", power: 1.26, cost: 1, extra: 0.2, level: 22 },
       { id: "earth-power", name: "Poder da Terra", type: "Ground", power: 1.36, cost: 2, level: 28 }
     ],
     Fighting: [
       { id: "karate-chop", name: "Golpe Karate", type: "Fighting", power: 1.02, cost: 0, level: 1 },
+      { id: "detect", name: "Detectar", type: "Fighting", power: 1.06, cost: 0, extra: 0.12, level: 6 },
+      { id: "low-kick", name: "Chute Baixo", type: "Fighting", power: 1.12, cost: 1, level: 10 },
+      { id: "double-kick", name: "Chute Duplo", type: "Fighting", power: 1.2, cost: 1, extra: 0.25, level: 18 },
+      { id: "smelling-salts", name: "Despertar Brutal", type: "Fighting", power: 1.26, cost: 1, level: 24 },
       { id: "aura-sphere", name: "Esfera Aura", type: "Fighting", power: 1.34, cost: 2, level: 28 }
     ],
     Ghost: [
       { id: "lick", name: "Lambida", type: "Ghost", power: 0.94, cost: 0, level: 1 },
+      { id: "night-shade", name: "Sombra Noturna", type: "Ghost", power: 1.12, cost: 1, level: 12 },
+      { id: "ominous-wind", name: "Vento Sinistro", type: "Ghost", power: 1.22, cost: 1, execute: 0.08, level: 20 },
       { id: "shadow-ball", name: "Bola Sombria", type: "Ghost", power: 1.36, cost: 2, execute: 0.12, level: 28 }
     ],
     Bug: [
       { id: "fury-cutter", name: "Corte Furioso", type: "Bug", power: 1.0, cost: 0, level: 1 },
+      { id: "bug-bite", name: "Picada", type: "Bug", power: 1.12, cost: 1, level: 12 },
+      { id: "silver-wind", name: "Vento Prata", type: "Bug", power: 1.22, cost: 1, extra: 0.2, level: 18 },
       { id: "x-scissor", name: "Tesoura X", type: "Bug", power: 1.3, cost: 1, level: 24 }
     ],
     Flying: [
       { id: "gust", name: "Lufada", type: "Flying", power: 0.98, cost: 0, level: 1 },
+      { id: "peck", name: "Bicada", type: "Flying", power: 1.06, cost: 0, level: 6 },
+      { id: "wing-attack", name: "Ataque de Asa", type: "Flying", power: 1.18, cost: 1, level: 14 },
       { id: "air-slash", name: "Corte de Ar", type: "Flying", power: 1.28, cost: 1, level: 22 }
     ],
     Ice: [
-      { id: "ice-shard", name: "Estilhaco de Gelo", type: "Ice", power: 1.0, cost: 0, level: 1 },
-      { id: "ice-beam", name: "Raio de Gelo", type: "Ice", power: 1.38, cost: 2, level: 30 }
+      { id: "powder-snow", name: "Pó de Neve", type: "Ice", power: 0.9, cost: 0, level: 1 },
+      { id: "ice-shard", name: "Estilhaço de Gelo", type: "Ice", power: 1.0, cost: 0, level: 1 },
+      { id: "icy-wind", name: "Vento Gelado", type: "Ice", power: 1.12, cost: 1, level: 12 },
+      { id: "ice-fang", name: "Presa de Gelo", type: "Ice", power: 1.24, cost: 1, level: 20 },
+      { id: "icicle-spear", name: "Lança de Gelo", type: "Ice", power: 1.3, cost: 1, level: 24 },
+      { id: "ice-beam", name: "Raio de Gelo", type: "Ice", power: 1.38, cost: 2, level: 30 },
+      { id: "blizzard", name: "Nevasca", type: "Ice", power: 1.52, cost: 2, level: 34 }
     ],
     Dragon: [
       { id: "twister", name: "Twister", type: "Dragon", power: 1.0, cost: 0, level: 1 },
+      { id: "dragon-tail", name: "Cauda Dragao", type: "Dragon", power: 1.18, cost: 1, level: 14 },
+      { id: "dragon-claw", name: "Garra Dragao", type: "Dragon", power: 1.28, cost: 1, level: 22 },
       { id: "dragon-pulse", name: "Pulso Dragao", type: "Dragon", power: 1.38, cost: 2, level: 30 }
     ],
     Dark: [
       { id: "bite", name: "Mordida", type: "Dark", power: 1.02, cost: 0, level: 1 },
-      { id: "night-slash", name: "Corte Noturno", type: "Dark", power: 1.3, cost: 1, level: 24 }
+      { id: "snarl", name: "Rosnado Sombrio", type: "Dark", power: 1.12, cost: 1, level: 12 },
+      { id: "crunch", name: "Triturar", type: "Dark", power: 1.24, cost: 1, level: 20 },
+      { id: "night-slash", name: "Corte Noturno", type: "Dark", power: 1.3, cost: 1, level: 24 },
+      { id: "dark-pulse", name: "Pulso Sombrio", type: "Dark", power: 1.38, cost: 2, level: 30 }
     ],
     Normal: [
       { id: "tackle", name: "Investida", type: "Normal", power: 0.92, cost: 0, level: 1 },
+      { id: "pound", name: "Pancada", type: "Normal", power: 1.0, cost: 0, level: 1 },
+      { id: "leer", name: "Encarar", type: "Normal", power: 1.04, cost: 0, level: 4 },
+      { id: "double-slap", name: "Tapa Duplo", type: "Normal", power: 1.1, cost: 1, extra: 0.18, level: 10 },
+      { id: "headbutt", name: "Cabecada", type: "Normal", power: 1.16, cost: 1, level: 14 },
+      { id: "false-swipe", name: "Falso Corte", type: "Normal", power: 1.2, cost: 1, level: 18 },
       { id: "body-slam", name: "Corpo Pesado", type: "Normal", power: 1.24, cost: 1, level: 22 }
+      ,{ id: "flail", name: "Debater", type: "Normal", power: 1.3, cost: 1, level: 26 }
+      ,{ id: "endure", name: "Resistir", type: "Normal", power: 1.34, cost: 2, level: 30 }
+      ,{ id: "metronome", name: "Metronomo", type: "Normal", power: 1.38, cost: 2, extra: 0.22, level: 32 }
+    ],
+    Steel: [
+      { id: "metal-claw", name: "Garra Metal", type: "Steel", power: 1.02, cost: 0, level: 1 },
+      { id: "bullet-punch", name: "Soco Bala", type: "Steel", power: 1.12, cost: 1, level: 10 },
+      { id: "iron-head", name: "Cabeca de Ferro", type: "Steel", power: 1.22, cost: 1, level: 16 },
+      { id: "flash-cannon", name: "Canhao Flash", type: "Steel", power: 1.38, cost: 2, level: 28 }
     ],
     Fairy: [
+      { id: "fairy-wind", name: "Vento Fada", type: "Fairy", power: 0.94, cost: 0, level: 1 },
       { id: "disarming-voice", name: "Voz Encantada", type: "Fairy", power: 0.98, cost: 0, level: 1 },
-      { id: "moonblast", name: "Explosao Lunar", type: "Fairy", power: 1.4, cost: 2, level: 30 }
+      { id: "charm", name: "Charme", type: "Fairy", power: 1.04, cost: 0, level: 8 },
+      { id: "draining-kiss", name: "Beijo Drenante", type: "Fairy", power: 1.08, cost: 1, drain: 0.3, level: 12 },
+      { id: "dazzling-gleam", name: "Brilho Mágico", type: "Fairy", power: 1.28, cost: 1, level: 22 },
+      { id: "play-rough", name: "Carinho", type: "Fairy", power: 1.34, cost: 2, level: 26 },
+      { id: "moonblast", name: "Explosão Lunar", type: "Fairy", power: 1.4, cost: 2, level: 30 }
     ]
   };
+
+  function specialForm(id, apiName, name, types, hp, atk, def, spd, trait, text = "Forma regional ou especial encontrada nas rotas do Oak Rogue.") {
+    return { id, apiName, spriteSlug: apiName, name, types, hp, atk, def, spd, trait, text, national: true, specialForm: true };
+  }
+
+  const SPECIAL_FORMS = [
+    specialForm(20025, "pikachu-original", "Pikachu Original Cap", ["Electric"], 35, 58, 45, 90, "Boné Original"),
+    specialForm(20026, "pikachu-hoenn", "Pikachu Hoenn Cap", ["Electric"], 35, 58, 45, 90, "Boné Hoenn"),
+    specialForm(20027, "pikachu-sinnoh", "Pikachu Sinnoh Cap", ["Electric"], 35, 58, 45, 90, "Boné Sinnoh"),
+    specialForm(20028, "pikachu-unova", "Pikachu Unova Cap", ["Electric"], 35, 58, 45, 90, "Boné Unova"),
+    specialForm(20029, "pikachu-kalos", "Pikachu Kalos Cap", ["Electric"], 35, 58, 45, 90, "Boné Kalos"),
+    specialForm(20030, "pikachu-alola", "Pikachu Alola Cap", ["Electric"], 35, 58, 45, 90, "Boné Alola"),
+    specialForm(20031, "pikachu-partner", "Pikachu Partner Cap", ["Electric"], 35, 58, 45, 90, "Parceiro"),
+    specialForm(20032, "pikachu-world", "Pikachu World Cap", ["Electric"], 35, 58, 45, 90, "Campeão Mundial"),
+    specialForm(20037, "vulpix-alola", "Vulpix de Alola", ["Ice"], 38, 50, 65, 65, "Neve"),
+    specialForm(20038, "ninetales-alola", "Ninetales de Alola", ["Ice", "Fairy"], 73, 81, 100, 109, "Véu Nevado"),
+    specialForm(20052, "meowth-alola", "Meowth de Alola", ["Dark"], 40, 65, 40, 90, "Astúcia"),
+    specialForm(20053, "persian-alola", "Persian de Alola", ["Dark"], 65, 75, 60, 115, "Pelagem Real"),
+    specialForm(20074, "geodude-alola", "Geodude de Alola", ["Rock", "Electric"], 40, 75, 100, 20, "Magnetismo"),
+    specialForm(20075, "graveler-alola", "Graveler de Alola", ["Rock", "Electric"], 55, 95, 115, 35, "Magnetismo"),
+    specialForm(20076, "golem-alola", "Golem de Alola", ["Rock", "Electric"], 80, 120, 130, 45, "Canhão Magnético"),
+    specialForm(20103, "exeggutor-alola", "Exeggutor de Alola", ["Grass", "Dragon"], 95, 125, 85, 45, "Draco Palmeira"),
+    specialForm(20105, "marowak-alola", "Marowak de Alola", ["Fire", "Ghost"], 60, 80, 110, 45, "Dança Flamejante"),
+    specialForm(20026.1, "raichu-alola", "Raichu de Alola", ["Electric", "Psychic"], 60, 95, 75, 110, "Surfe Psíquico"),
+    specialForm(20077, "ponyta-galar", "Ponyta de Galar", ["Psychic"], 50, 75, 55, 90, "Pastel"),
+    specialForm(20078, "rapidash-galar", "Rapidash de Galar", ["Psychic", "Fairy"], 65, 100, 80, 105, "Galope Místico"),
+    specialForm(20110, "weezing-galar", "Weezing de Galar", ["Poison", "Fairy"], 65, 95, 120, 60, "Chaminé Real"),
+    specialForm(20215, "sneasel-hisui", "Sneasel de Hisui", ["Fighting", "Poison"], 55, 95, 55, 115, "Escalada"),
+    specialForm(20019, "rattata-alola", "Rattata de Alola", ["Dark", "Normal"], 30, 56, 35, 72, "Noturno"),
+    specialForm(20020, "raticate-alola", "Raticate de Alola", ["Dark", "Normal"], 75, 71, 70, 77, "Chefe Noturno"),
+    specialForm(20027.1, "sandshrew-alola", "Sandshrew de Alola", ["Ice", "Steel"], 50, 75, 90, 40, "Iglu"),
+    specialForm(20028.1, "sandslash-alola", "Sandslash de Alola", ["Ice", "Steel"], 75, 100, 120, 65, "Garras Geladas"),
+    specialForm(20050, "diglett-alola", "Diglett de Alola", ["Ground", "Steel"], 10, 55, 40, 90, "Cabelo Metal"),
+    specialForm(20051, "dugtrio-alola", "Dugtrio de Alola", ["Ground", "Steel"], 35, 100, 60, 110, "Trio Metal"),
+    specialForm(20088, "grimer-alola", "Grimer de Alola", ["Poison", "Dark"], 80, 80, 50, 25, "Lodo Colorido"),
+    specialForm(20089, "muk-alola", "Muk de Alola", ["Poison", "Dark"], 105, 105, 100, 50, "Lodo Prismático"),
+    specialForm(20052.1, "meowth-galar", "Meowth de Galar", ["Steel"], 50, 65, 55, 40, "Sucata"),
+    specialForm(20863, "perrserker", "Perrserker", ["Steel"], 70, 110, 100, 50, "Barba de Ferro"),
+    specialForm(20083, "farfetchd-galar", "Farfetch'd de Galar", ["Fighting"], 52, 95, 55, 55, "Alho Valente"),
+    specialForm(20865, "sirfetchd", "Sirfetch'd", ["Fighting"], 62, 135, 95, 65, "Cavaleiro"),
+    specialForm(20199, "slowpoke-galar", "Slowpoke de Galar", ["Psychic"], 90, 65, 65, 15, "Tempero"),
+    specialForm(20080, "slowbro-galar", "Slowbro de Galar", ["Poison", "Psychic"], 95, 100, 95, 30, "Canhão Tóxico"),
+    specialForm(20199.1, "slowking-galar", "Slowking de Galar", ["Poison", "Psychic"], 95, 110, 95, 30, "Poção Real"),
+    specialForm(20122, "mr-mime-galar", "Mr. Mime de Galar", ["Ice", "Psychic"], 50, 90, 75, 100, "Sapateado"),
+    specialForm(20866, "mr-rime", "Mr. Rime", ["Ice", "Psychic"], 80, 110, 85, 70, "Mímico Gelado"),
+    specialForm(20144, "articuno-galar", "Articuno de Galar", ["Psychic", "Flying"], 90, 110, 95, 95, "Olhar Congelante"),
+    specialForm(20145, "zapdos-galar", "Zapdos de Galar", ["Fighting", "Flying"], 90, 115, 90, 100, "Chute Trovejante"),
+    specialForm(20146, "moltres-galar", "Moltres de Galar", ["Dark", "Flying"], 90, 120, 95, 90, "Fúria Sombria"),
+    specialForm(20222, "corsola-galar", "Corsola de Galar", ["Ghost"], 60, 65, 100, 30, "Coral Pálido"),
+    specialForm(20864, "cursola", "Cursola", ["Ghost"], 60, 145, 100, 30, "Casca Vazia"),
+    specialForm(20263, "zigzagoon-galar", "Zigzagoon de Galar", ["Dark", "Normal"], 38, 45, 41, 60, "Ziguezague"),
+    specialForm(20264, "linoone-galar", "Linoone de Galar", ["Dark", "Normal"], 78, 70, 61, 100, "Disparo"),
+    specialForm(20862, "obstagoon", "Obstagoon", ["Dark", "Normal"], 93, 90, 101, 95, "Bloqueio"),
+    specialForm(20554, "darumaka-galar", "Darumaka de Galar", ["Ice"], 70, 90, 45, 50, "Boneco de Neve"),
+    specialForm(20555, "darmanitan-galar", "Darmanitan de Galar", ["Ice"], 105, 130, 65, 95, "Modo Gelado"),
+    specialForm(20562, "yamask-galar", "Yamask de Galar", ["Ground", "Ghost"], 38, 65, 85, 30, "Máscara Rúnica"),
+    specialForm(20867, "runerigus", "Runerigus", ["Ground", "Ghost"], 58, 95, 145, 30, "Runas"),
+    specialForm(20618, "stunfisk-galar", "Stunfisk de Galar", ["Ground", "Steel"], 109, 81, 99, 32, "Armadilha"),
+    specialForm(20058, "growlithe-hisui", "Growlithe de Hisui", ["Fire", "Rock"], 60, 75, 55, 55, "Guarda Rochosa"),
+    specialForm(20059, "arcanine-hisui", "Arcanine de Hisui", ["Fire", "Rock"], 95, 115, 80, 90, "Fera Vulcânica"),
+    specialForm(20100, "voltorb-hisui", "Voltorb de Hisui", ["Electric", "Grass"], 40, 60, 50, 100, "Apricorn"),
+    specialForm(20101, "electrode-hisui", "Electrode de Hisui", ["Electric", "Grass"], 60, 80, 70, 150, "Explosão Verde"),
+    specialForm(20157, "typhlosion-hisui", "Typhlosion de Hisui", ["Fire", "Ghost"], 73, 113, 78, 95, "Chama Espiritual"),
+    specialForm(20503, "samurott-hisui", "Samurott de Hisui", ["Water", "Dark"], 90, 108, 85, 85, "Lâmina Cruel"),
+    specialForm(20724, "decidueye-hisui", "Decidueye de Hisui", ["Grass", "Fighting"], 88, 112, 95, 60, "Arqueiro Marcial"),
+    specialForm(20570, "zorua-hisui", "Zorua de Hisui", ["Normal", "Ghost"], 35, 85, 40, 70, "Ilusão Pálida"),
+    specialForm(20571, "zoroark-hisui", "Zoroark de Hisui", ["Normal", "Ghost"], 55, 125, 60, 110, "Rancor"),
+    specialForm(20705, "sliggoo-hisui", "Sliggoo de Hisui", ["Steel", "Dragon"], 58, 83, 113, 40, "Caracol Metal"),
+    specialForm(20706, "goodra-hisui", "Goodra de Hisui", ["Steel", "Dragon"], 80, 110, 150, 60, "Gosma Blindada"),
+    specialForm(20713, "avalugg-hisui", "Avalugg de Hisui", ["Ice", "Rock"], 95, 117, 184, 38, "Geleira Rochosa"),
+    specialForm(20194, "wooper-paldea", "Wooper de Paldea", ["Poison", "Ground"], 55, 45, 45, 15, "Lama Tóxica"),
+    specialForm(20980, "clodsire", "Clodsire", ["Poison", "Ground"], 130, 75, 90, 20, "Pântano"),
+    specialForm(20128, "tauros-paldeacombat", "Tauros de Paldea Combat", ["Fighting"], 75, 110, 105, 100, "Raça Combat"),
+    specialForm(20128.1, "tauros-paldeablaze", "Tauros de Paldea Blaze", ["Fighting", "Fire"], 75, 110, 105, 100, "Raça Blaze"),
+    specialForm(20128.2, "tauros-paldeaaqua", "Tauros de Paldea Aqua", ["Fighting", "Water"], 75, 110, 105, 100, "Raça Aqua"),
+    specialForm(20386.1, "deoxys-attack", "Deoxys Ataque", ["Psychic"], 50, 180, 20, 150, "Forma Ataque"),
+    specialForm(20386.2, "deoxys-defense", "Deoxys Defesa", ["Psychic"], 50, 70, 160, 90, "Forma Defesa"),
+    specialForm(20386.3, "deoxys-speed", "Deoxys Velocidade", ["Psychic"], 50, 95, 90, 180, "Forma Velocidade"),
+    specialForm(20479.1, "rotom-heat", "Rotom Heat", ["Electric", "Fire"], 50, 105, 107, 86, "Forno"),
+    specialForm(20479.2, "rotom-wash", "Rotom Wash", ["Electric", "Water"], 50, 105, 107, 86, "Lavadora"),
+    specialForm(20479.3, "rotom-frost", "Rotom Frost", ["Electric", "Ice"], 50, 105, 107, 86, "Geladeira"),
+    specialForm(20479.4, "rotom-fan", "Rotom Fan", ["Electric", "Flying"], 50, 105, 107, 86, "Ventilador"),
+    specialForm(20479.5, "rotom-mow", "Rotom Mow", ["Electric", "Grass"], 50, 105, 107, 86, "Cortador"),
+    specialForm(20487, "giratina-origin", "Giratina Origem", ["Ghost", "Dragon"], 150, 110, 100, 90, "Mundo Reverso"),
+    specialForm(20492, "shaymin-sky", "Shaymin Céu", ["Grass", "Flying"], 100, 115, 75, 127, "Gratidão Celeste"),
+    specialForm(20903, "sneasler", "Sneasler", ["Fighting", "Poison"], 80, 130, 70, 120, "Garra Íngreme")
+  ];
+
+  const SPECIAL_FORMS_BY_ID = new Map(SPECIAL_FORMS.map((form) => [form.id, form]));
 
   const EVOLUTIONS = {
     1: { into: { id: 2, name: "Ivysaur", types: ["Grass", "Poison"], hp: 62, atk: 62, def: 63, spd: 60, trait: "Controle" }, level: 16 },
@@ -574,6 +819,46 @@
     625: { into: { id: 983, name: "Kingambit", types: ["Dark", "Steel"], hp: 100, atk: 135, def: 120, spd: 50, trait: "General Supremo" }, stone: "leader" }
   };
 
+  Object.assign(EVOLUTIONS, {
+    25: {
+      options: [
+        { into: { id: 26, name: "Raichu", types: ["Electric"], hp: 66, atk: 90, def: 55, spd: 110, trait: "Voltagem" }, stone: "thunder" },
+        { into: { ...SPECIAL_FORMS_BY_ID.get(20026.1) }, stone: "alola" }
+      ],
+      stone: "choice"
+    },
+    20037: { into: { ...SPECIAL_FORMS_BY_ID.get(20038) }, stone: "ice" },
+    20019: { into: { ...SPECIAL_FORMS_BY_ID.get(20020) }, level: 20 },
+    20027.1: { into: { ...SPECIAL_FORMS_BY_ID.get(20028.1) }, stone: "ice" },
+    20050: { into: { ...SPECIAL_FORMS_BY_ID.get(20051) }, level: 26 },
+    20088: { into: { ...SPECIAL_FORMS_BY_ID.get(20089) }, level: 38 },
+    20052: { into: { ...SPECIAL_FORMS_BY_ID.get(20053) }, level: 28 },
+    20052.1: { into: { ...SPECIAL_FORMS_BY_ID.get(20863) }, level: 28 },
+    20083: { into: { ...SPECIAL_FORMS_BY_ID.get(20865) }, level: 32 },
+    20199: {
+      options: [
+        { into: { ...SPECIAL_FORMS_BY_ID.get(20080) }, stone: "poison" },
+        { into: { ...SPECIAL_FORMS_BY_ID.get(20199.1) }, stone: "king" }
+      ],
+      stone: "choice"
+    },
+    20122: { into: { ...SPECIAL_FORMS_BY_ID.get(20866) }, level: 32 },
+    20222: { into: { ...SPECIAL_FORMS_BY_ID.get(20864) }, level: 38 },
+    20263: { into: { ...SPECIAL_FORMS_BY_ID.get(20264) }, level: 20 },
+    20264: { into: { ...SPECIAL_FORMS_BY_ID.get(20862) }, level: 35 },
+    20554: { into: { ...SPECIAL_FORMS_BY_ID.get(20555) }, stone: "ice" },
+    20562: { into: { ...SPECIAL_FORMS_BY_ID.get(20867) }, level: 34 },
+    20074: { into: { ...SPECIAL_FORMS_BY_ID.get(20075) }, level: 25 },
+    20075: { into: { ...SPECIAL_FORMS_BY_ID.get(20076) }, level: 40 },
+    20077: { into: { ...SPECIAL_FORMS_BY_ID.get(20078) }, level: 40 },
+    20058: { into: { ...SPECIAL_FORMS_BY_ID.get(20059) }, stone: "fire" },
+    20100: { into: { ...SPECIAL_FORMS_BY_ID.get(20101) }, stone: "leaf" },
+    20570: { into: { ...SPECIAL_FORMS_BY_ID.get(20571) }, level: 30 },
+    20705: { into: { ...SPECIAL_FORMS_BY_ID.get(20706) }, level: 50 },
+    20215: { into: { ...SPECIAL_FORMS_BY_ID.get(20903) }, level: 36 },
+    20194: { into: { ...SPECIAL_FORMS_BY_ID.get(20980) }, level: 20 }
+  });
+
   const NODE_TYPES = [
     { type: "battle", label: "Batalha", icon: "B", sprite: "trainer", copy: "Inimigo escalado pelo andar." },
     { type: "grass", label: "Mato", icon: "G", sprite: "grass", copy: "Batalha selvagem aleatória." },
@@ -639,11 +924,12 @@
     pendingEvolutions: [],
     pendingEvolutionChoices: [],
     pendingMapFloor: null,
+    pendingTowerOrder: [],
     tower: null,
     lastTowerMode: null,
     routeVersion: ROUTE_VERSION,
     autoBattling: false,
-    battleSpeed: 1,
+    battleSpeed: 2,
     nuzlockeMode: false,
     levelCapEnabled: true
   };
@@ -653,23 +939,45 @@
   const dynamicEvolutionCache = new Map();
   let nationalDexIndex = [];
   let nationalDexLoadStarted = false;
-  const sprite = (p) => `${SPRITE_BASE}${p.id}.png`;
-  const mini = (p) => `${MINI_BASE}${p.id}.png`;
+  const sprite = (p) => p.spriteSlug
+    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug}.gif`
+    : `${SPRITE_BASE}${p.shiny ? "shiny/" : ""}${p.id}.png`;
+  const mini = (p) => p.spriteSlug
+    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug}.gif`
+    : `${MINI_BASE}${p.shiny ? "shiny/" : ""}${p.id}.png`;
   const slug = (name) => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const animated = (p) => `${ANIM_BASE}${slug(p.name.replace(/\s+(Alfa|Prisma|Condutor|Jardim|Toxico|Vulcao|Sismico|Tenente)$/i, ""))}.gif`;
+  const animated = (p) => `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug || slug(baseDexName(p))}.gif`;
   const itemSprite = (item) => `${ITEM_BASE}${item.sprite || item.id}.png`;
   const badgeSprite = (badge) => `${BADGE_BASE}${badge}.png`;
   const trainerSprite = (name) => `${TRAINER_BASE}${name}.png`;
+  const trainerBackSprite = (name) => `${TRAINER_BACK_BASE}${name}.png`;
   const PLAYER_TRAINER_SPRITE = "red";
   const playerTrainerSprite = () => PLAYER_TRAINER_SPRITE;
+  const playerTrainerBackSprite = () => PLAYER_TRAINER_BACK_SPRITE;
   const tmSprite = (move) => `${ITEM_BASE}tm-${String(move?.type || "normal").toLowerCase()}.png`;
+  const pokemonRarityScore = (p) => (p?.hp || 0) + (p?.atk || 0) + (p?.def || 0) + (p?.spd || 0);
+  const pokemonBallSprite = (p) => {
+    const legendary = p?.legendary || LEGENDARY_POOL.some((mon) => mon.id === p?.id);
+    if (legendary) return `${ITEM_BASE}master-ball.png`;
+    if (p?.shiny) return `${ITEM_BASE}luxury-ball.png`;
+    const score = pokemonRarityScore(p);
+    if (score >= 390) return `${ITEM_BASE}ultra-ball.png`;
+    if (score >= 310) return `${ITEM_BASE}great-ball.png`;
+    if (score >= 260) return `${ITEM_BASE}premier-ball.png`;
+    return `${ITEM_BASE}poke-ball.png`;
+  };
   const uid = (prefix = "id") => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const DEX_KEY = "oak_rogue_dex_seen";
   const SHINY_DEX_KEY = "oak_rogue_dex_shiny_seen";
+  const VARIATION_DEX_KEY = "oak_rogue_dex_variation_seen";
   const UNLOCKS_KEY = "oak_rogue_unlocks";
+  let towerBagSuppressClickUntil = 0;
+  let towerOrderSuppressClickUntil = 0;
+  let towerBagGlobalDropReady = false;
+  let battleSpeedCountdownTimer = null;
   const TOWER_DEBUG_UNLOCK_ALL = false;
   const TEMP_AVAILABLE_TOWER_MODES = new Set(["short"]);
-  const SHINY_RATE = 0.035;
+  const SHINY_RATE = 0.12;
   const TOWER_MODES = [
     { id: "short", title: "Torre Curta", floors: 50, requirement: "nuzlockeCleared", unlockText: "Vença uma run Nuzlocke para abrir.", reward: "Libera Torre Liga." },
     { id: "league", title: "Torre Liga", floors: 100, requirement: "towerShortCleared", unlockText: "Complete a Torre Curta para abrir.", reward: "Libera Torre Nacional." },
@@ -705,16 +1013,19 @@
         const id = Number(entry.url?.match(/\/pokemon-species\/(\d+)\//)?.[1]) || index + 1;
         return { id, name: formatNationalName(entry.name), national: true };
       }).filter((entry) => entry.id <= NATIONAL_DEX_LIMIT);
+      nationalDexIndex = [...nationalDexIndex, ...SPECIAL_FORMS];
       renderDexBadge();
       if ($("rogue-dex-modal")?.classList.contains("is-open")) renderRogueDex();
     } catch {
-      nationalDexIndex = [];
+      nationalDexIndex = [...SPECIAL_FORMS];
     }
     return nationalDexIndex;
   }
 
   async function hydrateNationalPokemon(ref) {
     if (!ref?.id) return null;
+    if (ref.specialForm) return { ...ref };
+    if (SPECIAL_FORMS_BY_ID.has(ref.id)) return { ...SPECIAL_FORMS_BY_ID.get(ref.id) };
     if (ref.types?.length && Number.isFinite(ref.hp)) return ref;
     if (nationalPokemonCache.has(ref.id)) return { ...nationalPokemonCache.get(ref.id) };
     const data = await fetchJson(`${API_BASE}/pokemon/${ref.id}`);
@@ -789,6 +1100,11 @@
     return entries;
   }
 
+  async function towerEvolutionCandidate() {
+    const entries = await teamEvolutionOptions();
+    return entries.find(({ mon, options }) => mon?.currentHp > 0 && options?.length);
+  }
+
   async function randomNationalPokemon(excludedIds = new Set()) {
     const index = await loadNationalDexIndex();
     const candidates = index.filter((entry) => !excludedIds.has(entry.id));
@@ -808,7 +1124,7 @@
   function dexCatalog() {
     const entries = nationalDexIndex.length
       ? [...nationalDexIndex, ...STARTERS, ...POOL, ...Object.values(GYM_POOLS).flat(), ...ALL_BOSSES.flatMap((boss) => boss.team)]
-      : [...STARTERS, ...POOL, ...Object.values(GYM_POOLS).flat(), ...ALL_BOSSES.flatMap((boss) => boss.team)];
+      : [...STARTERS, ...POOL, ...Object.values(GYM_POOLS).flat(), ...ALL_BOSSES.flatMap((boss) => boss.team), ...SPECIAL_FORMS];
     const unique = new Map();
     entries.forEach((p) => {
       if (!p?.id || unique.has(p.id)) return;
@@ -828,6 +1144,7 @@
   }
 
   function dexKeyFor(tab = "normal") {
+    if (tab === "variations") return VARIATION_DEX_KEY;
     return tab === "shiny" ? SHINY_DEX_KEY : DEX_KEY;
   }
 
@@ -859,6 +1176,13 @@
         saveDexSeen(shinySeen, "shiny");
       }
     }
+    if (mon.specialForm) {
+      const variationSeen = loadDexSeen("variations");
+      if (!variationSeen.has(mon.id)) {
+        variationSeen.add(mon.id);
+        saveDexSeen(variationSeen, "variations");
+      }
+    }
     renderDexBadge();
   }
 
@@ -874,7 +1198,7 @@
   }
 
   function shinySprite(p) {
-    return `${ANIM_BASE}shiny/${slug(baseDexName(p))}.gif`;
+    return `${ANIM_SHINY_BASE}${p.spriteSlug || slug(baseDexName(p))}.gif`;
   }
 
   function maybeMarkShiny(mon) {
@@ -883,22 +1207,25 @@
   }
 
   function renderRogueDex(tab = document.querySelector(".rogue-dex-tabs .is-active")?.dataset.dexTab || "normal") {
-    const catalog = dexCatalog();
+    const catalog = tab === "variations" ? [...SPECIAL_FORMS] : dexCatalog();
     const seen = loadDexSeen(tab);
     const genOne = catalog.filter((p) => dexGeneration(p.id) === 1);
     const genSeen = genOne.filter((p) => seen.has(p.id)).length;
     const genPct = genOne.length ? Math.round((genSeen / genOne.length) * 100) : 0;
     const pct = catalog.length ? Math.round((seen.size / catalog.length) * 100) : 0;
-    if ($("rogue-dex-generation")) $("rogue-dex-generation").textContent = `Gen I - ${genPct}%`;
-    if ($("rogue-dex-generation-bar")) $("rogue-dex-generation-bar").style.width = `${genPct}%`;
-    if ($("rogue-dex-summary")) $("rogue-dex-summary").textContent = `Todas as gens - ${pct}%`;
+    if ($("rogue-dex-generation")) $("rogue-dex-generation").textContent = tab === "variations" ? `VariaÃ§Ãµes - ${seen.size}/${catalog.length}` : `Gen I - ${genPct}%`;
+    if ($("rogue-dex-generation-bar")) $("rogue-dex-generation-bar").style.width = `${tab === "variations" ? pct : genPct}%`;
+    if ($("rogue-dex-summary")) $("rogue-dex-summary").textContent = tab === "variations" ? `Regionais e formas - ${pct}%` : `Todas as gens - ${pct}%`;
     if ($("rogue-dex-seen-bar")) $("rogue-dex-seen-bar").style.width = `${pct}%`;
     if ($("rogue-dex-grid")) $("rogue-dex-grid").innerHTML = catalog.map((p) => {
       const unlocked = seen.has(p.id);
-      const art = tab === "shiny" ? shinySprite(p) : animated(p);
-      return `<button class="rogue-dex-card ${unlocked ? "seen" : "unknown"} ${tab === "shiny" ? "shiny-tab" : ""}" type="button" ${unlocked ? `data-dex-mon="${p.id}"` : "disabled"}>
+      const isShinyTab = tab === "shiny";
+      const isVariationTab = tab === "variations";
+      const art = isShinyTab ? shinySprite(p) : animated(p);
+      const fallback = isShinyTab ? mini({ ...p, shiny: true }) : mini(p);
+      return `<button class="rogue-dex-card ${unlocked ? "seen" : "unknown"} ${tab === "shiny" ? "shiny-tab" : ""} ${isVariationTab ? "variation-tab" : ""}" type="button" ${unlocked ? `data-dex-mon="${p.id}"` : "disabled"}>
         <span>#${String(p.id).padStart(3, "0")}</span>
-        <img src="${art}" alt="${unlocked ? p.name : ""}" onerror="this.src='${mini(p)}'">
+        <img src="${art}" alt="${unlocked ? p.name : ""}" onerror="this.src='${fallback}'">
         <strong>${unlocked ? p.name : "???"}</strong>
         ${unlocked ? renderTypeChips(p.types || []) : "<small>Não visto</small>"}
       </button>`;
@@ -945,7 +1272,8 @@
   }
 
   async function showDexDetail(id) {
-    let p = dexCatalog().find((entry) => entry.id === id);
+    const activeDexTab = document.querySelector(".rogue-dex-tabs .is-active")?.dataset.dexTab || "normal";
+    let p = (activeDexTab === "variations" ? SPECIAL_FORMS : dexCatalog()).find((entry) => entry.id === id);
     const detail = $("rogue-dex-detail");
     const backdrop = $("rogue-dex-detail-backdrop");
     if (!p || !detail) return;
@@ -954,6 +1282,8 @@
         p = await hydrateNationalPokemon(p);
       } catch {}
     }
+    const isShinyDetail = activeDexTab === "shiny";
+    if (isShinyDetail) p = { ...p, shiny: true };
     if (backdrop) backdrop.hidden = false;
     detail.innerHTML = `
       <header class="rogue-dex-detail-title">
@@ -1008,8 +1338,70 @@
     return state.items.some((item) => item.kind === kind);
   }
 
+  function normalizeHeldItems(p) {
+    if (!p) return [];
+    const savedItems = Array.isArray(p.heldItems) ? p.heldItems : [];
+    const legacyItem = p.heldItem ? [p.heldItem] : [];
+    const normalized = [...savedItems, ...legacyItem].map(normalizeItem).filter(Boolean);
+    const unique = [];
+    normalized.forEach((item) => {
+      const key = item.id || item.name || item.sprite;
+      if (!unique.some((entry) => (entry.id || entry.name || entry.sprite) === key)) unique.push(item);
+    });
+    return unique.slice(0, MAX_HELD_ITEMS);
+  }
+
+  function setHeldItems(p, items) {
+    if (!p) return [];
+    const normalized = (items || []).map(normalizeItem).filter(Boolean).slice(0, MAX_HELD_ITEMS);
+    p.heldItems = normalized;
+    p.heldItem = normalized[0] || null;
+    return normalized;
+  }
+
+  function heldItems(p) {
+    return setHeldItems(p, normalizeHeldItems(p));
+  }
+
+  function heldItemSummary(p) {
+    const equipped = heldItems(p);
+    if (!equipped.length) return "sem item";
+    return equipped.length === 1 ? equipped[0].name : `${equipped[0].name} +${equipped.length - 1}`;
+  }
+
+  function heldItemsDetailText(p) {
+    const equipped = heldItems(p);
+    return equipped.length ? equipped.map((item) => item.name).join(", ") : "Sem relíquia equipada";
+  }
+
+  function heldSlotsMarkup(p) {
+    const equipped = heldItems(p);
+    if (!equipped.length) {
+      return `
+        <span class="held-slot empty"><span></span><b>Slot livre</b></span>
+        <span class="held-slot empty"><span></span><b>Slot livre</b></span>
+      `;
+    }
+    return Array.from({ length: MAX_HELD_ITEMS }, (_, index) => {
+      const item = equipped[index];
+      return item
+        ? `<span class="held-slot" tabindex="0" data-held-tooltip="${item.name}" data-held-tooltip-text="${itemShortText(item)}"><img class="animated-item" src="${itemSprite(item)}" alt="${item.name}"><b>${item.name}</b></span>`
+        : `<span class="held-slot empty"><span></span><b>Slot livre</b></span>`;
+    }).join("");
+  }
+
+  function towerHeldSlotsMarkup(p, monIndex) {
+    const equipped = heldItems(p);
+    return Array.from({ length: MAX_HELD_ITEMS }, (_, slotIndex) => {
+      const item = equipped[slotIndex];
+      return item
+        ? `<span class="held-slot tower-held-slot" role="button" tabindex="0" draggable="true" data-held-drop="${monIndex}" data-held-slot="${slotIndex}" data-held-drag-mon="${monIndex}" data-held-drag-slot="${slotIndex}" data-held-tooltip="${item.name}" data-held-tooltip-text="${itemShortText(item)}"><span class="tower-held-item-art"><img class="animated-item" src="${itemSprite(item)}" alt="${item.name}"></span><b>${item.name}</b></span>`
+        : `<span class="held-slot tower-held-slot empty" data-held-drop="${monIndex}" data-held-slot="${slotIndex}"><span></span><b>Slot livre</b></span>`;
+    }).join("");
+  }
+
   function hasStatItem(p, kind) {
-    return p?.heldItem?.kind === kind || hasItem(kind);
+    return heldItems(p).some((item) => item.kind === kind) || hasItem(kind);
   }
 
   function itemBonusValue(item) {
@@ -1087,7 +1479,7 @@
   }
 
   function bonusItems(kind, p = null) {
-    return [p?.heldItem, ...(state.items || [])].filter((item) => item?.kind === kind);
+    return [...heldItems(p), ...(state.items || [])].filter((item) => item?.kind === kind);
   }
 
   function statBonus(kind, p = null) {
@@ -1167,6 +1559,24 @@
     state.battle.playerIndex = Math.max(0, aliveTeam.findIndex((p) => p.currentHp > 0));
   }
 
+  function applyTowerLosses() {
+    if (!state.tower?.active) return;
+    if ((state.floor || 0) > 10) {
+      const aliveTeam = state.team.filter((p) => p.currentHp > 0 || isPendingBattleFaint(p));
+      if (aliveTeam.length !== state.team.length) {
+        state.team = aliveTeam;
+      }
+    }
+    if (!state.battle) return;
+    state.battle.playerTeam = state.team;
+    state.battle.playerIndex = Math.max(0, state.team.findIndex((p) => p.currentHp > 0));
+  }
+
+  function applyBattleLosses() {
+    if (state.tower?.active) return applyTowerLosses();
+    return applyNuzlockeLosses();
+  }
+
   function xpToNext(p) {
     return 58 + p.level * 14;
   }
@@ -1228,7 +1638,7 @@
 
   function legalMovesFor(p) {
     const typeMoves = p.types.flatMap((type) => TYPE_MOVES[type] || []);
-    const normalMoves = TYPE_MOVES.Normal || [];
+    const normalMoves = p.types.includes("Normal") ? TYPE_MOVES.Normal || [] : [];
     const legal = [...typeMoves, ...normalMoves]
       .filter((move) => (move.level || 1) <= (p.level || 1))
       .sort((a, b) => (b.level || 1) - (a.level || 1));
@@ -1251,9 +1661,8 @@
 
   function canLearnMove(p, move) {
     if (!p || !move) return false;
-    if ((move.level || 1) > (p.level || 1)) return false;
     if ((p.moves || []).some((entry) => entry.id === move.id)) return false;
-    return !move.type || p.types.includes(move.type) || move.type === "Normal";
+    return !!move.type && p.types.includes(move.type);
   }
 
   function moveCooldown(move) {
@@ -1272,35 +1681,44 @@
     mon.energy = 2;
     mon.xp = mon.xp || 0;
     syncMoves(mon);
-    mon.heldItem = mon.heldItem || null;
+    setHeldItems(mon, normalizeHeldItems(mon));
     return mon;
   }
 
   function show(screen) {
     const previousScreen = state.screen;
+    const useTowerBattleStyle = screen === "battle";
     if (screen !== "battle") {
       applyTowerBattleInlineLayout(false);
     }
     document.querySelectorAll(".rogue-screen").forEach((el) => el.classList.remove("is-active"));
-    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal", "has-tower-event-modal");
+    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal", "has-tower-event-modal", "has-tower-choice-modal", "has-tower-order-modal", "has-tower-learn-modal", "has-recruit-replace-modal", "has-equip-item-modal");
     $("choice-grid")?.classList.remove("many-evolution-options");
     document.body.classList.toggle("is-rogue-battle-open", screen === "battle");
-    document.body.classList.toggle("is-tower-battle", screen === "battle" && !!state.tower?.active);
-    if ((screen === "choice" && (previousScreen === "map" || previousScreen === "choice")) || (screen === "battle" && previousScreen === "map")) {
+    document.body.classList.toggle("is-tower-battle", useTowerBattleStyle);
+    document.body.classList.toggle("is-tower-run", !!state.tower?.active);
+    const keepMapBehindModal = !state.tower?.active && ((screen === "choice" && (previousScreen === "map" || previousScreen === "choice")) || (screen === "battle" && previousScreen === "map"));
+    if (keepMapBehindModal) {
       $("screen-map").classList.add("is-active");
       document.querySelector(".rogue-stage")?.classList.add(screen === "choice" ? "has-choice-modal" : "has-battle-modal");
+    }
+    if (state.tower?.active && screen === "choice") {
+      document.querySelector(".rogue-stage")?.classList.add("has-choice-modal", "has-tower-choice-modal");
     }
     $(`screen-${screen}`).classList.add("is-active");
     state.screen = screen;
     if (screen === "battle") {
-      applyTowerBattleInlineLayout(!!state.tower?.active || !!state.battle?.tower);
+      applyTowerBattleInlineLayout(useTowerBattleStyle);
+      startBattleSpeedCountdown();
+    } else {
+      stopBattleSpeedCountdown();
     }
     renderHud();
   }
 
   function save() {
     try {
-      localStorage.setItem("oak_rogue_run", JSON.stringify(state));
+      localStorage.setItem(saveKeyForMode(runModeForSave(state)), JSON.stringify(state));
     } catch {}
   }
 
@@ -1341,20 +1759,34 @@
 
   function renderTowerModes() {
     const grid = $("tower-mode-grid");
-    if (!grid) return;
+    const runGrid = document.querySelector(".run-mode-grid");
+    if (!grid || !runGrid) return;
+    const savedTower = savedRunForMode("tower");
+    const savedTowerMode = savedTower?.tower?.mode || null;
     const unlocks = loadUnlocks();
-    grid.innerHTML = TOWER_MODES.map((mode) => {
+    runGrid.querySelectorAll(".tower-mode-card").forEach((card) => card.remove());
+    const towerCards = TOWER_MODES.map((mode) => {
       const unlocked = isTowerModeUnlocked(mode, unlocks);
+      const hasSavedRun = savedTowerMode === mode.id;
       const floorLabel = mode.floors ? `${mode.floors}` : "∞";
       return `
-        <button class="tower-mode-card ${unlocked ? "is-unlocked" : "is-locked"}" type="button" data-tower-mode="${mode.id}" ${unlocked ? "" : "aria-disabled=\"true\""}>
-          <span class="tower-lock" aria-hidden="true">${unlocked ? "OK" : "X"}</span>
+        <article class="tower-mode-card ${unlocked ? "is-unlocked" : "is-locked"} ${hasSavedRun ? "has-save" : ""}" role="button" tabindex="0" data-tower-mode="${mode.id}" ${unlocked ? "" : "aria-disabled=\"true\""}>
+          <span class="tower-lock" aria-hidden="true">${hasSavedRun ? "CONT" : unlocked ? "OK" : "X"}</span>
           <strong>${mode.title}</strong>
-          <small>${floorLabel}</small>
-        </button>
+          <small>${unlockLabelFor(mode, unlocked, unlocks)}</small>
+          <em>${floorLabel} andares</em>
+          <span class="run-card-actions">
+            <button class="${unlocked ? "run-card-primary" : "run-card-secondary"}" type="button" data-tower-mode="${mode.id}">${hasSavedRun ? "Continuar torre" : unlocked ? "Subir torre" : "Bloqueada"}</button>
+          </span>
+        </article>
       `;
     }).join("");
-    setupTowerCarousel();
+    grid.insertAdjacentHTML("beforebegin", towerCards);
+    setupRunModeCarousel();
+    const modeGrid = document.querySelector(".run-mode-grid");
+    modeGrid?.scrollTo({ left: 0, behavior: "auto" });
+    window.requestAnimationFrame(() => centerNearestRunModeCard());
+    updateRunModeCarouselFocus();
   }
 
   function scrollTowerCarousel(direction) {
@@ -1363,6 +1795,110 @@
     if (!grid || !card) return;
     const gap = 8;
     grid.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: "smooth" });
+  }
+
+  function updateRunModeCarouselFocus() {
+    const grid = document.querySelector(".run-mode-grid");
+    if (!grid) return;
+    const cards = [...grid.querySelectorAll(".run-mode-card, .tower-mode-card")];
+    if (!cards.length) return;
+    const gridBox = grid.getBoundingClientRect();
+    const center = gridBox.left + gridBox.width / 2;
+    let active = cards[0];
+    let best = Number.POSITIVE_INFINITY;
+    cards.forEach((card) => {
+      const box = card.getBoundingClientRect();
+      const distance = Math.abs(box.left + box.width / 2 - center);
+      if (distance < best) {
+        best = distance;
+        active = card;
+      }
+    });
+    cards.forEach((card) => card.classList.toggle("is-carousel-active", card === active));
+  }
+
+  function centerNearestRunModeCard() {
+    const grid = document.querySelector(".run-mode-grid");
+    if (!grid) return;
+    const cards = [...grid.querySelectorAll(".run-mode-card, .tower-mode-card")];
+    if (!cards.length) return;
+    const gridBox = grid.getBoundingClientRect();
+    const center = gridBox.left + gridBox.width / 2;
+    let active = cards[0];
+    let best = Number.POSITIVE_INFINITY;
+    cards.forEach((card) => {
+      const box = card.getBoundingClientRect();
+      const distance = Math.abs(box.left + box.width / 2 - center);
+      if (distance < best) {
+        best = distance;
+        active = card;
+      }
+    });
+    const targetLeft = active.offsetLeft - (grid.clientWidth - active.offsetWidth) / 2;
+    grid.scrollTo({ left: Math.max(0, targetLeft), behavior: "smooth" });
+    updateRunModeCarouselFocus();
+  }
+
+  function setupRunModeCarousel() {
+    const grid = document.querySelector(".run-mode-grid");
+    if (!grid || grid.dataset.carouselReady) return;
+    grid.dataset.carouselReady = "true";
+    let frame = 0;
+    let dragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let handledPointerSelection = false;
+    const scheduleFocus = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateRunModeCarouselFocus);
+    };
+    grid.addEventListener("scroll", scheduleFocus, { passive: true });
+    window.addEventListener("resize", scheduleFocus);
+    grid.addEventListener("pointerdown", (event) => {
+      if (event.target.closest("button, input, a")) return;
+      dragging = true;
+      didDrag = false;
+      dragStartX = event.clientX;
+      dragStartScroll = grid.scrollLeft;
+      grid.classList.add("is-dragging");
+      grid.setPointerCapture?.(event.pointerId);
+    });
+    const moveDrag = (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 3) didDrag = true;
+      grid.scrollLeft = dragStartScroll - delta;
+      event.preventDefault();
+    };
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      grid.classList.remove("is-dragging");
+      grid.releasePointerCapture?.(event.pointerId);
+      centerNearestRunModeCard();
+    };
+    grid.addEventListener("pointermove", moveDrag);
+    grid.addEventListener("pointerup", stopDrag);
+    grid.addEventListener("pointercancel", stopDrag);
+    grid.addEventListener("click", (event) => {
+      if (!didDrag) return;
+      event.preventDefault();
+      event.stopPropagation();
+      didDrag = false;
+    }, true);
+    grid.addEventListener("click", (event) => {
+      const towerCard = event.target.closest("[data-tower-mode]");
+      if (!towerCard || didDrag) return;
+      handleTowerMode(towerCard.dataset.towerMode);
+    });
+    grid.addEventListener("keydown", (event) => {
+      const towerCard = event.target.closest("[data-tower-mode]");
+      if (!towerCard || !["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      handleTowerMode(towerCard.dataset.towerMode);
+    });
+    scheduleFocus();
   }
 
   function setupTowerCarousel() {
@@ -1387,7 +1923,7 @@
       grid.scrollLeft = dragStartScroll - delta;
     });
     const endDrag = (event) => {
-      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("button[data-tower-mode]");
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-tower-mode]");
       const shouldOpen = !dragMoved && target && grid.contains(target);
       dragging = false;
       window.setTimeout(() => { dragMoved = false; }, 0);
@@ -1396,7 +1932,7 @@
     grid.addEventListener("pointerup", endDrag);
     grid.addEventListener("pointercancel", endDrag);
     grid.addEventListener("click", (event) => {
-      const button = event.target.closest("button[data-tower-mode]");
+      const button = event.target.closest("[data-tower-mode]");
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
@@ -1434,7 +1970,18 @@
   }
 
   function showTowerPreview(mode) {
+    const savedTower = savedRunForMode("tower");
+    if (savedTower?.tower?.mode === mode.id && load("tower")) {
+      continueTowerRun();
+      return;
+    }
     void startTowerRun(mode);
+  }
+
+  function selectRunMode(mode) {
+    const input = mode === "nuzlocke" ? $("run-nuzlocke") : $("run-normal");
+    if (input) input.checked = true;
+    updateContinueRunButton();
   }
 
   function handleTowerMode(id) {
@@ -1452,28 +1999,73 @@
   }
 
   function savedRunMode() {
-    try {
-      const saved = JSON.parse(localStorage.getItem("oak_rogue_run") || "null");
-      if (!saved?.team?.length) return null;
-      if (saved.tower?.active) return "tower";
-      return saved.nuzlockeMode ? "nuzlocke" : "normal";
-    } catch {
-      return null;
-    }
+    return availableSavedRunModes()[0] || null;
   }
 
   function selectedRunMode() {
     return $("run-nuzlocke")?.checked ? "nuzlocke" : "normal";
   }
 
+  function runModeForSave(run) {
+    if (run?.tower?.active) return "tower";
+    return run?.nuzlockeMode ? "nuzlocke" : "normal";
+  }
+
+  function saveKeyForMode(mode) {
+    return `oak_rogue_run_${mode}`;
+  }
+
+  function savedRunForMode(mode) {
+    try {
+      let saved = JSON.parse(localStorage.getItem(saveKeyForMode(mode)) || "null");
+      if (!saved && mode === savedRunModeFromLegacy()) {
+        saved = JSON.parse(localStorage.getItem("oak_rogue_run") || "null");
+      }
+      if (!saved?.team?.length) return null;
+      return runModeForSave(saved) === mode ? saved : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function savedRunModeFromLegacy() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("oak_rogue_run") || "null");
+      if (!saved?.team?.length) return null;
+      return runModeForSave(saved);
+    } catch {
+      return null;
+    }
+  }
+
+  function availableSavedRunModes() {
+    return ["normal", "nuzlocke", "tower"].filter((mode) => !!savedRunForMode(mode));
+  }
+
+  function continueRunLabel(mode) {
+    if (mode === "tower") return "Continuar torre";
+    return `Continuar ${mode === "nuzlocke" ? "Nuzlocke" : "Normal"}`;
+  }
+
   function updateContinueRunButton() {
     const button = $("continue-run");
+    const modes = availableSavedRunModes();
+    document.querySelectorAll("[data-continue-mode]").forEach((cardButton) => {
+      const mode = cardButton.dataset.continueMode;
+      cardButton.hidden = !modes.includes(mode);
+    });
     if (!button) return;
-    const savedMode = savedRunMode();
-    button.hidden = !savedMode || (savedMode !== "tower" && savedMode !== selectedRunMode());
-    if (!button.hidden) {
-      button.textContent = savedMode === "tower" ? "Continuar torre" : "Continuar run";
-    }
+    const selectedMode = selectedRunMode();
+    const preferred = modes.includes(selectedMode)
+      ? selectedMode
+      : modes.includes("tower")
+      ? "tower"
+      : null;
+    button.dataset.continueMode = "";
+    button.hidden = !preferred;
+    if (!preferred) return;
+    button.textContent = continueRunLabel(preferred);
+    button.dataset.continueMode = preferred;
   }
 
   function normalizeItem(item) {
@@ -1489,9 +2081,11 @@
     return Math.max(1, Math.min(p.maxHp, Math.ceil(p.maxHp * hpPct)));
   }
 
-  function load() {
+  function load(mode) {
     try {
-      const raw = localStorage.getItem("oak_rogue_run");
+      const requestedMode = mode;
+      const saved = requestedMode ? savedRunForMode(requestedMode) : null;
+      const raw = saved ? JSON.stringify(saved) : localStorage.getItem("oak_rogue_run");
       if (!raw) return false;
       Object.assign(state, JSON.parse(raw));
       if (!Array.isArray(state.badges)) state.badges = [];
@@ -1506,13 +2100,19 @@
       state.pendingItem = normalizeItem(state.pendingItem);
       state.nuzlockeMode = !!state.nuzlockeMode;
       state.levelCapEnabled = state.levelCapEnabled !== false;
-      state.battleSpeed = state.battleSpeed === 2 ? 2 : 1;
+      state.battleSpeed = [1, 2, 3].includes(state.battleSpeed) ? state.battleSpeed : 2;
       state.autoBattling = false;
-    if (!Array.isArray(state.map) || state.map.length !== RUN_FLOORS || state.routeVersion !== ROUTE_VERSION) buildMap();
+      if (!Array.isArray(state.pendingTowerOrder)) state.pendingTowerOrder = [];
+      if (state.tower?.active) {
+        state.tower.secondChanceUsed = !!state.tower.secondChanceUsed;
+        state.tower.guaranteedRecruitUsed = !!state.tower.guaranteedRecruitUsed;
+      }
+    if (!state.tower?.active && (!Array.isArray(state.map) || state.map.length !== RUN_FLOORS || state.routeVersion !== ROUTE_VERSION)) buildMap();
       state.routeVersion = ROUTE_VERSION;
       state.team.forEach((p) => {
         p.runId ||= uid("mon");
-        p.heldItem = normalizeItem(p.heldItem);
+        restoreShinyFromEvolutionDex(p);
+        setHeldItems(p, normalizeHeldItems(p));
         const oldMax = p.maxHp || hpMax(p);
         p.maxHp = hpMax(p);
         p.currentHp = normalizeSavedHp(p, oldMax);
@@ -1522,18 +2122,26 @@
       });
       state.fallenTeam = state.fallenTeam.map((p) => ({ ...p, runId: p.runId || uid("mon"), currentHp: 0 }));
       state.battle?.enemyTeam?.forEach((p) => {
-        const oldMax = p.maxHp || hpMax(p);
-        p.maxHp = hpMax(p);
-        p.currentHp = normalizeSavedHp(p, oldMax);
+        p.maxHp = Number.isFinite(p.maxHp) ? p.maxHp : hpMax(p);
+        p.currentHp = Number.isFinite(p.currentHp)
+          ? Math.max(0, Math.min(p.maxHp, p.currentHp))
+          : p.maxHp;
         syncMoves(p);
       });
       if (state.battle && !Array.isArray(state.battle.enemyTeam) && state.battle.enemy) {
         state.battle.enemyTeam = [state.battle.enemy];
         state.battle.enemyIndex = 0;
       }
+      if (state.battle?.tower) {
+        state.battle.playerTeam = state.team;
+      }
       if (state.battle && !Number.isFinite(state.battle.playerIndex)) {
         state.battle.playerTeam = state.battle.playerTeam || state.team;
         state.battle.playerIndex = state.battle.playerTeam.findIndex((p) => p.currentHp > 0);
+      }
+      if (state.battle) {
+        resetBattleHpVisuals(state.battle.playerTeam || state.team);
+        resetBattleHpVisuals(state.battle.enemyTeam || []);
       }
       state.pendingEvolutionChoices = state.pendingEvolutionChoices.filter((entry) => {
         const p = state.team.find((mon) => mon.runId === entry.runId);
@@ -1548,7 +2156,10 @@
   }
 
   function clearSave() {
-    localStorage.removeItem("oak_rogue_run");
+    try {
+      localStorage.removeItem(saveKeyForMode(runModeForSave(state)));
+      if (savedRunModeFromLegacy() === runModeForSave(state)) localStorage.removeItem("oak_rogue_run");
+    } catch {}
   }
 
   function getRogueAudioContext() {
@@ -1563,19 +2174,21 @@
     try {
       const audio = getRogueAudioContext();
       if (!audio) return;
-      const start = audio.currentTime + delay;
+      const speed = battleSpeedFactor();
+      const scaledDuration = duration / speed;
+      const start = audio.currentTime + delay / speed;
       const oscillator = audio.createOscillator();
       const gain = audio.createGain();
       oscillator.type = type;
       oscillator.frequency.setValueAtTime(frequency, start);
-      if (endFrequency) oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+      if (endFrequency) oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + scaledDuration);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.linearRampToValueAtTime(volume, start + Math.min(0.025, duration * 0.35));
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      gain.gain.linearRampToValueAtTime(volume, start + Math.min(0.025, scaledDuration * 0.35));
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + scaledDuration);
       oscillator.connect(gain);
       gain.connect(audio.destination);
       oscillator.start(start);
-      oscillator.stop(start + duration + 0.02);
+      oscillator.stop(start + scaledDuration + 0.02);
     } catch {
       // Audio can be blocked by browser policy; gameplay continues silently.
     }
@@ -1732,7 +2345,7 @@
         <img src="${mini(p)}" alt="${p.name}">
         <div>
           <strong>${p.name}</strong>
-          <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp} · ${p.heldItem ? p.heldItem.name : "sem item"}</small>
+          <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp} · ${heldItemSummary(p)}</small>
           ${renderTypeChips(p.types)}
         </div>
       </div>
@@ -1770,7 +2383,7 @@
   }
 
   function findMonByName(name, floor = state.floor || 1) {
-    return [...gymPool(floor), ...POOL].find((p) => p.name === name) || POOL[0];
+    return [...gymPool(floor), ...POOL, ...SPECIAL_FORMS].find((p) => p.name === name) || POOL[0];
   }
 
   function renderRouteSidebars() {
@@ -1786,7 +2399,7 @@
         <div class="route-team-mon ${p.currentHp <= 0 ? "fainted" : ""} ${visualIndex >= 3 ? "hover-up" : ""}" draggable="true" data-team-index="${index}">
           <b class="team-order">${visualIndex + 1}</b>
           <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
-          ${p.heldItem ? `<img class="held-item-icon" src="${itemSprite(p.heldItem)}" alt="${p.heldItem.name}" title="${p.heldItem.name}">` : ""}
+          ${heldItems(p).map((item) => `<img class="held-item-icon" src="${itemSprite(item)}" alt="${item.name}" title="${item.name}">`).join("")}
           <span>${p.name}</span>
           <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
           <i style="width:${Math.max(0, Math.round((p.currentHp / p.maxHp) * 100))}%"></i>
@@ -1795,7 +2408,7 @@
               <img src="${animated(p)}" alt="" onerror="this.src='${mini(p)}'">
               <div>
                 <strong>${p.name}</strong>
-            <small>Lv.${p.level} · ${p.heldItem ? p.heldItem.name : "sem item"}</small>
+            <small>Lv.${p.level} · ${heldItemSummary(p)}</small>
                 <small>HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
               </div>
             </div>
@@ -1813,7 +2426,7 @@
               ${renderTypeChips([(p.moves || [])[0]?.type || p.types[0]])}
               <small>${(p.moves || [])[0]?.power || 50} PWR</small>
             </div>
-            ${p.heldItem ? `<div class="team-hover-item"><img src="${itemSprite(p.heldItem)}" alt=""><span><b>${p.heldItem.name}</b><small>${p.heldItem.text}</small></span></div>` : ""}
+            ${heldItems(p).map((item) => `<div class="team-hover-item"><img src="${itemSprite(item)}" alt=""><span><b>${item.name}</b><small>${item.text}</small></span></div>`).join("")}
           </div>
         </div>
       `).join("") || "<p>Sua equipe aparece aqui.</p>";
@@ -2067,10 +2680,10 @@
     state.pendingEvolutions = [];
     state.pendingEvolutionChoices = [];
     state.pendingMapFloor = null;
-    state.tower = { active: true, mode: mode.id, title: mode.title, totalFloors: towerTotalFloors(mode), clearsUnlock: mode.id };
+    state.tower = { active: true, mode: mode.id, title: mode.title, totalFloors: towerTotalFloors(mode), clearsUnlock: mode.id, secondChanceUsed: false, guaranteedRecruitUsed: false };
     state.lastTowerMode = mode.id;
     state.routeVersion = ROUTE_VERSION;
-    state.battleSpeed = 1;
+    state.battleSpeed = 2;
     state.nuzlockeMode = false;
     state.levelCapEnabled = false;
     $("screen-starters")?.querySelector(".rogue-kicker") && ($("screen-starters").querySelector(".rogue-kicker").textContent = "Subir Torre");
@@ -2100,7 +2713,7 @@
     state.tower = null;
     state.lastTowerMode = null;
     state.routeVersion = ROUTE_VERSION;
-    state.battleSpeed = 1;
+    state.battleSpeed = 2;
     state.nuzlockeMode = !!$("run-nuzlocke")?.checked;
     state.levelCapEnabled = state.nuzlockeMode;
     $("screen-starters")?.querySelector(".rogue-kicker") && ($("screen-starters").querySelector(".rogue-kicker").textContent = "Laboratório do Professor Oak");
@@ -2112,11 +2725,12 @@
   async function chooseStarter(id) {
     const starter = (state.starterChoices?.length ? state.starterChoices : STARTERS).find((p) => p.id === id);
     if (!starter) return state.tower?.active ? setupTowerStarters() : setupStarters();
-    state.team = [maybeMarkShiny(cloneMon(starter, 5))];
+    state.team = [maybeMarkShiny(cloneMon(starter, state.tower?.active ? 8 : 5))];
     state.starterChoices = [];
     state.team[0].runId ||= uid("mon");
     registerDexSeen(state.team[0]);
     if (state.tower?.active) {
+      state.team[0].energy = 4;
       save();
       return startTowerFloor(1);
     }
@@ -2369,7 +2983,8 @@
     const local = Math.max(1, floor - arena.floorFrom);
     const routeProgress = Math.floor((local - 1) / 2);
     const teamLevel = averageTeamLevel();
-    const target = Math.max(5, Math.min(cap - 2, Math.round(teamLevel * 0.9) + routeProgress + 1));
+    const assist = state.tower?.active ? 2 : state.nuzlockeMode ? 1 : 0;
+    const target = Math.max(5, Math.min(cap - 1, Math.round(teamLevel * 0.92) + routeProgress + 1 + assist));
     return Math.max(3, target);
   }
 
@@ -2378,11 +2993,12 @@
     const local = Math.max(1, (state.floor || 1) - arena.floorFrom);
     const teamLevel = averageTeamLevel();
     const routePressure = Math.floor((local - 1) / 3);
-    const kindBoost = kind === "boss" ? 2 : kind === "npc" ? 1 : kind === "grass" ? 0 : -1;
-    const threatBoost = Math.max(0, Math.floor(state.threat - 1));
+    const kindBoost = kind === "boss" ? (state.nuzlockeMode ? 1 : 2) : kind === "npc" ? 1 : kind === "grass" ? 0 : -1;
+    const threatBoost = state.nuzlockeMode ? Math.max(0, Math.floor(state.threat - 1.6)) : Math.max(0, Math.floor(state.threat - 1));
     const arenaBaseline = arena.id === "league" ? 58 + index * 2 : 5 + (arena.badge - 1) * 4 + routePressure;
-    const level = Math.max(teamLevel, arenaBaseline) + kindBoost + threatBoost + index;
-    const gymSoftCap = arena.id === "league" ? 100 : levelCapForArena(arena) + (kind === "boss" ? 1 : -2);
+    const nuzlockeRelief = state.nuzlockeMode ? (kind === "boss" ? 1 : 2) : 0;
+    const level = Math.max(teamLevel, arenaBaseline) + kindBoost + threatBoost + index - nuzlockeRelief;
+    const gymSoftCap = arena.id === "league" ? 100 : levelCapForArena(arena) + (kind === "boss" ? (state.nuzlockeMode ? 0 : 1) : -2);
     const capped = Math.min(level, gymSoftCap);
     return state.levelCapEnabled ? Math.min(capped, currentLevelCap() + (kind === "boss" ? 1 : 0)) : capped;
   }
@@ -2418,18 +3034,32 @@
 
   function towerEnemyLevel() {
     const floor = Math.max(1, state.floor || 1);
-    return Math.max(5, Math.round(averageTeamLevel() + floor * 0.42));
+    const teamLevel = averageTeamLevel();
+    if (floor <= 8) return Math.max(5, Math.min(teamLevel, Math.round(teamLevel + Math.max(0, (floor - 1) * 0.08))));
+    const pressure = floor <= 15
+      ? 0.25 + (floor - 8) * 0.14
+      : 1.25 + (floor - 15) * 0.22;
+    return Math.max(5, Math.round(teamLevel + pressure));
   }
 
   async function createTowerEnemy() {
     const floor = Math.max(1, state.floor || 1);
-    const rareFloor = floor % 10 === 0;
+    const protectedFloor = floor <= 5;
+    const rareFloor = !protectedFloor && floor % 10 === 0;
     let base = rareFloor && Math.random() < 0.55
       ? LEGENDARY_POOL[Math.floor(Math.random() * LEGENDARY_POOL.length)]
       : await randomNationalPokemon() || randomPool(1, false, floor)[0];
+    if (protectedFloor) {
+      let attempts = 0;
+      while (LEGENDARY_POOL.some((mon) => mon.id === base?.id) && attempts < 8) {
+        base = await randomNationalPokemon() || randomPool(1, false, floor)[0];
+        attempts += 1;
+      }
+      if (LEGENDARY_POOL.some((mon) => mon.id === base?.id)) base = randomPool(1, false, floor)[0];
+    }
     const enemy = maybeMarkShiny(cloneMon(base, towerEnemyLevel()));
     if (rareFloor && !enemy.legendary) enemy.shiny = true;
-    enemy.maxHp = Math.round(enemy.maxHp * (rareFloor ? 1.85 : 1 + Math.min(0.65, floor * 0.006)));
+    enemy.maxHp = Math.round(enemy.maxHp * (rareFloor ? 1.42 : 1 + Math.min(0.28, Math.max(0, floor - 6) * 0.003)));
     enemy.currentHp = enemy.maxHp;
     enemy.leader = rareFloor ? "Encontro raro" : "Torre";
     enemy.legendary = rareFloor && LEGENDARY_POOL.some((mon) => mon.id === base.id);
@@ -2442,7 +3072,7 @@
     const leader = ALL_BOSSES[Math.max(0, bossIndex)];
     return leader.team.map((mon, index) => {
       const enemy = maybeMarkShiny(cloneMon(mon, enemyLevel("boss", index)));
-      const aceBoost = index === leader.team.length - 1 ? 1.65 : 1.22;
+      const aceBoost = state.nuzlockeMode ? (index === leader.team.length - 1 ? 1.42 : 1.12) : (index === leader.team.length - 1 ? 1.65 : 1.22);
       enemy.maxHp = Math.round(enemy.maxHp * aceBoost);
       enemy.currentHp = enemy.maxHp;
       enemy.leader = leader.leader;
@@ -2490,14 +3120,19 @@
 
   async function startBattle(node) {
     if (!activePlayer()) return endRun(false);
+    state.autoBattling = false;
+    state.battleSpeed = 2;
+    stopBattleSpeedCountdown();
     const towerBattle = !!state.tower?.active;
     const bossBattle = node.type === "boss" || ARENAS.some((arena) => arena.floorTo === state.floor);
     const legendaryBattle = node.type === "legendary";
     const npcBattle = node.type === "battle";
     const npcData = npcBattle ? await createNpcTeam(node) : null;
     const enemyTeam = towerBattle ? [await createTowerEnemy()] : bossBattle ? createLeaderTeam(node) : legendaryBattle ? createLegendaryTeam(node) : npcBattle ? npcData.team : [await createEnemy(false)];
+    resetBattleHpVisuals(state.team);
+    resetBattleHpVisuals(enemyTeam);
     registerDexSeenMany(enemyTeam);
-    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: !towerBattle && bossBattle, legendary: towerBattle ? !!enemyTeam[0].legendary : legendaryBattle, npc: !towerBattle && npcBattle, tower: towerBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: towerBattle ? "Torre" : npcData?.trainerName || null, trainerSpriteId: towerBattle ? null : npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null };
+    state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: !towerBattle && bossBattle, legendary: towerBattle ? !!enemyTeam[0].legendary : legendaryBattle, npc: !towerBattle && npcBattle, tower: towerBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: towerBattle ? "Torre" : npcData?.trainerName || null, trainerSpriteId: towerBattle ? null : npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null, speedBoostStartedAt: Date.now() };
     $("battle-title").textContent = towerBattle
       ? `${state.tower.title} · Andar ${state.floor}`
       : node.type === "boss"
@@ -2511,15 +3146,29 @@
     renderBattle();
     playBattleSfx("start");
     show("battle");
+    save();
+    window.setTimeout(() => animateBattleSendOut(), sendoutDelay(80));
+    scheduleAutoBattle(980);
+  }
+
+  function scheduleAutoBattle(delay = 450) {
     window.setTimeout(() => {
-      if (state.screen === "battle" && state.battle) runAutoBattle();
-    }, 450);
+      if (!state.battle || state.autoBattling) return;
+      if (state.screen !== "battle") {
+        scheduleAutoBattle(120);
+        return;
+      }
+      runAutoBattle();
+    }, delay);
   }
 
   function renderBattle() {
     if (!state.battle) return;
-    const isTowerBattle = !!state.tower?.active || !!state.battle.tower;
+    maybeAutoPromoteBattleSpeed();
+    const isTowerBattle = true;
     document.querySelector(".battle-grid")?.classList.toggle("tower-battle-grid", isTowerBattle);
+    document.querySelector(".battle-grid")?.classList.toggle("battle-speed-3x", state.battleSpeed === 3);
+    document.querySelector(".battle-grid")?.classList.toggle("battle-speed-2x", state.battleSpeed === 2);
     const playerTeam = state.battle.playerTeam || state.team;
     const currentPlayer = playerTeam[state.battle.playerIndex || 0];
     const player = isPendingBattleFaint(currentPlayer)
@@ -2527,21 +3176,15 @@
       : activePlayer() || currentPlayer || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
     if (!player) return;
     renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player", isTowerBattle);
-    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy");
+    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy", isTowerBattle);
     animateRenderedHpBars();
     applyTowerBattleInlineLayout(isTowerBattle);
-    $("move-grid").innerHTML = `
-      <div class="battle-auto-status">
-        <span>
-          <strong>Batalha automática</strong>
-          <small>Moves, energia e itens equipados resolvem o combate em tempo real.</small>
-        </span>
-        <button class="battle-speed-toggle ${state.battleSpeed === 2 ? "is-active" : ""}" type="button" data-battle-speed="2" aria-pressed="${state.battleSpeed === 2 ? "true" : "false"}" title="Alternar velocidade 2x">2x</button>
-      </div>
-    `;
+    const countdown = battleSpeedCountdownSeconds();
+    $("move-grid").innerHTML = `<button class="battle-speed-toggle ${state.battleSpeed >= 2 ? "is-active" : ""} ${state.battleSpeed === 3 ? "is-3x" : ""}" type="button" data-battle-speed="1" aria-pressed="${state.battleSpeed >= 2 ? "true" : "false"}" title="${state.battleSpeed === 3 ? "Velocidade maxima ativa" : "Alternar velocidade"}" ${state.battleSpeed === 3 ? "disabled" : ""}>${state.battleSpeed === 3 ? "3x" : "2x"}${state.battleSpeed === 2 && countdown > 0 ? `<small>${countdown}s</small>` : ""}</button>`;
+    if (isTowerBattle) positionTowerVsBadge();
   }
 
-  function renderBattleRoster(id, mons, active, label, trainer, side = "", useTeamBalls = false) {
+  function renderBattleRoster(id, mons, active, label, trainer, side = "", useTeamBalls = false, activeOnly = false) {
     const orderedMons = [...mons].sort((a, b) => {
       if (a === active) return -1;
       if (b === active) return 1;
@@ -2555,25 +3198,35 @@
         ${trainer ? `<img src="${trainerSprite(trainer)}" alt="${label}" onerror="this.style.display='none'">` : ""}
         <span class="rogue-kicker">${label}</span>
       </div>
-      <div class="battle-stack count-${Math.min(6, Math.max(1, mons.length))}">
-        ${useTeamBalls ? renderBattleSlot(active || orderedMons[0], true) : orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
+      <div class="battle-stack count-${activeOnly || useTeamBalls ? 1 : Math.min(6, Math.max(1, mons.length))}">
+        ${useTeamBalls || activeOnly ? renderBattleSlot(active || orderedMons[0], true) : orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
         ${useTeamBalls ? renderBattleTeamBalls(mons, active) : ""}
       </div>
     `;
   }
 
   function renderBattleTeamBalls(mons, active) {
-    return `<div class="battle-team-balls" aria-label="Pokemon do time">
+    return `<div class="battle-team-balls" aria-label="Pokémon do time">
       ${mons.map((p, index) => {
         const fainted = p.currentHp <= 0 && !isPendingBattleFaint(p);
         const pendingFaint = p.currentHp <= 0 && isPendingBattleFaint(p);
         const activeClass = p === active ? "is-active" : "";
         const faintedClass = fainted ? "is-fainted" : pendingFaint ? "is-pending-faint" : "";
         return `<span class="battle-team-ball ${activeClass} ${faintedClass}" title="${index + 1}. ${p.name}${fainted || pendingFaint ? " derrotado" : ""}" aria-label="${index + 1}. ${p.name}${fainted || pendingFaint ? " derrotado" : ""}">
-          <img class="animated-item" src="${ITEM_BASE}poke-ball.png" alt="">
+          <img class="animated-item" src="${pokemonBallSprite(p)}" alt="">
         </span>`;
       }).join("")}
     </div>`;
+  }
+
+  function resetBattleHpVisuals(mons = []) {
+    mons.forEach((p) => {
+      if (!p) return;
+      delete p.renderedHpPct;
+      delete p.renderedHpValue;
+      delete p.renderedMaxHpValue;
+      delete p.pendingFaintUntil;
+    });
   }
 
   function applyTowerBattleInlineLayout(isTowerBattle) {
@@ -2584,6 +3237,7 @@
       grid.removeAttribute("style");
       screen?.removeAttribute("style");
       document.querySelector(".tower-vs-badge")?.removeAttribute("style");
+      document.querySelector(".battle-speed-toggle")?.removeAttribute("style");
       return;
     }
     if (screen) {
@@ -2684,18 +3338,35 @@
       display: "grid",
       top: `${centerY}px`
     });
+    const speedButton = document.querySelector(".battle-speed-toggle");
+    if (speedButton) {
+      Object.assign(speedButton.style, {
+        position: "absolute",
+        left: "50%",
+        top: `${centerY + 43}px`,
+        transform: "translate(-50%, -50%)"
+      });
+    }
   }
 
   function renderBattleSlot(p, active) {
     const pct = Math.max(0, Math.round((p.currentHp / p.maxHp) * 100));
-    const previousPct = Number.isFinite(p.renderedHpPct) ? p.renderedHpPct : pct;
+    const hpChanged = p.renderedHpValue !== p.currentHp || p.renderedMaxHpValue !== p.maxHp;
+    const previousPct = hpChanged && Number.isFinite(p.renderedHpPct) ? p.renderedHpPct : pct;
     if (pct <= 0 && previousPct > 0) markPendingBattleFaint(p);
     const pendingFaint = pct <= 0 && isPendingBattleFaint(p);
     p.renderedHpPct = pct;
+    p.renderedHpValue = p.currentHp;
+    p.renderedMaxHpValue = p.maxHp;
     const hpState = pct <= 25 ? "danger" : pct <= 50 ? "warn" : "ok";
-    return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}">
+    const primaryType = p.types?.[0] || "Normal";
+    const secondaryType = p.types?.[1] || primaryType;
+    const primaryColor = TYPE_COLOR[primaryType] || "#6af0c1";
+    const secondaryColor = TYPE_COLOR[secondaryType] || primaryColor;
+    return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}" style="--mon-type-color:${primaryColor};--mon-type-color-2:${secondaryColor};">
       <strong>${p.name} <small>Lv.${p.level}</small></strong>
       ${renderBattleTypeBadges(p.types || [])}
+      ${heldItems(p).length ? `<div class="battle-held-items" aria-label="Relíquias equipadas">${heldItems(p).map((item) => `<span title="${item.name}: ${itemShortText(item)}"><img src="${itemSprite(item)}" alt="${item.name}"></span>`).join("")}</div>` : ""}
       <div class="hp-bar ${hpState}" aria-label="HP"><span data-hp-target="${pct}" style="width:${previousPct}%"></span></div>
       <small>${Math.max(0, p.currentHp)}/${p.maxHp}</small>
       <img class="pokemon-anim" src="${animated(p)}" alt="${p.name}" onerror="this.src='${sprite(p)}'">
@@ -2712,6 +3383,9 @@
   function animateRenderedHpBars() {
     requestAnimationFrame(() => {
       document.querySelectorAll(".battle-slot .hp-bar span[data-hp-target]").forEach((bar) => {
+        const targetWidth = `${bar.dataset.hpTarget}%`;
+        if (bar.style.width === targetWidth) return;
+        bar.style.transitionDuration = `${Math.max(180, Math.round(620 / battleSpeedFactor()))}ms`;
         bar.style.width = `${bar.dataset.hpTarget}%`;
         if (bar.dataset.hpTarget === "0") {
           const slot = bar.closest(".battle-slot.pending-faint");
@@ -2771,7 +3445,11 @@
     const critChance = Math.min(0.75, 0.08 + strongestBonus("crit", attacker));
     const crit = Math.random() < critChance ? 1.35 : 1;
     const orb = 1 + statBonus("damage", attacker);
-    return { amount: eff === 0 ? 0 : Math.max(1, Math.round(base * stab * eff * crit * orb)), eff, crit: crit > 1 };
+    const earlyTowerGuard = state.battle?.tower && state.floor <= 5 && state.battle.enemyTeam?.includes(attacker) ? 0.9 : 1;
+    const playerSide = state.battle?.playerTeam?.includes(attacker);
+    const enemySide = state.battle?.enemyTeam?.includes(attacker);
+    const runRelief = enemySide && (state.battle?.tower || state.nuzlockeMode) ? 0.9 : playerSide && (state.battle?.tower || state.nuzlockeMode) ? 1.06 : 1;
+    return { amount: eff === 0 ? 0 : Math.max(1, Math.round(base * stab * eff * crit * orb * earlyTowerGuard * runRelief)), eff, crit: crit > 1 };
   }
 
   function effectivenessText(eff) {
@@ -2784,7 +3462,8 @@
   function chooseAutoMove(attacker, defender) {
     const moves = attacker.moves?.length ? attacker.moves : legalMovesFor(attacker);
     const usable = moves.filter((move) => (move.cost || 0) <= attacker.energy);
-    const pool = usable.length ? usable : [moves[0]];
+    const struggle = { id: "struggle", name: "Desespero", type: "Normal", power: 0.88, cost: 0 };
+    const pool = usable.length ? usable : moves.length ? [moves[0]] : [struggle];
     return pool
       .map((move) => ({ move, score: (move.power || 1) * effectiveness(move.type || attacker.types[0], defender.types) }))
       .sort((a, b) => b.score - a.score)[0].move;
@@ -2792,6 +3471,7 @@
 
   async function runAutoBattle() {
     if (state.autoBattling) return;
+    if (!state.battle || !activePlayer() || state.battle.enemy?.currentHp <= 0) return;
     state.autoBattling = true;
     const button = document.querySelector("[data-auto-battle]");
     if (button) button.disabled = true;
@@ -2826,7 +3506,7 @@
             const beforeHeal = p.currentHp;
             p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * healBonus));
             const healed = p.currentHp - beforeHeal;
-            if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), 280);
+          if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), battleDelay(280));
           }
           const enemyStatus = tickStatus(e);
           $("battle-log").textContent = `${p.name} usou ${pMove.name}: ${hit.amount} dano${hit.crit ? " crítico" : ""}${effectivenessText(hit.eff)}.${enemyStatus}`;
@@ -2859,14 +3539,26 @@
           await wait(battleDelay(actionDelay));
           const faintDelayLeft = pendingBattleFaintDelay();
           if (faintDelayLeft > 0) await wait(faintDelayLeft);
-          applyNuzlockeLosses();
-          if (!activePlayer()) {
+          const playerBeforeLosses = p;
+          if (state.tower?.active && !state.team.some((mon) => mon.currentHp > 0)) {
+            state.autoBattling = false;
+            await wait(battleDelay(hpDrainDelay));
+            endRun(false);
+            return;
+          }
+          applyBattleLosses();
+          const playerAfterLosses = activePlayer();
+          if (!playerAfterLosses) {
             state.autoBattling = false;
             await wait(battleDelay(hpDrainDelay));
             endRun(false);
             return;
           }
           renderBattle();
+          if (playerAfterLosses !== playerBeforeLosses) {
+            window.setTimeout(() => animateBattleSendOut({ sides: ["player"] }), sendoutDelay(80));
+            await wait(sendoutDelay(BATTLE_SENDOUT_DURATION));
+          }
         }
       }
     }
@@ -2879,8 +3571,55 @@
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
+  function battleSpeedFactor() {
+    return state.battleSpeed === 3 ? 3 : state.battleSpeed === 2 ? 2 : 1;
+  }
+
   function battleDelay(ms) {
-    return Math.max(120, Math.round(ms / (state.battleSpeed === 2 ? 2 : 1)));
+    return Math.max(80, Math.round(ms / battleSpeedFactor()));
+  }
+
+  function sendoutDelay(ms) {
+    const factor = state.battleSpeed === 3 ? 1.45 : state.battleSpeed === 2 ? 1.25 : 1;
+    return Math.max(140, Math.round(ms / factor));
+  }
+
+  function ensureBattleSpeedTimer() {
+    if (!state.battle) return;
+    state.battle.speedBoostStartedAt ||= Date.now();
+  }
+
+  function battleSpeedCountdownSeconds() {
+    if (!state.battle || state.battleSpeed !== 2) return 0;
+    ensureBattleSpeedTimer();
+    const left = BATTLE_AUTO_3X_AFTER_MS - (Date.now() - state.battle.speedBoostStartedAt);
+    return Math.max(0, Math.ceil(left / 1000));
+  }
+
+  function maybeAutoPromoteBattleSpeed() {
+    if (!state.battle || state.battleSpeed !== 2) return false;
+    ensureBattleSpeedTimer();
+    if (Date.now() - state.battle.speedBoostStartedAt < BATTLE_AUTO_3X_AFTER_MS) return false;
+    state.battleSpeed = 3;
+    save();
+    return true;
+  }
+
+  function startBattleSpeedCountdown() {
+    ensureBattleSpeedTimer();
+    if (battleSpeedCountdownTimer) return;
+    battleSpeedCountdownTimer = window.setInterval(() => {
+      if (!state.battle || state.screen !== "battle") return stopBattleSpeedCountdown();
+      const promoted = maybeAutoPromoteBattleSpeed();
+      if (state.battleSpeed === 2 || promoted) renderBattle();
+      if (state.battleSpeed !== 2) stopBattleSpeedCountdown();
+    }, 250);
+  }
+
+  function stopBattleSpeedCountdown() {
+    if (!battleSpeedCountdownTimer) return;
+    window.clearInterval(battleSpeedCountdownTimer);
+    battleSpeedCountdownTimer = null;
   }
 
   function moveEffectClass(type) {
@@ -2889,6 +3628,46 @@
 
   function moveIdClass(move) {
     return `move-id-${String(move?.id || "basic").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "basic"}`;
+  }
+
+  function realMoveAnim(move) {
+    return REAL_MOVE_ANIMS[String(move?.id || "").toLowerCase()] || null;
+  }
+
+  const activeRealMoveAudios = new Set();
+  const activeRealMoveTimers = new Set();
+
+  function clearActiveMoveEffects(root = document) {
+    activeRealMoveTimers.forEach((timer) => window.clearInterval(timer));
+    activeRealMoveTimers.clear();
+    root.querySelectorAll?.(".real-move-effect, .move-effect, .move-impact-effect").forEach((effect) => effect.remove());
+  }
+
+  function playRealMoveAudio(anim) {
+    if (!anim?.audio) return;
+    activeRealMoveAudios.forEach((active) => {
+      active.pause();
+      active.currentTime = 0;
+    });
+    activeRealMoveAudios.clear();
+    const audio = new Audio(`assets/battle-animations/real/audio/${anim.audio}`);
+    audio.volume = 0.34;
+    audio.playbackRate = battleSpeedFactor();
+    activeRealMoveAudios.add(audio);
+    const stopAudio = () => {
+      if (!activeRealMoveAudios.has(audio)) return;
+      const fade = window.setInterval(() => {
+        audio.volume = Math.max(0, audio.volume - 0.08);
+        if (audio.volume > 0) return;
+        window.clearInterval(fade);
+        audio.pause();
+        audio.currentTime = 0;
+        activeRealMoveAudios.delete(audio);
+      }, 30);
+    };
+    audio.addEventListener("ended", () => activeRealMoveAudios.delete(audio), { once: true });
+    window.setTimeout(stopAudio, battleDelay(820));
+    void audio.play().catch(() => {});
   }
 
   function animateBattleAction(attackerId, attackerName, targetId, targetName, amount, crit, eff, type, move = null) {
@@ -2900,22 +3679,117 @@
       attacker.classList.remove("is-attacking");
       void attacker.offsetWidth;
       attacker.classList.add("is-attacking");
-      window.setTimeout(() => attacker.classList.remove("is-attacking"), 680);
+      window.setTimeout(() => attacker.classList.remove("is-attacking"), battleDelay(680));
     }
     animateMoveEffect(attacker, target, type, move, crit);
     animateHit(targetId, targetName, amount, crit, eff);
   }
 
+  function animateBattleSendOut(options = {}) {
+    const battleGrid = document.querySelector(".battle-grid");
+    if (!battleGrid || !state.battle) return;
+    const sides = options.sides ? new Set(options.sides) : null;
+    const entries = [
+      { side: "player", rootId: "player-card", mon: activePlayer(), trainer: playerTrainerSprite() },
+      { side: "enemy", rootId: "enemy-card", mon: state.battle.enemy, trainer: state.battle.trainerSpriteId || state.battle.enemy?.trainer || null }
+    ].filter(({ side }) => !sides || sides.has(side));
+    const gridRect = battleGrid.getBoundingClientRect();
+    entries.forEach(({ side, rootId, mon, trainer }, index) => {
+      if (!mon) return;
+      const root = $(rootId);
+      const slot = root?.querySelector(`[data-battle-mon="${CSS.escape(mon.name)}"]`) || root;
+      if (!slot) return;
+      const slotRect = slot.getBoundingClientRect();
+      const x = slotRect.left + slotRect.width / 2 - gridRect.left;
+      const y = slotRect.top + slotRect.height * 0.56 - gridRect.top;
+      slot.classList.remove("is-awaiting-sendout", "is-sent-out");
+      void slot.offsetWidth;
+      slot.classList.add("is-awaiting-sendout");
+      const sendDelay = index * 180;
+      const revealDelay = sendDelay + 1260;
+      window.setTimeout(() => {
+        slot.classList.remove("is-awaiting-sendout");
+        slot.classList.add("is-sent-out");
+      }, sendoutDelay(revealDelay));
+      window.setTimeout(() => slot.classList.remove("is-sent-out"), sendoutDelay(revealDelay + 980));
+
+      const effect = document.createElement("span");
+      effect.className = `sendout-effect ${side}`;
+      effect.style.setProperty("--send-x", `${x}px`);
+      effect.style.setProperty("--send-y", `${y}px`);
+      effect.style.setProperty("--send-delay", `${sendoutDelay(sendDelay)}ms`);
+      const trainerImg = side === "player" ? playerTrainerBackSprite() : trainer ? trainerBackSprite(trainer) : "";
+      const trainerFallback = trainer ? trainerSprite(trainer) : "";
+      effect.innerHTML = `
+        ${trainerImg ? side === "player"
+          ? `<span class="sendout-trainer player-back" style="--trainer-sheet: url('${trainerImg}')"></span>`
+          : `<img class="sendout-trainer enemy-back" src="${trainerImg}" alt="" onerror="${trainerFallback ? `this.classList.remove('enemy-back');this.classList.add('enemy-front');this.src='${trainerFallback}'` : "this.remove()"}">`
+          : ""}
+        <img class="sendout-ball" src="${pokemonBallSprite(mon)}" alt="">
+        <span class="sendout-burst"></span>
+      `;
+      battleGrid.appendChild(effect);
+      window.setTimeout(() => effect.remove(), sendoutDelay(2300 + sendDelay));
+    });
+  }
+
   function animateMoveEffect(attacker, target, type, move = null, crit = false) {
     const battleGrid = document.querySelector(".battle-grid");
     if (!battleGrid || !attacker || !target) return;
+    clearActiveMoveEffects(battleGrid);
     const gridRect = battleGrid.getBoundingClientRect();
     const fromRect = attacker.getBoundingClientRect();
     const toRect = target.getBoundingClientRect();
     const fromX = fromRect.left + fromRect.width / 2 - gridRect.left;
     const fromY = fromRect.top + fromRect.height * 0.62 - gridRect.top;
-    const toX = toRect.left + toRect.width / 2 - gridRect.left;
-    const toY = toRect.top + toRect.height * 0.58 - gridRect.top;
+    const targetSprite = target.querySelector?.(".pokemon-anim");
+    const targetSpriteRect = targetSprite?.getBoundingClientRect();
+    const toX = (targetSpriteRect || toRect).left + (targetSpriteRect || toRect).width / 2 - gridRect.left;
+    const toY = targetSpriteRect
+      ? targetSpriteRect.top + targetSpriteRect.height * 0.48 - gridRect.top
+      : toRect.top + toRect.height * 0.45 - gridRect.top;
+    const useTowerStyle = battleGrid.classList.contains("tower-battle-grid") || document.body.classList.contains("is-tower-battle");
+    const realAnim = realMoveAnim(move);
+    if (realAnim) {
+      const effect = document.createElement("span");
+      const variantClass = realAnim.variant ? ` real-variant-${String(realAnim.variant).replace(/[^a-z0-9-]/gi, "").toLowerCase()}` : "";
+      effect.className = `real-move-effect ${moveEffectClass(type)} ${moveIdClass(move)}${variantClass} ${crit ? "is-critical" : ""}`;
+      effect.style.setProperty("--impact-x", `${toX}px`);
+      effect.style.setProperty("--impact-y", `${toY}px`);
+      effect.style.setProperty("--real-move-image", `url("assets/battle-animations/real/graphics/${realAnim.image}")`);
+      const frameCount = Math.max(1, Number(realAnim.frames) || 1);
+      effect.style.setProperty("--real-move-frames", frameCount);
+      effect.style.setProperty("--real-move-sheet-width", `${frameCount * 100}%`);
+      effect.style.setProperty("--real-move-frame-x", "0%");
+      effect.style.setProperty("--real-move-width", `${realAnim.w || 192}px`);
+      effect.style.setProperty("--real-move-height", `${realAnim.h || 192}px`);
+      effect.style.setProperty("--real-move-scale", (realAnim.scale ?? 1) * (useTowerStyle ? 1.9 : 1));
+      effect.style.setProperty("--real-move-offset-x", `${realAnim.x || 0}px`);
+      effect.style.setProperty("--real-move-offset-y", `${realAnim.y || 0}px`);
+      battleGrid.appendChild(effect);
+      if (frameCount > 1) {
+        let frame = 0;
+        const frameMs = Math.max(34, Math.round(battleDelay(720) / frameCount));
+        const timer = window.setInterval(() => {
+          frame = Math.min(frame + 1, frameCount - 1);
+          effect.style.setProperty("--real-move-frame-x", `${-(frame * 100) / frameCount}%`);
+          if (frame >= frameCount - 1) {
+            window.clearInterval(timer);
+            activeRealMoveTimers.delete(timer);
+          }
+        }, frameMs);
+        activeRealMoveTimers.add(timer);
+      }
+      playRealMoveAudio(realAnim);
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => {
+        effect.remove();
+      }, battleDelay(920));
+      return;
+    }
     const effect = document.createElement("span");
     const directionClass = toX >= fromX ? "moves-right" : "moves-left";
     effect.className = `move-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${directionClass} ${crit ? "is-critical" : ""}`;
@@ -2929,11 +3803,22 @@
       effect.appendChild(particle);
     }
     battleGrid.appendChild(effect);
+    const impact = document.createElement("span");
+    impact.className = `move-impact-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${crit ? "is-critical" : ""}`;
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    for (let i = 0; i < 8; i += 1) {
+      const shard = document.createElement("i");
+      shard.style.setProperty("--shard", i);
+      impact.appendChild(shard);
+    }
+    battleGrid.appendChild(impact);
     battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
     void battleGrid.offsetWidth;
     battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
-    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), crit ? 520 : 320);
-    window.setTimeout(() => effect.remove(), 920);
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+    window.setTimeout(() => effect.remove(), battleDelay(920));
+    window.setTimeout(() => impact.remove(), battleDelay(1120));
   }
 
   function animateHit(id, monName, amount, crit, eff) {
@@ -2953,8 +3838,8 @@
     damage.className = `damage-pop ${crit ? "critical" : ""} ${eff === 0 ? "immune" : eff > 1 ? "effective" : eff < 1 ? "resisted" : ""}`;
     damage.textContent = `${crit ? "Crit! " : ""}-${amount}`;
     el.appendChild(damage);
-    window.setTimeout(() => damage.remove(), 1900);
-    if (crit) window.setTimeout(() => el.classList.remove("is-critical-hit"), 620);
+    window.setTimeout(() => damage.remove(), battleDelay(1900));
+    if (crit) window.setTimeout(() => el.classList.remove("is-critical-hit"), battleDelay(620));
   }
 
   function animateBattlePopup(id, monName, text, kind = "info") {
@@ -2965,7 +3850,7 @@
     popup.className = `damage-pop battle-pop-${kind}`;
     popup.textContent = text;
     el.appendChild(popup);
-    window.setTimeout(() => popup.remove(), 1900);
+    window.setTimeout(() => popup.remove(), battleDelay(1900));
   }
 
   function applyMoveEffect(move, attacker, defender, damage) {
@@ -3022,7 +3907,7 @@
       const beforeHeal = p.currentHp;
       p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * healBonus));
       const healed = p.currentHp - beforeHeal;
-      if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), 280);
+      if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), battleDelay(280));
     }
     if (e.currentHp <= 0) return handleEnemyFaint(log);
     enemyTurn(log);
@@ -3041,6 +3926,7 @@
     $("battle-title").textContent = `${battle.enemy.leader} enviou ${battle.enemy.name}`;
     $("battle-log").textContent = `${prefix}${xpLog} ${battle.enemy.leader} chamou ${battle.enemy.name}.`;
     renderBattle();
+    window.setTimeout(() => animateBattleSendOut({ sides: ["enemy"] }), sendoutDelay(80));
     save();
   }
 
@@ -3078,10 +3964,16 @@
     if (p.currentHp <= 0) {
       window.setTimeout(() => {
         const finishFaint = () => {
-          applyNuzlockeLosses();
-          if (!activePlayer()) return endRun(false);
+          const playerBeforeLosses = p;
+          if (state.tower?.active && !state.team.some((mon) => mon.currentHp > 0)) return endRun(false);
+          applyBattleLosses();
+          const playerAfterLosses = activePlayer();
+          if (!playerAfterLosses) return endRun(false);
           renderBattle();
-          save();
+          if (playerAfterLosses !== playerBeforeLosses) {
+            window.setTimeout(() => animateBattleSendOut({ sides: ["player"] }), sendoutDelay(80));
+          }
+          window.setTimeout(save, playerAfterLosses !== playerBeforeLosses ? sendoutDelay(BATTLE_SENDOUT_DURATION) : 0);
         };
         const faintDelayLeft = pendingBattleFaintDelay();
         if (faintDelayLeft > 0) window.setTimeout(finishFaint, faintDelayLeft);
@@ -3121,7 +4013,8 @@
     state.team.forEach((p) => {
       if (p.currentHp > 0) {
         p.energy = Math.min(4, p.energy + 1);
-        p.currentHp = boss ? p.maxHp : Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.18));
+        const routeRecovery = state.nuzlockeMode ? 0.32 : 0.18;
+        p.currentHp = boss ? p.maxHp : Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * routeRecovery));
       } else if (boss && !state.nuzlockeMode) {
         p.currentHp = p.maxHp;
       }
@@ -3129,7 +4022,7 @@
     recoveryLog = boss
       ? " O time foi totalmente recuperado."
       : " O time recuperou um pouco de HP.";
-    state.threat = Math.min(3, state.threat + (boss ? 0 : 0.35));
+    state.threat = Math.min(3, state.threat + (boss ? 0 : state.nuzlockeMode ? 0.18 : 0.35));
     if (earnedBadge) state.badges.push(earnedBadge);
     if (boss && defeated?.badge) {
       const clearedArena = ARENAS.find((arena) => arena.badge === defeated.badge);
@@ -3180,10 +4073,21 @@
     show("choice");
   }
 
+  function towerFaintedSlotIndex() {
+    return state.tower?.active ? state.team.findIndex((p) => p?.currentHp <= 0) : -1;
+  }
+
+  function hasRecruitSlot() {
+    return state.team.length < 6 || (state.team.length >= 6 && towerFaintedSlotIndex() >= 0);
+  }
+
   async function showCatch() {
     const picks = (await recruitPoolExpanded(3)).map((p) => maybeMarkShiny(cloneMon(p, recruitLevel())));
     registerDexSeenMany(picks);
-    const teamIsFull = state.team.length >= 6;
+    const teamIsFull = !hasRecruitSlot();
+    const continueAction = state.tower?.active ? "tower-order" : "map";
+    const continueLabel = state.tower?.active ? "Continuar subida" : "Continuar rota";
+    const continueCopy = state.tower?.active ? "Ir para o prÃ³ximo andar." : teamIsFull ? "Manter seu time atual." : "Pular este recrutamento.";
     $("choice-kicker").textContent = "Recrutamento";
     $("choice-title").textContent = teamIsFull ? "Time completo" : "Um aliado pode entrar";
     $("choice-copy").textContent = teamIsFull
@@ -3205,17 +4109,19 @@
     `).join("");
     $("choice-grid").innerHTML = recruitChoices
       ? `${recruitChoices}
-        <button class="choice-button" type="button" data-action="map">
-          <strong>Continuar rota</strong>
-          <small>${teamIsFull ? "Manter seu time atual." : "Pular este recrutamento."}</small>
+        <button class="choice-button" type="button" data-action="${continueAction}">
+          <strong>${continueLabel}</strong>
+          <small>${continueCopy}</small>
         </button>`
-      : `<button class="choice-button" type="button" data-action="map"><strong>Continuar rota</strong><small>Nenhum Pokémon novo apareceu.</small></button>`;
+      : `<button class="choice-button" type="button" data-action="${continueAction}"><strong>${continueLabel}</strong><small>${state.tower?.active ? "Nenhum aliado apareceu agora." : "Nenhum Pokémon novo apareceu."}</small></button>`;
     state.offer = picks;
     show("choice");
   }
 
   function showRecruitReplace(mon) {
     if (!mon) return renderMap();
+    const continueAction = state.tower?.active ? "tower-order" : "map";
+    const continueLabel = state.tower?.active ? "Continuar subida" : "Continuar rota";
     state.pendingRecruit = mon;
     $("choice-kicker").textContent = "Troca de time";
     $("choice-title").textContent = `Recrutar ${mon.name}`;
@@ -3229,9 +4135,9 @@
         ${renderTypeChips(p.types)}
         <span class="choice-hover-detail">
           <span>Sai do time</span>
-          ${statPreviewWithItem(p, p.heldItem)}
+          ${statPreviewWithItem(p, heldItems(p)[0])}
           ${statBars(p)}
-          <small>${p.heldItem ? `${p.heldItem.name} volta para a bag` : "Sem item equipado"}</small>
+          <small>${heldItems(p).length ? `${heldItemsDetailText(p)} voltam para a bag` : "Sem item equipado"}</small>
         </span>
       </button>
     `).join("") + `
@@ -3240,19 +4146,135 @@
         <strong>Voltar</strong>
         <small>Escolher outro recruta.</small>
       </button>
-      <button class="choice-button" type="button" data-action="map">
-        <strong>Continuar rota</strong>
-        <small>Cancelar recrutamento.</small>
+      <button class="choice-button" type="button" data-action="${continueAction}">
+        <strong>${continueLabel}</strong>
+        <small>${state.tower?.active ? "Ir para o prÃ³ximo andar." : "Cancelar recrutamento."}</small>
       </button>
     `;
     show("choice");
+  }
+
+  function showRecruitReplace(mon) {
+    if (!mon) return renderMap();
+    const continueAction = state.tower?.active ? "tower-order" : "map";
+    const continueLabel = state.tower?.active ? "Continuar subida" : "Continuar rota";
+    state.pendingRecruit = mon;
+    $("choice-kicker").textContent = "Troca de time";
+    $("choice-title").textContent = `Recrutar ${mon.name}`;
+    $("choice-copy").textContent = "Escolha qual Pokemon sai do time. Se ele segurar uma reliquia, ela volta para a bag.";
+    const recruitPreview = `
+      <div class="recruit-replace-preview">
+        <img src="${animated(mon)}" alt="${mon.name}" onerror="this.src='${mini(mon)}'">
+        <div>
+          <strong>${mon.name}</strong>
+          <small>Lv.${mon.level} - HP ${mon.maxHp}/${mon.maxHp} - ${mon.trait || "Novo aliado"}</small>
+          ${renderTypeChips(mon.types)}
+        </div>
+      </div>
+    `;
+    const teamCards = state.team.map((p, i) => `
+      <button class="choice-button pokemon-choice tower-order-choice recruit-replace-choice" type="button" data-replace-recruit="${i}">
+        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
+        <span class="tower-order-rank">Sai</span>
+        <strong>${p.name}</strong>
+        <span class="held-slot-grid tower-card-slots">${towerHeldSlotsMarkup(p, i)}</span>
+        <small>Lv.${p.level} - HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
+        ${renderTypeChips(p.types)}
+        <span class="choice-hover-detail">
+          <span>${p.trait || "Atual no time"}</span>
+          ${statBars(p)}
+          <small>${heldItems(p).length ? `${heldItemsDetailText(p)} voltam para a bag` : "Sem reliquia equipada"}</small>
+          <small>Moves: ${(p.moves || []).map((move) => move.name).join(", ") || "Ataque basico"}</small>
+        </span>
+        <span class="tower-card-action" data-replace-recruit="${i}">Substituir</span>
+      </button>
+    `).join("");
+    $("choice-grid").innerHTML = `
+      ${recruitPreview}
+      <div class="tower-order-mons recruit-replace-mons">${teamCards}</div>
+      <div class="tower-order-actions recruit-replace-actions">
+        <button class="choice-button tower-order-action" type="button" data-action="catch">
+          <strong>Voltar</strong>
+          <small>Escolher outro recruta.</small>
+        </button>
+        <button class="choice-button tower-order-action" type="button" data-action="${continueAction}">
+          <strong>${continueLabel}</strong>
+          <small>${state.tower?.active ? "Ir para o proximo andar." : "Cancelar recrutamento."}</small>
+        </button>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-tower-order-modal", "has-recruit-replace-modal");
+    setupRecruitReplaceCarousel();
+  }
+
+  function setupRecruitReplaceCarousel() {
+    const track = document.querySelector(".recruit-replace-mons");
+    if (!track || track.dataset.carouselReady) return;
+    track.dataset.carouselReady = "true";
+    let dragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let handledPointerSelection = false;
+    track.addEventListener("pointerdown", (event) => {
+      if (event.target.closest(".tower-order-action, .tower-held-slot")) return;
+      dragging = true;
+      didDrag = false;
+      dragStartX = event.clientX;
+      dragStartScroll = track.scrollLeft;
+      track.classList.add("is-dragging");
+      track.setPointerCapture?.(event.pointerId);
+    });
+    track.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 14) didDrag = true;
+      track.scrollLeft = dragStartScroll - delta;
+      event.preventDefault();
+    });
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove("is-dragging");
+      track.releasePointerCapture?.(event.pointerId);
+      if (!didDrag) {
+        const button = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-replace-recruit]");
+        if (button && track.contains(button)) {
+          handledPointerSelection = true;
+          replacePokemon(Number(button.dataset.replaceRecruit));
+        }
+      }
+    };
+    track.addEventListener("pointerup", stopDrag);
+    track.addEventListener("pointercancel", stopDrag);
+    track.addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-replace-recruit]");
+      if (handledPointerSelection) {
+        event.preventDefault();
+        event.stopPropagation();
+        handledPointerSelection = false;
+        return;
+      }
+      if (!didDrag && button && track.contains(button)) {
+        event.preventDefault();
+        event.stopPropagation();
+        return replacePokemon(Number(button.dataset.replaceRecruit));
+      }
+      if (!didDrag) return;
+      event.preventDefault();
+      event.stopPropagation();
+      didDrag = false;
+    }, true);
   }
 
   function showItem() {
     const picks = itemPool(3);
     $("choice-kicker").textContent = "Relíquia";
     $("choice-title").textContent = "Escolha uma melhoria";
-    $("choice-copy").textContent = "Escolha um item e equipe em um Pokémon. Alguns efeitos também contam como relíquia da run.";
+    $("choice-copy").textContent = state.tower?.active
+      ? "Escolha uma relíquia. Ela vai para a mochila e você prepara o time em seguida."
+      : "Escolha um item e equipe em um Pokémon. Alguns efeitos também contam como relíquia da run.";
     $("choice-grid").innerHTML = picks.map((item, i) => `
       <button class="choice-button item-choice" type="button" data-item="${i}">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
@@ -3274,6 +4296,26 @@
     $("choice-kicker").textContent = "Equipar item";
     $("choice-title").textContent = item.name;
     $("choice-copy").textContent = itemShortText(item);
+    const equipCards = state.team.map((p, i) => `
+      <button class="choice-button pokemon-choice tower-order-choice equip-item-choice" type="button" data-equip="${i}">
+        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
+        <strong>${p.name}</strong>
+        <span class="equipped-item-pill ${heldItems(p).length ? "" : "empty"}">
+          <span class="held-slot-grid">${towerHeldSlotsMarkup(p, i)}</span>
+          <span>
+            <b>${heldItems(p).length ? `${heldItems(p).length}/${MAX_HELD_ITEMS} relíquias` : "Slot livre"}</b>
+            <small>${heldItems(p).length ? heldItemsDetailText(p) : "Sem relíquia equipada"}</small>
+          </span>
+        </span>
+        ${renderTypeChips(p.types)}
+        <span class="choice-hover-detail">
+          <span>${heldItems(p).length ? `Atual: ${heldItemsDetailText(p)}` : "Livre"}</span>
+          ${statBars(p)}
+          <small>HP ${Math.max(0, p.currentHp)}/${p.maxHp} · Energia ${p.energy}</small>
+        </span>
+        <span class="tower-card-action" data-equip="${i}">Equipar aqui</span>
+      </button>
+    `).join("");
     $("choice-grid").innerHTML = `
       <div class="pending-item-card">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
@@ -3283,25 +4325,7 @@
         </span>
         ${itemBonusMarkup(item)}
       </div>
-    ` + state.team.map((p, i) => `
-      <button class="choice-button pokemon-choice" type="button" data-equip="${i}">
-        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
-        <strong>${p.name}</strong>
-        <span class="equipped-item-pill ${p.heldItem ? "" : "empty"}">
-          ${p.heldItem ? `<img class="animated-item" src="${itemSprite(p.heldItem)}" alt="${p.heldItem.name}">` : ""}
-          <span>
-            <b>${p.heldItem ? p.heldItem.name : "Slot livre"}</b>
-            <small>${p.heldItem ? itemShortText(p.heldItem) : "Sem relíquia equipada"}</small>
-          </span>
-        </span>
-        ${renderTypeChips(p.types)}
-        <span class="choice-hover-detail">
-          <span>${p.heldItem ? `Atual: ${p.heldItem.name}` : "Livre"}</span>
-          ${statBars(p)}
-          <small>HP ${Math.max(0, p.currentHp)}/${p.maxHp} · Energia ${p.energy}</small>
-        </span>
-      </button>
-    `).join("") + `
+      <div class="tower-equip-mons equip-item-mons">${equipCards}</div>
       <button class="choice-button item-choice store-item-choice" type="button" data-store-item="1">
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
         <strong>Guardar na bag</strong>
@@ -3309,25 +4333,133 @@
       </button>
     `;
     show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-equip-item-modal");
+    setupTowerEquipCarousel();
+    setupHeldSlotDragDrop();
+  }
+
+  function setupTowerEquipCarousel() {
+    const track = document.querySelector(".tower-equip-mons");
+    if (!track || track.dataset.carouselReady) return;
+    track.dataset.carouselReady = "true";
+    let dragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let handledPointerSelection = false;
+    track.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      didDrag = false;
+      dragStartX = event.clientX;
+      dragStartScroll = track.scrollLeft;
+      track.classList.add("is-dragging");
+      track.setPointerCapture?.(event.pointerId);
+    });
+    track.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 14) didDrag = true;
+      track.scrollLeft = dragStartScroll - delta;
+      event.preventDefault();
+    });
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove("is-dragging");
+      track.releasePointerCapture?.(event.pointerId);
+      if (!didDrag) {
+        const button = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-equip]");
+        if (button && track.contains(button)) {
+          handledPointerSelection = true;
+          equipPendingItem(Number(button.dataset.equip));
+        }
+      }
+    };
+    track.addEventListener("pointerup", stopDrag);
+    track.addEventListener("mouseup", (event) => {
+      if (didDrag) return;
+      const button = document.elementFromPoint(event.clientX, event.clientY)?.closest?.("[data-equip]");
+      if (button && track.contains(button)) equipPendingItem(Number(button.dataset.equip));
+    });
+    track.addEventListener("pointercancel", stopDrag);
+    track.addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-equip]");
+      if (handledPointerSelection) {
+        event.preventDefault();
+        event.stopPropagation();
+        handledPointerSelection = false;
+        return;
+      }
+      if (didDrag) {
+        event.preventDefault();
+        event.stopPropagation();
+        didDrag = false;
+        return;
+      }
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      equipPendingItem(Number(button.dataset.equip));
+    }, true);
+  }
+
+  function ensureHeldTooltip() {
+    let tooltip = document.querySelector(".held-slot-floating-tooltip");
+    if (tooltip) return tooltip;
+    tooltip = document.createElement("div");
+    tooltip.className = "held-slot-floating-tooltip";
+    tooltip.setAttribute("aria-hidden", "true");
+    document.body.appendChild(tooltip);
+    return tooltip;
+  }
+
+  function showHeldTooltip(slot) {
+    const tooltip = ensureHeldTooltip();
+    const title = slot.dataset.heldTooltip || "";
+    const text = slot.dataset.heldTooltipText || "";
+    tooltip.innerHTML = `<strong>${title}</strong><small>${text}</small>`;
+    tooltip.classList.add("is-visible");
+    tooltip.setAttribute("aria-hidden", "false");
+    positionHeldTooltip(slot, tooltip);
+  }
+
+  function positionHeldTooltip(slot, tooltip = ensureHeldTooltip()) {
+    if (!tooltip.classList.contains("is-visible")) return;
+    const rect = slot.getBoundingClientRect();
+    const width = tooltip.offsetWidth || 190;
+    const height = tooltip.offsetHeight || 62;
+    const left = Math.max(12, Math.min(window.innerWidth - width - 12, rect.left + rect.width / 2 - width / 2));
+    const top = rect.top - height - 10 > 8 ? rect.top - height - 10 : rect.bottom + 10;
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${Math.max(8, Math.min(window.innerHeight - height - 8, top))}px`;
+  }
+
+  function hideHeldTooltip() {
+    const tooltip = document.querySelector(".held-slot-floating-tooltip");
+    if (!tooltip) return;
+    tooltip.classList.remove("is-visible");
+    tooltip.setAttribute("aria-hidden", "true");
   }
 
   function showReplaceItem(index) {
     const p = state.team[index];
     if (!p || !state.pendingItem) return renderMap();
+    const equipped = heldItems(p);
+    const replacedItem = equipped[0];
     state.pendingEquipIndex = index;
     $("choice-kicker").textContent = "Item equipado";
     $("choice-title").textContent = p.name;
-    $("choice-copy").textContent = `${p.name} já segura ${p.heldItem.name}. Trocar pelo item novo ou guardar na bag?`;
+    $("choice-copy").textContent = `${p.name} já usa ${MAX_HELD_ITEMS} relíquias. Trocar o primeiro slot ou guardar na bag?`;
     $("choice-grid").innerHTML = `
       <button class="choice-button item-choice" type="button" data-confirm-equip="1">
         <img class="animated-item" src="${itemSprite(state.pendingItem)}" alt="${state.pendingItem.name}">
-        <strong>Trocar item</strong>
-        <small>${state.pendingItem.name} entra. ${p.heldItem.name} volta para a bag.</small>
+        <strong>Trocar slot 1</strong>
+        <small>${state.pendingItem.name} entra. ${replacedItem.name} volta para a bag.</small>
       </button>
       <button class="choice-button item-choice" type="button" data-store-item="1">
         <img class="animated-item" src="${itemSprite(state.pendingItem)}" alt="${state.pendingItem.name}">
         <strong>Guardar novo</strong>
-        <small>Mantem ${p.heldItem.name} em ${p.name}.</small>
+        <small>Mantem ${heldItemsDetailText(p)} em ${p.name}.</small>
       </button>
     `;
     show("choice");
@@ -3338,7 +4470,7 @@
     state.items.push({ ...state.pendingItem });
     state.pendingItem = null;
     state.pendingEquipIndex = null;
-    if (state.tower?.active) return towerNextStep();
+    if (state.tower?.active) return towerPrepareNextStep();
     renderMap();
     save();
   }
@@ -3346,12 +4478,16 @@
   function equipPendingItem(index, replace = false) {
     const p = state.team[index];
     if (!p || !state.pendingItem) return;
-    if (p.heldItem && !replace) return showReplaceItem(index);
-    if (p.heldItem && replace) state.items.push({ ...p.heldItem });
-    p.heldItem = { ...state.pendingItem };
+    const equipped = heldItems(p);
+    if (equipped.length >= MAX_HELD_ITEMS && !replace) return showReplaceItem(index);
+    if (equipped.length >= MAX_HELD_ITEMS && replace) {
+      state.items.push({ ...equipped.shift() });
+    }
+    equipped.push({ ...state.pendingItem });
+    setHeldItems(p, equipped);
     state.pendingItem = null;
     state.pendingEquipIndex = null;
-    if (state.tower?.active) return towerNextStep();
+    if (state.tower?.active) return towerPrepareNextStep();
     renderMap();
     save();
   }
@@ -3540,6 +4676,569 @@
     return `Andar ${state.floor}/${state.tower.totalFloors}`;
   }
 
+  function towerUpcomingHint() {
+    const nextFloor = (state.floor || 0) + 1;
+    if (nextFloor <= 5) return "inimigo protegido, nÃ­vel parecido e dano reduzido";
+    if (nextFloor % 10 === 0) return "andar raro, maior chance de tipo incomum ou lendÃ¡rio";
+    const teamTypes = state.team.flatMap((p) => p.types || []);
+    const leadType = teamTypes[nextFloor % Math.max(1, teamTypes.length)] || "Normal";
+    return `tipo provÃ¡vel variado, prepare cobertura contra ${leadType}`;
+  }
+
+  function showTowerTeamOrder(options = {}) {
+    if (!state.tower?.active) return towerNextStep();
+    document.querySelector(".rogue-stage")?.classList.remove("has-tower-learn-modal");
+    towerOrderSuppressClickUntil = 0;
+    towerOrderPointerStart = null;
+    if ((state.floor || 0) >= 10) {
+      const aliveOnly = state.team.filter((p) => p.currentHp > 0);
+      if (aliveOnly.length !== state.team.length) {
+        state.team = aliveOnly;
+        state.pendingTowerOrder = [];
+      }
+    }
+    const aliveTeam = state.team
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => p?.currentHp > 0);
+    if (aliveTeam.length <= 1 && !state.items.length && !options.keepPreparing) return towerNextStep();
+    state.pendingTowerOrder = Array.isArray(state.pendingTowerOrder)
+      ? state.pendingTowerOrder.filter((index) => aliveTeam.some((entry) => entry.i === index))
+      : [];
+    const selected = new Set(state.pendingTowerOrder);
+    const complete = state.pendingTowerOrder.length >= aliveTeam.length;
+    $("choice-kicker").textContent = "Preparar equipe";
+    $("choice-title").textContent = "Escolha a ordem";
+    $("choice-copy").textContent = complete
+      ? "Ordem definida. Confirme para subir com essa formação."
+      : `Clique na sequência desejada. Próxima posição: ${state.pendingTowerOrder.length + 1}.`;
+    $("choice-copy").textContent += ` Próximo andar: ${towerUpcomingHint()}.`;
+    $("choice-grid").innerHTML = `
+      ${towerBagDockMarkup()}
+      <div class="tower-order-mons">
+    ${aliveTeam.map(({ p, i }) => `
+      <button class="choice-button pokemon-choice tower-order-choice ${selected.has(i) ? "is-picked" : ""}" type="button" data-tower-order-pick="${i}" ${selected.has(i) ? "disabled" : ""}>
+        <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
+        <span class="tower-order-rank">${selected.has(i) ? `${state.pendingTowerOrder.indexOf(i) + 1}º` : "..."}</span>
+        <strong>${p.name}</strong>
+        <span class="held-slot-grid tower-card-slots">${towerHeldSlotsMarkup(p, i)}</span>
+        <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
+        ${renderTypeChips(p.types)}
+        <span class="choice-hover-detail">
+          <span>${p.trait || "Líder da subida"}</span>
+          ${statBars(p)}
+          <small>Energia ${p.energy || 0} · ${heldItemSummary(p)}</small>
+          <small>Moves: ${(p.moves || []).map((move) => move.name).join(", ") || "Ataque básico"}</small>
+        </span>
+        <span class="tower-card-action" data-tower-order-pick="${i}">${selected.has(i) ? "Escolhido" : "Escolher"}</span>
+      </button>
+    `).join("")}
+      </div>
+      <div class="tower-order-actions">
+        <button class="choice-button tower-order-action" type="button" data-action="${complete ? "tower-confirm-order" : "tower-reset-order"}">
+          <strong>${complete ? "Confirmar ordem" : "Recomeçar"}</strong>
+          <small>${complete ? "Subir com essa formação." : "Limpar escolhas."}</small>
+        </button>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-tower-order-modal");
+    setupTowerOrderCarousel();
+    setupTowerOrderCardSelection();
+    setupTowerBagDock();
+    save();
+  }
+
+  function pickTowerOrderIndex(index) {
+    if (!state.tower?.active) return false;
+    const aliveIndexes = state.team.map((p, i) => (p?.currentHp > 0 ? i : null)).filter((i) => i !== null);
+    state.pendingTowerOrder = Array.isArray(state.pendingTowerOrder) ? state.pendingTowerOrder : [];
+    if (!aliveIndexes.includes(index) || state.pendingTowerOrder.includes(index)) return false;
+    state.pendingTowerOrder.push(index);
+    showTowerTeamOrder();
+    return true;
+  }
+
+  function setupTowerOrderCardSelection() {
+    document.querySelectorAll(".tower-order-choice[data-tower-order-pick]").forEach((button) => {
+      if (button.dataset.orderClickReady) return;
+      button.dataset.orderClickReady = "true";
+      let startX = 0;
+      let startY = 0;
+      button.addEventListener("pointerdown", (event) => {
+        if (event.target.closest?.(".tower-held-slot")) return;
+        startX = event.clientX;
+        startY = event.clientY;
+      });
+      button.addEventListener("pointerup", (event) => {
+        if (event.target.closest?.(".tower-held-slot")) return;
+        if (Math.hypot(event.clientX - startX, event.clientY - startY) > 10) return;
+        event.preventDefault();
+        event.stopPropagation();
+        pickTowerOrderIndex(Number(button.dataset.towerOrderPick));
+      });
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    });
+  }
+
+  function towerBagDockMarkup() {
+    return `
+      <div class="tower-bag-dock">
+        <button class="tower-bag-icon" type="button" data-tower-bag-toggle="1" aria-label="Abrir mochila de relíquias" title="Mochila de relíquias">
+          <span aria-hidden="true"></span>
+          <b>${state.items.length}</b>
+        </button>
+        <div class="tower-bag-popover" data-tower-bag-popover>
+          <strong>Mochila</strong>
+          <small>${state.items.length ? "Arraste uma relíquia para um slot." : "Sem relíquias guardadas."}</small>
+          <div class="tower-bag-dropzone" data-bag-drop="1">Solte aqui para guardar</div>
+          <div class="tower-bag-items">
+            ${state.items.length ? state.items.map((item, index) => `
+              <button class="tower-bag-item" type="button" draggable="true" data-bag-item="${index}" data-bag-drag="${index}" data-held-tooltip="${item.name}" data-held-tooltip-text="${itemShortText(item)}">
+                <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
+                <span><b>${item.name}</b><small>${itemShortText(item)}</small></span>
+              </button>
+            `).join("") : `<span class="tower-bag-empty">A mochila está vazia.</span>`}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function setupTowerBagDock() {
+    const docks = [...document.querySelectorAll(".tower-bag-dock")];
+    const dock = docks.find((entry) => !entry.dataset.ready) || docks[docks.length - 1];
+    if (!dock) return;
+    docks.filter((oldDock) => oldDock !== dock).forEach((oldDock) => oldDock.remove());
+    if (dock.parentElement !== document.body) {
+      document.body.appendChild(dock);
+    }
+    if (dock.dataset.ready) return;
+    dock.dataset.ready = "true";
+    const popover = dock.querySelector("[data-tower-bag-popover]");
+    const toggle = dock.querySelector("[data-tower-bag-toggle]");
+    applyTowerBagPosition(dock);
+    setupDraggableTowerBag(dock, toggle);
+    toggle?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (performance.now() < towerBagSuppressClickUntil) {
+        return;
+      }
+      dock.classList.toggle("is-open");
+      if (dock.classList.contains("is-open")) positionTowerBagPopover(dock);
+    });
+    document.addEventListener("click", (event) => {
+      if (!dock.contains(event.target)) dock.classList.remove("is-open");
+    });
+    popover?.addEventListener("click", (event) => event.stopPropagation());
+    document.querySelectorAll("[data-bag-drag]").forEach((el) => {
+      el.addEventListener("dragstart", (event) => {
+        event.stopPropagation();
+        towerOrderSuppressClickUntil = performance.now() + 900;
+        event.dataTransfer.setData("text/plain", JSON.stringify({ source: "bag", itemIndex: Number(el.dataset.bagDrag) }));
+        event.dataTransfer.effectAllowed = "move";
+      });
+    });
+    document.querySelectorAll("[data-held-drag-mon]").forEach((el) => {
+      el.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      el.addEventListener("pointerdown", (event) => event.stopPropagation());
+      el.addEventListener("dragstart", (event) => {
+        event.stopPropagation();
+        towerOrderSuppressClickUntil = performance.now() + 900;
+        hideHeldTooltip();
+        event.dataTransfer.setData("text/plain", JSON.stringify({
+          source: "held",
+          monIndex: Number(el.dataset.heldDragMon),
+          slotIndex: Number(el.dataset.heldDragSlot)
+        }));
+        event.dataTransfer.effectAllowed = "move";
+      });
+    });
+    document.querySelectorAll("[data-held-drop]").forEach((el) => {
+      el.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        el.classList.add("is-drop-target");
+      });
+      el.addEventListener("dragleave", () => el.classList.remove("is-drop-target"));
+      el.addEventListener("drop", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        el.classList.remove("is-drop-target");
+        const payload = dragPayload(event);
+        const monIndex = Number(el.dataset.heldDrop);
+        const slotIndex = Number(el.dataset.heldSlot);
+        if (payload?.source === "bag") equipBagItemToSlot(payload.itemIndex, monIndex, slotIndex);
+        if (payload?.source === "held") moveHeldItemToSlot(payload.monIndex, payload.slotIndex, monIndex, slotIndex);
+      });
+    });
+    document.querySelector("[data-bag-drop]")?.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.currentTarget.classList.add("is-drop-target");
+    });
+    document.querySelector("[data-bag-drop]")?.addEventListener("dragleave", (event) => {
+      event.currentTarget.classList.remove("is-drop-target");
+    });
+    document.querySelector("[data-bag-drop]")?.addEventListener("drop", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      event.currentTarget.classList.remove("is-drop-target");
+      const payload = dragPayload(event);
+      if (payload?.source === "held") unequipHeldItemToBag(payload.monIndex, payload.slotIndex);
+    });
+    setupTowerBagGlobalDrop();
+    positionTowerBagPopover(dock);
+  }
+
+  function setupTowerBagGlobalDrop() {
+    if (towerBagGlobalDropReady) return;
+    towerBagGlobalDropReady = true;
+    document.addEventListener("dragover", (event) => {
+      const bagDrop = event.target.closest?.("[data-bag-drop]");
+      const heldDrop = event.target.closest?.("[data-held-drop]");
+      if (!bagDrop && !heldDrop) return;
+      event.preventDefault();
+      event.stopPropagation();
+      (bagDrop || heldDrop).classList.add("is-drop-target");
+    }, true);
+    document.addEventListener("drop", (event) => {
+      const bagDrop = event.target.closest?.("[data-bag-drop]");
+      const heldDrop = event.target.closest?.("[data-held-drop]");
+      if (!bagDrop && !heldDrop) return;
+      event.preventDefault();
+      event.stopPropagation();
+      towerOrderSuppressClickUntil = performance.now() + 900;
+      bagDrop?.classList.remove("is-drop-target");
+      heldDrop?.classList.remove("is-drop-target");
+      const payload = dragPayload(event);
+      if (bagDrop && payload?.source === "held") return unequipHeldItemToBag(payload.monIndex, payload.slotIndex);
+      if (heldDrop) {
+        const monIndex = Number(heldDrop.dataset.heldDrop);
+        const slotIndex = Number(heldDrop.dataset.heldSlot);
+        if (payload?.source === "bag") return equipBagItemToSlot(payload.itemIndex, monIndex, slotIndex);
+        if (payload?.source === "held") return moveHeldItemToSlot(payload.monIndex, payload.slotIndex, monIndex, slotIndex);
+      }
+    }, true);
+  }
+
+  function positionTowerBagPopover(dock) {
+    const popover = dock.querySelector("[data-tower-bag-popover]");
+    const toggle = dock.querySelector("[data-tower-bag-toggle]");
+    if (!popover || !toggle) return;
+    const margin = 8;
+    const gap = 10;
+    const iconRect = toggle.getBoundingClientRect();
+    const popoverWidth = Math.min(320, Math.max(260, window.innerWidth - margin * 2));
+    popover.style.width = `${popoverWidth}px`;
+    popover.style.left = "0px";
+    popover.style.top = `${iconRect.height + gap}px`;
+    popover.style.maxHeight = `${Math.max(180, window.innerHeight - margin * 2)}px`;
+    const estimatedHeight = Math.min(popover.scrollHeight || 260, window.innerHeight - margin * 2);
+    let left = 0;
+    let top = iconRect.height + gap;
+    if (iconRect.left + popoverWidth > window.innerWidth - margin) {
+      left = iconRect.width - popoverWidth;
+    }
+    if (iconRect.left + left < margin) {
+      left = margin - iconRect.left;
+    }
+    if (iconRect.bottom + gap + estimatedHeight > window.innerHeight - margin) {
+      top = -estimatedHeight - gap;
+    }
+    if (iconRect.top + top < margin) {
+      top = margin - iconRect.top;
+    }
+    popover.style.left = `${Math.round(left)}px`;
+    popover.style.top = `${Math.round(top)}px`;
+    popover.style.maxHeight = `${Math.max(160, Math.min(430, window.innerHeight - iconRect.top - top - margin))}px`;
+  }
+
+  function readTowerBagPosition() {
+    try {
+      const position = JSON.parse(localStorage.getItem(TOWER_BAG_POSITION_KEY) || "null");
+      if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) return null;
+      return position;
+    } catch {
+      return null;
+    }
+  }
+
+  function clampTowerBagPosition(x, y, handle) {
+    const rect = handle?.getBoundingClientRect?.() || {};
+    const margin = 8;
+    const width = rect.width || 54;
+    const height = rect.height || 54;
+    return {
+      x: Math.min(Math.max(margin, x), Math.max(margin, window.innerWidth - width - margin)),
+      y: Math.min(Math.max(margin, y), Math.max(margin, window.innerHeight - height - margin))
+    };
+  }
+
+  function applyTowerBagPosition(dock) {
+    const position = readTowerBagPosition();
+    if (!position) return;
+    const next = clampTowerBagPosition(position.x, position.y, dock.querySelector("[data-tower-bag-toggle]") || dock);
+    dock.style.left = `${next.x}px`;
+    dock.style.top = `${next.y}px`;
+  }
+
+  function saveTowerBagPosition(dock) {
+    const rect = dock.getBoundingClientRect();
+    localStorage.setItem(TOWER_BAG_POSITION_KEY, JSON.stringify({ x: Math.round(rect.left), y: Math.round(rect.top) }));
+  }
+
+  function setupDraggableTowerBag(dock, handle) {
+    if (!handle) return;
+    let dragging = false;
+    let didDrag = false;
+    let startX = 0;
+    let startY = 0;
+    let grabOffsetX = 0;
+    let grabOffsetY = 0;
+    handle.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      dragging = true;
+      didDrag = false;
+      startX = event.clientX;
+      startY = event.clientY;
+      const rect = dock.getBoundingClientRect();
+      grabOffsetX = event.clientX - rect.left;
+      grabOffsetY = event.clientY - rect.top;
+      const current = clampTowerBagPosition(rect.left, rect.top, handle);
+      dock.style.left = `${current.x}px`;
+      dock.style.top = `${current.y}px`;
+      dock.classList.add("is-moving");
+      handle.setPointerCapture?.(event.pointerId);
+    });
+    window.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
+      if (Math.hypot(deltaX, deltaY) > 6) didDrag = true;
+      if (!didDrag) return;
+      event.preventDefault();
+      event.stopPropagation();
+      dock.classList.remove("is-open");
+      const next = clampTowerBagPosition(event.clientX - grabOffsetX, event.clientY - grabOffsetY, handle);
+      dock.style.left = `${next.x}px`;
+      dock.style.top = `${next.y}px`;
+      positionTowerBagPopover(dock);
+    }, { capture: true });
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      event.preventDefault();
+      event.stopPropagation();
+      dragging = false;
+      dock.classList.remove("is-moving");
+      handle.releasePointerCapture?.(event.pointerId);
+      if (didDrag) {
+        towerBagSuppressClickUntil = performance.now() + 350;
+        saveTowerBagPosition(dock);
+      }
+    };
+    window.addEventListener("pointerup", stopDrag, { capture: true });
+    window.addEventListener("pointercancel", stopDrag, { capture: true });
+    window.addEventListener("resize", () => {
+      const rect = dock.getBoundingClientRect();
+      const next = clampTowerBagPosition(rect.left, rect.top, handle);
+      dock.style.left = `${next.x}px`;
+      dock.style.top = `${next.y}px`;
+      positionTowerBagPopover(dock);
+      saveTowerBagPosition(dock);
+    });
+  }
+
+  function dragPayload(event) {
+    try {
+      return JSON.parse(event.dataTransfer.getData("text/plain") || "{}");
+    } catch {
+      return null;
+    }
+  }
+
+  function refreshHeldItemScreen() {
+    state.pendingTowerOrder = [];
+    save();
+    if (state.pendingItem && state.screen === "choice" && document.querySelector(".rogue-stage")?.classList.contains("has-equip-item-modal")) {
+      return showEquipItem(state.pendingItem);
+    }
+    if (state.tower?.active) return showTowerTeamOrder({ keepPreparing: true });
+    renderHud();
+  }
+
+  function equipBagItemToSlot(itemIndex, monIndex, slotIndex) {
+    const p = state.team[monIndex];
+    if (!p || itemIndex < 0 || itemIndex >= state.items.length) return;
+    const item = state.items.splice(itemIndex, 1)[0];
+    const equipped = heldItems(p);
+    const replaced = equipped[slotIndex];
+    equipped[slotIndex] = { ...item };
+    if (replaced) state.items.push({ ...replaced });
+    setHeldItems(p, equipped.filter(Boolean));
+    refreshHeldItemScreen();
+  }
+
+  function moveHeldItemToSlot(fromMonIndex, fromSlotIndex, toMonIndex, toSlotIndex) {
+    const fromMon = state.team[fromMonIndex];
+    const toMon = state.team[toMonIndex];
+    if (!fromMon || !toMon) return;
+    const fromItems = heldItems(fromMon);
+    const moving = fromItems[fromSlotIndex];
+    if (!moving) return;
+    const toItems = heldItems(toMon);
+    const replaced = toItems[toSlotIndex];
+    fromItems.splice(fromSlotIndex, 1);
+    toItems[toSlotIndex] = { ...moving };
+    if (replaced) fromItems.push({ ...replaced });
+    setHeldItems(fromMon, fromItems.filter(Boolean));
+    setHeldItems(toMon, toItems.filter(Boolean));
+    refreshHeldItemScreen();
+  }
+
+  function unequipHeldItemToBag(monIndex, slotIndex) {
+    const p = state.team[monIndex];
+    if (!p) return;
+    const equipped = heldItems(p);
+    const [item] = equipped.splice(slotIndex, 1);
+    if (!item) return;
+    state.items.push({ ...item });
+    setHeldItems(p, equipped);
+    refreshHeldItemScreen();
+  }
+
+  function setupHeldSlotDragDrop() {
+    document.querySelectorAll("[data-held-drag-mon]").forEach((el) => {
+      if (el.dataset.heldDndReady) return;
+      el.dataset.heldDndReady = "true";
+      el.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      el.addEventListener("pointerdown", (event) => event.stopPropagation());
+      el.addEventListener("dragstart", (event) => {
+        event.stopPropagation();
+        towerOrderSuppressClickUntil = performance.now() + 900;
+        hideHeldTooltip();
+        event.dataTransfer.setData("text/plain", JSON.stringify({
+          source: "held",
+          monIndex: Number(el.dataset.heldDragMon),
+          slotIndex: Number(el.dataset.heldDragSlot)
+        }));
+        event.dataTransfer.effectAllowed = "move";
+      });
+    });
+    document.querySelectorAll("[data-held-drop]").forEach((el) => {
+      if (el.dataset.heldDropReady) return;
+      el.dataset.heldDropReady = "true";
+      el.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        el.classList.add("is-drop-target");
+      });
+      el.addEventListener("dragleave", () => el.classList.remove("is-drop-target"));
+      el.addEventListener("drop", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        el.classList.remove("is-drop-target");
+        const payload = dragPayload(event);
+        const monIndex = Number(el.dataset.heldDrop);
+        const slotIndex = Number(el.dataset.heldSlot);
+        if (payload?.source === "bag") equipBagItemToSlot(payload.itemIndex, monIndex, slotIndex);
+        if (payload?.source === "held") moveHeldItemToSlot(payload.monIndex, payload.slotIndex, monIndex, slotIndex);
+      });
+    });
+    setupTowerBagGlobalDrop();
+  }
+
+  function setupTowerOrderCarousel() {
+    const track = document.querySelector(".tower-order-mons");
+    if (!track || track.dataset.carouselReady) return;
+    track.dataset.carouselReady = "true";
+    track.scrollLeft = 0;
+    let dragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    track.addEventListener("pointerdown", (event) => {
+      if (event.target.closest(".tower-order-action, .tower-held-slot, .tower-bag-dock")) return;
+      dragging = true;
+      didDrag = false;
+      dragStartX = event.clientX;
+      dragStartScroll = track.scrollLeft;
+      track.classList.add("is-dragging");
+      track.setPointerCapture?.(event.pointerId);
+    });
+    track.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 14) didDrag = true;
+      track.scrollLeft = dragStartScroll - delta;
+      if (didDrag) event.preventDefault();
+    });
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove("is-dragging");
+      track.releasePointerCapture?.(event.pointerId);
+    };
+    track.addEventListener("pointerup", stopDrag);
+    track.addEventListener("pointercancel", stopDrag);
+    track.addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-tower-order-pick]");
+      if (didDrag) {
+        event.preventDefault();
+        event.stopPropagation();
+        didDrag = false;
+        return;
+      }
+      if (!button || !track.contains(button)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      pickTowerOrderIndex(Number(button.dataset.towerOrderPick));
+    }, true);
+  }
+
+  function showTowerBag() {
+    if (!state.tower?.active) return renderMap();
+    $("choice-kicker").textContent = "Bag da Torre";
+    $("choice-title").textContent = "Equipar relíquias";
+    $("choice-copy").textContent = state.items.length
+      ? "Escolha uma relíquia da bag para equipar antes do próximo andar."
+      : "A bag está vazia. Escolha relíquias nos eventos da Torre para equipar aqui.";
+    $("choice-grid").innerHTML = (state.items.length ? state.items.map((item, index) => `
+      <button class="choice-button item-choice" type="button" data-bag-item="${index}">
+        <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
+        <strong>${item.name}</strong>
+        <small>${itemShortText(item)}</small>
+        <span class="choice-hover-detail">
+          <span>Relíquia</span>
+          <small>${itemShortText(item)}</small>
+          ${itemBonusMarkup(item)}
+        </span>
+      </button>
+    `).join("") : "") + `
+      <button class="choice-button tower-order-action" type="button" data-action="tower-order">
+        <strong>Voltar</strong>
+        <small>Retornar para a preparação.</small>
+      </button>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-simple-modal", "has-tower-choice-modal");
+    save();
+  }
+
+  function towerPrepareNextStep() {
+    if (!state.tower?.active) return renderMap();
+    return showTowerTeamOrder();
+  }
+
   function towerNextStep() {
     if (!state.tower?.active) return renderMap();
     state.pendingTowerEvent = false;
@@ -3552,26 +5251,40 @@
     state.floor = floor;
     state.branch = 0;
     state.pendingMapFloor = null;
-    save();
+    prepareTowerTeamForBattle();
     await startBattle({ type: "tower" });
+  }
+
+  function prepareTowerTeamForBattle() {
+    if ((state.floor || 0) > 10) {
+      state.team = state.team.filter((p) => p.currentHp > 0);
+      state.pendingTowerOrder = [];
+    }
+    const energyFloor = (state.floor || 1) <= 10 ? 3 : 2;
+    state.team.forEach((p) => {
+      if (p.currentHp > 0) p.energy = Math.max(energyFloor, p.energy || 0);
+    });
   }
 
   function winTowerBattle(prefix, reward = { xp: 0, levels: 0 }) {
     const defeatedName = state.battle?.enemy?.name || "Oponente";
     const rare = state.floor % 10 === 0;
+    const recoveryRate = rare ? 0.5 : state.floor <= 10 ? 0.44 : 0.34;
     let recoveryLog = "";
     state.team.forEach((p) => {
       if (p.currentHp > 0) {
-        p.energy = Math.min(4, p.energy + 1);
-        p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * (rare ? 0.34 : 0.16)));
+        p.energy = Math.min(4, Math.max(state.floor <= 10 ? 3 : 2, p.energy || 0) + 1);
+        p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * recoveryRate));
       }
     });
-    recoveryLog = rare ? " O time recuperou bem após o encontro raro." : " O time recuperou um pouco de HP.";
-    state.threat = Math.min(3, state.threat + 0.12);
+    recoveryLog = rare ? " O time recuperou bem após o encontro raro." : " O time recuperou HP e estabilizou energia.";
+    state.threat = Math.min(3, state.threat + 0.03);
     state.battle = null;
     state.autoBattling = false;
     if (Number.isFinite(state.tower.totalFloors) && state.floor >= state.tower.totalFloors) return endRun(true);
-    if (state.floor > 0 && state.floor % 5 === 0) {
+    const earlyEventFloor = state.floor <= 20 && state.floor % 2 === 0;
+    const regularEventFloor = state.floor > 20 && state.floor % 3 === 0;
+    if (state.floor > 0 && (earlyEventFloor || regularEventFloor)) {
       state.pendingTowerEvent = true;
       save();
       return showTowerEvent();
@@ -3606,46 +5319,83 @@
     save();
   }
 
-  function showTowerEvent() {
+  async function showTowerEvent() {
     state.pendingTowerEvent = true;
+    const evolutionCandidate = await towerEvolutionCandidate();
+    let eventOptions = [
+      { type: "heal", title: "Fonte segura", copy: "Cura 60% do HP do time vivo.", trainer: "pokemoncenterlady" },
+      { type: "relic", title: "Baú de relíquia", copy: "Escolha 1 entre 3 relíquias.", trainer: "scientist" },
+      { type: "recruit", title: "Sinal aliado", copy: "Escolha 1 entre 3 Pokémon para recrutar.", trainer: "pokemonbreederf" },
+      { type: "tutor", title: "Tutor técnico", copy: "Ensine um move compatível a um Pokémon vivo.", trainer: "gentleman" },
+      { type: "risk", title: "Pacto de risco", copy: "Próximo inimigo mais forte, time ganha nível e energia.", trainer: "blackbelt" }
+    ];
+    eventOptions = eventOptions.map((option) => option.type === "risk"
+      ? { ...option, copy: "Inimigos mais fortes, mas cura o mais ferido e melhora o time." }
+      : option);
+    if (!state.tower.guaranteedRecruitUsed && state.floor <= 4) {
+      eventOptions = eventOptions.filter((option) => option.type === "recruit");
+    }
+    if (evolutionCandidate) {
+      eventOptions.splice(3, 0, { type: "evolve", title: "Catalisador", copy: `Evoluir ${evolutionCandidate.mon.name}.`, trainer: "psychic" });
+    }
     $("choice-kicker").textContent = "Evento da Torre";
     $("choice-title").textContent = `Andar ${state.floor}`;
     $("choice-copy").textContent = "Uma sala muda o ritmo da subida. Escolha uma vantagem antes do próximo andar.";
-    $("choice-grid").innerHTML = `
-      <button class="choice-button" type="button" data-tower-event="heal"><strong>Fonte segura</strong><small>Cura 45% do HP do time vivo.</small></button>
-      <button class="choice-button" type="button" data-tower-event="relic"><strong>Baú de relíquia</strong><small>Escolha 1 entre 3 relíquias.</small></button>
-      <button class="choice-button" type="button" data-tower-event="recruit"><strong>Sinal aliado</strong><small>Escolha 1 entre 3 Pokémon para recrutar.</small></button>
-      <button class="choice-button" type="button" data-tower-event="tutor"><strong>Tutor técnico</strong><small>Ensine um move compatível a um Pokémon vivo.</small></button>
-      <button class="choice-button" type="button" data-tower-event="risk"><strong>Pacto de risco</strong><small>Próximo inimigo mais forte, time ganha nível e energia.</small></button>
-    `;
     show("choice");
+    $("choice-grid").innerHTML = eventOptions.map((option) => `
+      <button class="choice-button tower-event-option" type="button" data-tower-event="${option.type}">
+        <span class="tower-event-npc">
+          <img src="${trainerSprite(option.trainer)}" alt="" onerror="this.style.display='none'">
+        </span>
+        <strong>${option.title}</strong>
+        <small>${option.copy}</small>
+      </button>
+    `).join("");
     document.querySelector(".rogue-stage")?.classList.add("has-simple-modal", "has-tower-event-modal");
     save();
   }
 
-  function applyTowerEvent(type) {
+  async function applyTowerEvent(type) {
     state.pendingTowerEvent = false;
     if (type === "heal") {
       state.team.forEach((p) => {
         if (p.currentHp > 0) {
-          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.45));
+          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.6));
           p.energy = Math.min(4, p.energy + 1);
         }
       });
       save();
-      return towerNextStep();
+      return towerPrepareNextStep();
     }
     if (type === "relic") return showItem();
-    if (type === "recruit") return showCatch();
+    if (type === "recruit") {
+      if (state.tower?.active) state.tower.guaranteedRecruitUsed = true;
+      return showCatch();
+    }
     if (type === "tutor") return showMoveTutor();
+    if (type === "evolve") {
+      const candidate = await towerEvolutionCandidate();
+      state.pendingTowerEvent = false;
+      if (candidate?.options?.length > 1) return showEvolutionChoice(candidate.index);
+      if (candidate?.options?.length === 1 && evolvePokemon(candidate.mon, 0, candidate.options)) {
+        save();
+        return showEvolutionPopup(state.pendingEvolutions?.shift());
+      }
+      save();
+      return towerPrepareNextStep();
+    }
     if (type === "risk") {
-      state.threat = Math.min(3, state.threat + 0.45);
+      state.threat = Math.min(3, state.threat + 0.25);
+      const injured = state.team
+        .filter((p) => p.currentHp > 0 && p.currentHp < p.maxHp)
+        .sort((a, b) => (a.currentHp / Math.max(1, a.maxHp)) - (b.currentHp / Math.max(1, b.maxHp)))[0];
+      if (injured) injured.currentHp = injured.maxHp;
       state.team.forEach((p) => {
         if (p.currentHp > 0) {
           p.level += 1;
           p.energy = Math.min(4, p.energy + 2);
           p.maxHp = hpMax(p);
-          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.2));
+          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.25));
           syncMoves(p);
           maybeAutoEvolve(p);
         }
@@ -3654,14 +5404,16 @@
       if (evolution) return showEvolutionPopup(evolution);
       save();
     }
-    return towerNextStep();
+    return towerPrepareNextStep();
   }
 
   function continueTowerRun() {
     if (!state.tower?.active) return false;
     if (state.battle) {
+      state.autoBattling = false;
       renderBattle();
       show("battle");
+      scheduleAutoBattle(300);
       return true;
     }
     if (state.pendingTowerEvent) {
@@ -3751,7 +5503,7 @@
     state.offer = moves;
     $("choice-kicker").textContent = "Move Tutor";
     $("choice-title").textContent = "Desbloquear habilidade";
-    $("choice-copy").textContent = "Escolha um move. Depois selecione um Pokémon para aprender. As batalhas automáticas passam a usar esse move.";
+    $("choice-copy").textContent = "Escolha um move do tipo do Pokémon. O tutor ignora nível, mas respeita o elemento.";
     $("choice-grid").innerHTML = moves.length ? moves.map((move, i) => `
       <button class="choice-button item-choice" type="button" data-move-learn="${i}">
         <img class="animated-item" src="${tmSprite(move)}" alt="${move.name}" onerror="this.src='${ITEM_BASE}tm-normal.png'">
@@ -3759,7 +5511,7 @@
         <span class="move-cd-pill">CD ${moveCooldown(move)}</span>
         <small>${move.type || "Tipo do usuário"} · poder ${Math.round(move.power * 100)} · custo ${move.cost}</small>
       </button>
-    `).join("") : `<button class="choice-button item-choice" type="button" data-action="${state.tower?.active ? "tower-next" : "map"}"><img class="animated-item" src="${ITEM_BASE}tm-normal.png" alt=""><strong>${state.tower?.active ? "Continuar subida" : "Continuar rota"}</strong><small>Nenhum move novo compatível agora.</small></button>`;
+    `).join("") : `<button class="choice-button item-choice" type="button" data-action="${state.tower?.active ? "tower-order" : "map"}"><img class="animated-item" src="${ITEM_BASE}tm-normal.png" alt=""><strong>${state.tower?.active ? "Preparar equipe" : "Continuar rota"}</strong><small>Nenhum move novo compatível agora.</small></button>`;
     show("choice");
   }
 
@@ -3770,17 +5522,103 @@
     $("choice-kicker").textContent = "Aprender move";
     $("choice-title").textContent = move.name;
     $("choice-copy").textContent = canAnyLearn ? "Escolha quem aprende. Cada Pokémon pode carregar até 4 moves." : "Nenhum Pokémon do time pode aprender esse move agora.";
-    $("choice-grid").innerHTML = state.team.map((p, i) => `
-      <button class="choice-button" type="button" data-learn="${i}" ${canLearnFromTutor(p) ? "" : "disabled"}>
+    const learnCards = state.team.map((p, i) => `
+      <button class="choice-button" type="button" ${canLearnFromTutor(p) ? `data-learn="${i}"` : "disabled"}>
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>${canLearnFromTutor(p) ? (p.moves || []).map((m) => m.name).join(", ") : p.currentHp <= 0 && state.tower?.active ? "Derrotado na torre" : "Tipo ou nível incompatível"}</small>
+        <small>${canLearnFromTutor(p) ? (p.moves || []).map((m) => m.name).join(", ") : p.currentHp <= 0 && state.tower?.active ? "Derrotado na torre" : "Tipo incompatível"}</small>
+        ${canLearnFromTutor(p) ? `<span class="tower-card-action" data-learn="${i}">Aprender</span>` : ""}
       </button>
-    `).join("") + (canAnyLearn ? "" : `
-      <button class="choice-button" type="button" data-action="move-tutor"><strong>Escolher outro move</strong><small>Voltar para o tutor.</small></button>
-      <button class="choice-button" type="button" data-action="${state.tower?.active ? "tower-next" : "map"}"><strong>${state.tower?.active ? "Continuar subida" : "Continuar rota"}</strong><small>Pular este tutor.</small></button>
-    `);
+    `).join("");
+    const learnActions = `
+      ${canAnyLearn ? "" : `<button class="choice-button ${state.tower?.active ? "tower-order-action" : ""}" type="button" data-action="move-tutor"><strong>Escolher outro move</strong><small>Voltar para o tutor.</small></button>`}
+      <button class="choice-button ${state.tower?.active ? "tower-order-action" : ""}" type="button" data-action="${state.tower?.active ? "tower-order" : "map"}"><strong>${state.tower?.active ? "Preparar equipe" : "Continuar rota"}</strong><small>Pular este tutor.</small></button>
+    `;
+    $("choice-grid").innerHTML = state.tower?.active
+      ? `<div class="tower-learn-mons">${learnCards}</div><div class="tower-learn-actions">${learnActions}</div>`
+      : `${learnCards}${learnActions}`;
     show("choice");
+    if (state.tower?.active) {
+      document.querySelector(".rogue-stage")?.classList.add("has-tower-learn-modal");
+      setupTowerLearnCarousel();
+    }
+  }
+
+  function learnPendingMove(index) {
+    const p = state.team[Number(index)];
+    if (p && state.pendingMove && (!state.tower?.active || p.currentHp > 0) && canLearnMove(p, state.pendingMove)) {
+      p.moves = p.moves || legalMovesFor(p);
+      const move = { ...state.pendingMove, type: state.pendingMove.type || p.types[0] };
+      if (p.moves.length >= 4) p.moves.shift();
+      if (!p.moves.some((entry) => entry.id === move.id)) p.moves.push(move);
+      state.pendingMove = null;
+    }
+    if (state.tower?.active) {
+      save();
+      return towerPrepareNextStep();
+    }
+    renderMap();
+    save();
+  }
+
+  function setupTowerLearnCarousel() {
+    const track = document.querySelector(".tower-learn-mons");
+    if (!track || track.dataset.carouselReady) return;
+    track.dataset.carouselReady = "true";
+    track.scrollLeft = 0;
+    let dragging = false;
+    let didDrag = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+    let pointerDownButton = null;
+    let suppressNextClick = false;
+    track.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      didDrag = false;
+      pointerDownButton = event.target.closest("[data-learn]");
+      dragStartX = event.clientX;
+      dragStartScroll = track.scrollLeft;
+      track.classList.add("is-dragging");
+      track.setPointerCapture?.(event.pointerId);
+    });
+    track.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const delta = event.clientX - dragStartX;
+      if (Math.abs(delta) > 14) didDrag = true;
+      track.scrollLeft = dragStartScroll - delta;
+      if (didDrag) event.preventDefault();
+    });
+    const stopDrag = (event) => {
+      if (!dragging) return;
+      dragging = false;
+      track.classList.remove("is-dragging");
+      track.releasePointerCapture?.(event.pointerId);
+      if (!didDrag && pointerDownButton && track.contains(pointerDownButton) && !pointerDownButton.disabled) {
+        suppressNextClick = true;
+        learnPendingMove(pointerDownButton.dataset.learn);
+      }
+      pointerDownButton = null;
+    };
+    track.addEventListener("pointerup", stopDrag);
+    track.addEventListener("pointercancel", stopDrag);
+    track.addEventListener("click", (event) => {
+      const button = event.target.closest?.("[data-learn]");
+      if (suppressNextClick) {
+        event.preventDefault();
+        event.stopPropagation();
+        suppressNextClick = false;
+        return;
+      }
+      if (didDrag) {
+        event.preventDefault();
+        event.stopPropagation();
+        didDrag = false;
+        return;
+      }
+      if (!button || !track.contains(button) || button.disabled) return;
+      event.stopPropagation();
+      learnPendingMove(button.dataset.learn);
+    }, true);
   }
 
   async function showEvolutionStone() {
@@ -3816,6 +5654,31 @@
     return evo.options?.length ? evo.options : [evo];
   }
 
+  function evolutionPredecessorIds(targetId) {
+    return Object.entries(EVOLUTIONS)
+      .filter(([, evo]) => {
+        const options = evo?.options?.length ? evo.options : evo ? [evo] : [];
+        return options.some((option) => Number(option?.into?.id) === Number(targetId));
+      })
+      .map(([id]) => Number(id));
+  }
+
+  function restoreShinyFromEvolutionDex(p) {
+    if (!p || p.shiny) return;
+    const shinySeen = loadDexSeen("shiny");
+    if (!shinySeen.size) return;
+    const predecessors = evolutionPredecessorIds(p.id);
+    if (predecessors.some((id) => shinySeen.has(id))) p.shiny = true;
+  }
+
+  function carryEvolutionIdentity(from, to) {
+    if (!from || !to) return to;
+    to.runId = from.runId || to.runId || uid("mon");
+    if (from.shiny) to.shiny = true;
+    setHeldItems(to, normalizeHeldItems(from));
+    return to;
+  }
+
   function renderEvolutionChoice(index, options) {
     const p = state.team[index];
     if (!p || options.length <= 1) return false;
@@ -3825,7 +5688,7 @@
     $("choice-copy").textContent = "Cada forma muda tipo, atributos e golpes disponíveis.";
     $("choice-grid").classList.toggle("many-evolution-options", options.length > 4);
     $("choice-grid").innerHTML = options.map((option, i) => {
-      const evolved = { ...p, ...option.into, level: p.level || 1 };
+      const evolved = carryEvolutionIdentity(p, { ...p, ...option.into, level: p.level || 1 });
       evolved.maxHp = hpMax(evolved);
       evolved.currentHp = evolved.maxHp;
       evolved.moves = legalMovesFor(evolved);
@@ -3883,8 +5746,11 @@
     const option = options[optionIndex] || options[0];
     if (!option?.into) return false;
     const oldHpPct = p.maxHp ? p.currentHp / p.maxHp : 1;
+    const wasShiny = !!p.shiny;
     const from = JSON.parse(JSON.stringify(p));
     Object.assign(p, JSON.parse(JSON.stringify(option.into)));
+    if (wasShiny) p.shiny = true;
+    carryEvolutionIdentity(from, p);
     p.level = p.level || 1;
     p.maxHp = hpMax(p);
     p.currentHp = oldHpPct <= 0 ? 0 : Math.max(1, Math.ceil(p.maxHp * oldHpPct));
@@ -3896,14 +5762,14 @@
   }
 
   function showEvolutionPopup(entry) {
-    if (!entry) return renderMap();
+    if (!entry) return state.tower?.active ? towerPrepareNextStep() : renderMap();
     const hasNext = (state.pendingEvolutions?.length || 0) > 0;
     $("choice-kicker").textContent = "Evolução";
     $("choice-title").textContent = `${entry.from.name} evoluiu`;
     $("choice-copy").textContent = `${entry.from.name} virou ${entry.to.name}. Novos atributos e golpes foram atualizados pelo nível.`;
     $("choice-grid").innerHTML = `
       ${renderEvolutionSummary(entry)}
-      <button class="choice-button" type="button" data-action="next-evolution"><strong>${hasNext ? "Próxima evolução" : "Continuar rota"}</strong><small>${hasNext ? "Ver a próxima evolução pendente." : "Voltar ao mapa."}</small></button>
+      <button class="choice-button" type="button" data-action="next-evolution"><strong>${hasNext ? "Próxima evolução" : state.tower?.active ? "Continuar subida" : "Continuar rota"}</strong><small>${hasNext ? "Ver a próxima evolução pendente." : state.tower?.active ? "Voltar para a torre." : "Voltar ao mapa."}</small></button>
     `;
     playBattleSfx("evolution");
     show("choice");
@@ -3925,41 +5791,74 @@
   }
 
   function addPokemon(mon) {
-    if (!mon || state.team.some((p) => p.id === mon.id || p.name === mon.name)) return renderMap();
-    if (state.team.length >= 6) return showRecruitReplace(mon);
+    if (!mon || state.team.some((p) => p.currentHp > 0 && (p.id === mon.id || p.name === mon.name))) return renderMap();
+    const faintedSlot = state.team.length >= 6 ? towerFaintedSlotIndex() : -1;
+    if (state.team.length >= 6 && faintedSlot < 0) return showRecruitReplace(mon);
     registerDexSeen(mon);
     mon.runId ||= uid("mon");
-    state.team.push(mon);
+    setHeldItems(mon, normalizeHeldItems(mon));
+    if (faintedSlot >= 0) {
+      const replaced = state.team[faintedSlot];
+      heldItems(replaced).forEach((item) => state.items.push({ ...item }));
+      state.team.splice(faintedSlot, 1, mon);
+    } else {
+      state.team.push(mon);
+    }
     const evolved = maybeAutoEvolve(mon);
     if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
-    if (state.tower?.active) return towerNextStep();
+    if (state.tower?.active) {
+      state.pendingTowerOrder = [];
+      return towerPrepareNextStep();
+    }
     renderMap();
     save();
   }
 
   function replacePokemon(index) {
     const mon = state.pendingRecruit;
-    if (!mon || index < 0 || index >= state.team.length || state.team.some((p, i) => i !== index && (p.id === mon.id || p.name === mon.name))) return renderMap();
+    if (!mon || index < 0 || index >= state.team.length || state.team.some((p, i) => i !== index && p.currentHp > 0 && (p.id === mon.id || p.name === mon.name))) return renderMap();
     const replaced = state.team[index];
-    if (replaced?.heldItem) {
-      state.items.push({ ...replaced.heldItem });
-      replaced.heldItem = null;
-    }
+    heldItems(replaced).forEach((item) => state.items.push({ ...item }));
+    setHeldItems(replaced, []);
     registerDexSeen(mon);
     mon.runId ||= uid("mon");
-    mon.heldItem = mon.heldItem || null;
+    setHeldItems(mon, normalizeHeldItems(mon));
     state.team.splice(index, 1, mon);
     state.pendingRecruit = null;
     const evolved = maybeAutoEvolve(mon);
     if (evolved === "choice") return showPendingEvolutionChoice();
     if (evolved) return showEvolutionPopup(state.pendingEvolutions?.shift());
-    if (state.tower?.active) return towerNextStep();
+    if (state.tower?.active) {
+      state.pendingTowerOrder = [];
+      return towerPrepareNextStep();
+    }
     renderMap();
     save();
   }
 
+  function tryTowerSecondChance() {
+    if (!state.tower?.active || state.tower.secondChanceUsed || (state.floor || 0) > 10) return false;
+    state.tower.secondChanceUsed = true;
+    state.battle = null;
+    state.autoBattling = false;
+    state.floor = Math.max(0, (state.floor || 1) - 1);
+    state.team.forEach((p) => {
+      p.currentHp = Math.max(1, Math.ceil(p.maxHp * 0.35));
+      p.energy = Math.max((state.floor || 1) <= 10 ? 3 : 2, p.energy || 0);
+    });
+    $("choice-kicker").textContent = "Segunda chance";
+    $("choice-title").textContent = "A subida continua";
+    $("choice-copy").textContent = "Até o andar 10, a Torre revive o time com 35% de HP e recua um andar.";
+    $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="tower-next"><strong>Continuar subida</strong><small>Reorganizar e tentar de novo.</small></button>`;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-choice-modal", "has-simple-modal");
+    save();
+    return true;
+  }
+
   function endRun(won) {
+    if (!won && tryTowerSecondChance()) return;
     if (won) registerNuzlockeClear();
     if (won) registerTowerClear();
     const towerTitle = state.tower?.title || "Torre";
@@ -3986,8 +5885,18 @@
   }
 
   document.addEventListener("click", async (event) => {
+    if (event.target.closest?.(".tower-held-slot, .tower-bag-dock, .tower-bag-item, .tower-bag-dropzone")) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     const button = event.target.closest("button");
     if (!button) return;
+    if (button.dataset.startMode) {
+      selectRunMode(button.dataset.startMode);
+      return newRun();
+    }
+    if (button.dataset.towerMode) return handleTowerMode(button.dataset.towerMode);
     if (button.id === "start-run") newRun();
     if (button.id === "restart-run") {
       if (state.lastTowerMode) {
@@ -4001,23 +5910,34 @@
     if (button.dataset.dexTab) setRogueDexTab(button.dataset.dexTab);
     if (button.dataset.dexMon) showDexDetail(Number(button.dataset.dexMon));
     if (button.dataset.dexDetailClose) hideDexDetail();
-    if (button.id === "continue-run") {
-      const mode = savedRunMode();
-      if (mode !== "tower" && mode !== selectedRunMode()) return updateContinueRunButton();
-      if (!load()) return updateContinueRunButton();
+    if (button.id === "continue-run" || button.dataset.continueMode) {
+      const mode = button.dataset.continueMode || savedRunMode();
+      if (!mode) return updateContinueRunButton();
+      if (!load(mode)) return updateContinueRunButton();
       if (state.tower?.active) return continueTowerRun();
       if (!state.map.length) buildMap();
       if (showPendingEvolutionChoice()) return;
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
       if (!state.battle) applyPendingMapFloor();
-      state.battle ? (renderBattle(), show("battle")) : renderMap();
+      if (state.battle) {
+        state.autoBattling = false;
+        renderBattle();
+        show("battle");
+        scheduleAutoBattle(300);
+      } else {
+        renderMap();
+      }
     }
     if (button.dataset.starter) await chooseStarter(Number(button.dataset.starter));
     if (button.dataset.floor) await enterNode(Number(button.dataset.floor), Number(button.dataset.branch));
     if (button.dataset.autoBattle) runAutoBattle();
     if (button.dataset.battleSpeed) {
-      state.battleSpeed = state.battleSpeed === 2 ? 1 : 2;
+      if (state.battleSpeed === 3) return;
+      state.battleSpeed = state.battleSpeed >= 2 ? 1 : 2;
+      if (state.battleSpeed === 2 && state.battle) state.battle.speedBoostStartedAt = Date.now();
+      if (state.battleSpeed === 2) startBattleSpeedCountdown();
+      if (state.battleSpeed === 1) stopBattleSpeedCountdown();
       renderBattle();
       save();
     }
@@ -4027,22 +5947,41 @@
       applyPendingMapFloor();
       state.pendingEvolutionChoiceIndex = null;
       if (showPendingEvolutionChoice()) return;
-      if (state.tower?.active) return towerNextStep();
+      if (state.tower?.active) return towerPrepareNextStep();
       renderMap();
     }
+    if (button.dataset.action === "tower-order") return towerPrepareNextStep();
+    if (button.dataset.action === "tower-bag") return showTowerBag();
+    if (button.dataset.action === "tower-reset-order") {
+      state.pendingTowerOrder = [];
+      return showTowerTeamOrder();
+    }
+    if (button.dataset.action === "tower-confirm-order") {
+      const order = Array.isArray(state.pendingTowerOrder) ? state.pendingTowerOrder : [];
+      const ordered = order.map((index) => state.team[index]).filter(Boolean);
+      const rest = state.team.filter((_, index) => !order.includes(index));
+      state.team = [...ordered, ...rest];
+      state.pendingTowerOrder = [];
+      save();
+      return towerNextStep();
+    }
+    if (button.dataset.towerOrderPick) {
+      if (performance.now() < towerOrderSuppressClickUntil) return;
+      return pickTowerOrderIndex(Number(button.dataset.towerOrderPick));
+    }
     if (button.dataset.action === "tower-next") return towerNextStep();
-    if (button.dataset.towerEvent) return applyTowerEvent(button.dataset.towerEvent);
+    if (button.dataset.towerEvent) return await applyTowerEvent(button.dataset.towerEvent);
     if (button.dataset.towerCarousel) return scrollTowerCarousel(button.dataset.towerCarousel === "next" ? 1 : -1);
     if (button.dataset.action === "title") {
       show("title");
       renderTowerModes();
       updateContinueRunButton();
     }
-    if (button.dataset.towerMode) handleTowerMode(button.dataset.towerMode);
     if (button.dataset.action === "next-evolution") {
       const evolution = state.pendingEvolutions?.shift();
       if (evolution) return showEvolutionPopup(evolution);
       if (showPendingEvolutionChoice()) return;
+      if (state.tower?.active) return towerPrepareNextStep();
       renderMap();
       save();
     }
@@ -4054,11 +5993,20 @@
       save();
     }
     if (button.dataset.action === "move-tutor") showMoveTutor();
-    if (button.dataset.action === "catch") showCatch();
-    if (button.dataset.catch) addPokemon(state.offer[Number(button.dataset.catch)]);
-    if (button.dataset.replaceRecruit) replacePokemon(Number(button.dataset.replaceRecruit));
+    if (button.dataset.action === "catch") return showCatch();
+    if (button.dataset.catch) return addPokemon(state.offer[Number(button.dataset.catch)]);
+    if (button.dataset.replaceRecruit) return replacePokemon(Number(button.dataset.replaceRecruit));
     if (button.dataset.item) {
-      showEquipItem({ ...state.offer[Number(button.dataset.item)] });
+      const item = { ...state.offer[Number(button.dataset.item)] };
+      if (state.tower?.active) {
+        state.items.push(item);
+        state.offer = [];
+        state.pendingItem = null;
+        state.pendingTowerOrder = [];
+        save();
+        return towerPrepareNextStep();
+      }
+      showEquipItem(item);
     }
     if (button.dataset.bagItem) {
       const index = Number(button.dataset.bagItem);
@@ -4081,20 +6029,7 @@
       showMoveLearner({ ...state.offer[Number(button.dataset.moveLearn)] });
     }
     if (button.dataset.learn) {
-      const p = state.team[Number(button.dataset.learn)];
-      if (p && state.pendingMove && (!state.tower?.active || p.currentHp > 0) && canLearnMove(p, state.pendingMove)) {
-        p.moves = p.moves || legalMovesFor(p);
-        const move = { ...state.pendingMove, type: state.pendingMove.type || p.types[0] };
-        if (p.moves.length >= 4) p.moves.shift();
-        if (!p.moves.some((entry) => entry.id === move.id)) p.moves.push(move);
-        state.pendingMove = null;
-      }
-      if (state.tower?.active) {
-        save();
-        return towerNextStep();
-      }
-      renderMap();
-      save();
+      return learnPendingMove(button.dataset.learn);
     }
     if (button.dataset.evolve) {
       const index = Number(button.dataset.evolve);
@@ -4140,12 +6075,61 @@
       if (!chosen || !state.battle) return;
       state.battle.playerIndex = idx;
       show("battle");
-      enemyTurn(`${chosen.name} entrou em campo.`);
+      renderBattle();
+      $("battle-log").textContent = `${chosen.name} entrou em campo.`;
+      window.setTimeout(() => animateBattleSendOut({ sides: ["player"] }), sendoutDelay(80));
+      window.setTimeout(() => enemyTurn(`${chosen.name} entrou em campo.`), sendoutDelay(BATTLE_SENDOUT_DURATION));
     }
   });
 
   document.addEventListener("click", (event) => {
     if (event.target?.id === "rogue-dex-detail-backdrop") hideDexDetail();
+  });
+
+  let towerOrderPointerStart = null;
+  document.addEventListener("pointerdown", (event) => {
+    if (!document.querySelector(".rogue-stage")?.classList.contains("has-tower-order-modal")) return;
+    if (event.target.closest?.(".tower-held-slot, .tower-bag-dock, .tower-order-action")) return;
+    const button = event.target.closest?.("[data-tower-order-pick]");
+    if (!button || button.disabled) return;
+    towerOrderPointerStart = {
+      button,
+      x: event.clientX,
+      y: event.clientY
+    };
+  }, true);
+
+  document.addEventListener("pointerup", (event) => {
+    if (!towerOrderPointerStart) return;
+    const { button, x, y } = towerOrderPointerStart;
+    towerOrderPointerStart = null;
+    if (!document.querySelector(".rogue-stage")?.classList.contains("has-tower-order-modal")) return;
+    if (!button.isConnected || button.disabled) return;
+    if (Math.hypot(event.clientX - x, event.clientY - y) > 10) return;
+    event.preventDefault();
+    event.stopPropagation();
+    pickTowerOrderIndex(Number(button.dataset.towerOrderPick));
+  }, true);
+
+  document.addEventListener("pointerover", (event) => {
+    const slot = event.target.closest?.("[data-held-tooltip]");
+    if (slot) showHeldTooltip(slot);
+  });
+  document.addEventListener("pointermove", (event) => {
+    const slot = event.target.closest?.("[data-held-tooltip]");
+    if (slot) positionHeldTooltip(slot);
+  });
+  document.addEventListener("pointerout", (event) => {
+    if (!event.target.closest?.("[data-held-tooltip]")) return;
+    if (event.relatedTarget?.closest?.("[data-held-tooltip]")) return;
+    hideHeldTooltip();
+  });
+  document.addEventListener("focusin", (event) => {
+    const slot = event.target.closest?.("[data-held-tooltip]");
+    if (slot) showHeldTooltip(slot);
+  });
+  document.addEventListener("focusout", (event) => {
+    if (event.target.closest?.("[data-held-tooltip]")) hideHeldTooltip();
   });
 
   document.addEventListener("keydown", (event) => {
