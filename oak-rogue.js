@@ -1769,8 +1769,9 @@
       const unlocked = isTowerModeUnlocked(mode, unlocks);
       const hasSavedRun = savedTowerMode === mode.id;
       const floorLabel = mode.floors ? `${mode.floors}` : "∞";
+      const towerCardImage = mode.id === "short" ? ` style="--run-card-image: url('assets/oak-rogue-card-tower.png');"` : "";
       return `
-        <article class="tower-mode-card ${unlocked ? "is-unlocked" : "is-locked"} ${hasSavedRun ? "has-save" : ""}" role="button" tabindex="0" data-tower-mode="${mode.id}" ${unlocked ? "" : "aria-disabled=\"true\""}>
+        <article class="tower-mode-card tower-card-${mode.id} ${unlocked ? "is-unlocked" : "is-locked"} ${hasSavedRun ? "has-save" : ""}" role="button" tabindex="0" data-tower-mode="${mode.id}"${towerCardImage} ${unlocked ? "" : "aria-disabled=\"true\""}>
           <span class="tower-lock" aria-hidden="true">${hasSavedRun ? "CONT" : unlocked ? "OK" : "X"}</span>
           <strong>${mode.title}</strong>
           <small>${unlockLabelFor(mode, unlocked, unlocks)}</small>

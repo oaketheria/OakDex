@@ -543,6 +543,7 @@
 
 .run-mode-card {
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   align-content: stretch;
@@ -556,8 +557,12 @@
   color: #dce7e4;
   text-align: left;
   background:
+    linear-gradient(180deg, rgba(11, 18, 24, 0.2), rgba(11, 18, 24, 0.42)),
+    var(--run-card-image, linear-gradient(transparent, transparent)),
     radial-gradient(circle at 50% 22%, rgba(106, 240, 193, 0.12) 0 24%, transparent 25%),
     linear-gradient(180deg, rgba(44, 53, 66, 0.98), rgba(25, 34, 44, 0.98));
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
   box-shadow: 0 9px 0 rgba(0,0,0,0.28), 0 18px 36px rgba(0,0,0,0.22), inset 0 0 0 2px rgba(255,255,255,0.04);
   cursor: grab;
   transform: translateY(0);
@@ -572,8 +577,12 @@
 .run-mode-card.featured {
   border-color: rgba(255, 219, 84, 0.46);
   background:
+    linear-gradient(180deg, rgba(11, 18, 24, 0.18), rgba(11, 18, 24, 0.38)),
+    var(--run-card-image, linear-gradient(transparent, transparent)),
     radial-gradient(circle at 50% 22%, rgba(255, 219, 84, 0.16) 0 24%, transparent 25%),
     linear-gradient(180deg, rgba(52, 44, 34, 0.98), rgba(28, 32, 38, 0.98));
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
 }
 
 .run-mode-card input {
@@ -799,6 +808,7 @@
 
 .run-mode-grid > .tower-mode-card {
   flex: 0 0 300px;
+  isolation: isolate;
   min-height: 252px;
   max-height: 252px;
   grid-template-columns: auto minmax(0, 1fr);
@@ -809,8 +819,12 @@
   border-width: 2px;
   border-radius: 8px;
   background:
+    linear-gradient(180deg, rgba(7, 16, 22, 0.14), rgba(7, 16, 22, 0.34)),
+    var(--run-card-image, linear-gradient(transparent, transparent)),
     radial-gradient(circle at 50% 22%, rgba(106, 240, 193, 0.1) 0 24%, transparent 25%),
     linear-gradient(180deg, rgba(34, 45, 56, 0.98), rgba(19, 29, 36, 0.98));
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
   box-shadow: 0 9px 0 rgba(0,0,0,0.28), 0 18px 36px rgba(0,0,0,0.22), inset 0 0 0 2px rgba(255,255,255,0.04);
   transform: translateY(0);
   opacity: 0.94;
@@ -880,6 +894,7 @@
 
 .tower-mode-card {
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-content: center;
@@ -891,7 +906,12 @@
   border-radius: 8px;
   color: #dce7e4;
   text-align: left;
-  background: linear-gradient(180deg, rgba(34, 45, 56, 0.94), rgba(19, 29, 36, 0.96));
+  background:
+    linear-gradient(180deg, rgba(7, 16, 22, 0.2), rgba(7, 16, 22, 0.42)),
+    var(--run-card-image, linear-gradient(transparent, transparent)),
+    linear-gradient(180deg, rgba(34, 45, 56, 0.94), rgba(19, 29, 36, 0.96));
+  background-size: cover, cover, auto;
+  background-position: center, center, center;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04), 0 5px 0 rgba(0,0,0,0.22);
   scroll-snap-align: center;
   user-select: none;
@@ -1213,8 +1233,12 @@ body.oak-rogue-page {
 .run-mode-card:has(input:checked) {
   transform: translateY(-2px);
   background:
+    linear-gradient(180deg, rgba(11, 18, 24, 0.16), rgba(11, 18, 24, 0.34)),
+    var(--run-card-image, linear-gradient(transparent, transparent)),
     radial-gradient(circle at 18% 18%, rgba(255, 219, 84, 0.2), transparent 7rem),
     linear-gradient(180deg, rgba(52, 52, 44, 0.98), rgba(25, 36, 39, 0.98));
+  background-size: cover, cover, auto, auto;
+  background-position: center, center, center, center;
 }
 
 .run-mode-card input {
@@ -1352,6 +1376,131 @@ body.oak-rogue-page {
 
 .tower-lock {
   box-shadow: 0 0 12px rgba(106, 240, 193, 0.22);
+}
+
+#screen-title .run-card-main,
+#screen-title .run-mode-grid > .tower-card-short {
+  display: block;
+  position: relative;
+  padding: 0;
+  border-color: rgba(255, 219, 84, 0.42);
+  background: var(--run-card-image) var(--run-card-bg-position, 52.5% 37.4%) / var(--run-card-bg-size, 110.3% 122.1%) no-repeat;
+  box-shadow: 0 9px 0 rgba(0,0,0,0.3), 0 18px 36px rgba(0,0,0,0.28);
+}
+
+#screen-title .run-mode-grid > .tower-card-short {
+  --run-card-bg-size: 109% 117.5%;
+  --run-card-bg-position: 55.1% 41.4%;
+}
+
+#screen-title .run-card-main::before,
+#screen-title .run-card-main::after,
+#screen-title .run-mode-grid > .tower-card-short::before,
+#screen-title .run-mode-grid > .tower-card-short::after {
+  content: none;
+}
+
+#screen-title .run-card-main > span:not(.run-card-actions),
+#screen-title .run-card-main > ul,
+#screen-title .run-mode-grid > .tower-card-short > .tower-lock,
+#screen-title .run-mode-grid > .tower-card-short > strong,
+#screen-title .run-mode-grid > .tower-card-short > small,
+#screen-title .run-mode-grid > .tower-card-short > em {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+#screen-title .run-card-main > input {
+  position: absolute;
+  left: 7.2%;
+  top: 12.8%;
+  z-index: 3;
+  width: 8%;
+  height: 9.6%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+#screen-title .run-card-main .run-card-actions,
+#screen-title .run-mode-grid > .tower-card-short .run-card-actions {
+  position: static;
+  display: contents;
+}
+
+#screen-title .run-card-main .run-card-primary,
+#screen-title .run-card-main .run-card-secondary,
+#screen-title .run-mode-grid > .tower-card-short .run-card-primary,
+#screen-title .run-mode-grid > .tower-card-short .run-card-secondary {
+  position: absolute;
+  z-index: 4;
+  display: inline-grid;
+  width: auto;
+  min-height: 0;
+  place-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font: 900 0.43rem "Press Start 2P", monospace;
+  line-height: 1.2;
+  text-align: center;
+  text-indent: 0;
+  overflow: hidden;
+}
+
+#screen-title .run-card-main .run-card-primary,
+#screen-title .run-mode-grid > .tower-card-short .run-card-primary {
+  border: 0;
+  color: #15120a;
+  background: linear-gradient(180deg, #ffef70, #ffcb35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 2px 0 #9a6716, 0 0 10px rgba(255, 211, 106, 0.16);
+}
+
+#screen-title .run-card-main .run-card-secondary,
+#screen-title .run-mode-grid > .tower-card-short .run-card-secondary {
+  border: 1px solid rgba(106, 240, 193, 0.42);
+  color: #e6f6ef;
+  background: linear-gradient(180deg, rgba(30, 50, 56, 0.96), rgba(11, 39, 36, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05), 0 2px 0 rgba(0,0,0,0.24);
+}
+
+#screen-title .run-card-main .run-card-primary {
+  left: 39px;
+  right: 39px;
+  bottom: 52px;
+  height: 25px;
+}
+
+#screen-title .run-card-main .run-card-secondary {
+  left: 39px;
+  right: 39px;
+  bottom: 22px;
+  height: 25px;
+}
+
+#screen-title .run-mode-grid > .tower-card-short .run-card-primary,
+#screen-title .run-mode-grid > .tower-card-short .run-card-secondary {
+  left: 39px;
+  right: 39px;
+  bottom: 53px;
+  height: 25px;
+}
+
+#screen-title .run-card-main .run-card-primary:hover,
+#screen-title .run-card-main .run-card-primary:focus-visible,
+#screen-title .run-card-main .run-card-secondary:hover,
+#screen-title .run-card-main .run-card-secondary:focus-visible,
+#screen-title .run-mode-grid > .tower-card-short .run-card-primary:hover,
+#screen-title .run-mode-grid > .tower-card-short .run-card-primary:focus-visible,
+#screen-title .run-mode-grid > .tower-card-short .run-card-secondary:hover,
+#screen-title .run-mode-grid > .tower-card-short .run-card-secondary:focus-visible {
+  outline: 2px solid rgba(255, 219, 84, 0.9);
+  outline-offset: -2px;
+  transform: translateY(-2px);
+  filter: brightness(1.08);
 }
 
 @keyframes rogue-ambient-drift {
