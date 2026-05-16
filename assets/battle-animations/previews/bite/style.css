@@ -1,0 +1,321 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #100907;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #0b1020;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(245, 225, 166, 0.86) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(245, 225, 166, 0.86) 0 13%, transparent 14%),
+    linear-gradient(180deg, #84634f 0 28%, #604034 29% 52%, #291b19 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.26));
+}
+
+.attacker {
+  left: 14%;
+  bottom: 18%;
+  animation: attacker-bite-lunge 1450ms ease-in-out infinite;
+}
+
+.attacker img {
+  transform: scaleX(-1);
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-bitten 1450ms ease-in-out infinite;
+}
+
+.target img {
+  animation: target-bite-filter 1450ms ease-in-out infinite;
+}
+
+.bite-impact {
+  position: absolute;
+  right: 14%;
+  top: 16%;
+  z-index: 10;
+  width: 178px;
+  height: 178px;
+  pointer-events: none;
+  transform: translate(23%, 5%);
+}
+
+.mouth-shadow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 158px;
+  height: 130px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(9, 3, 2, 0.98) 0 28%, rgba(48, 16, 10, 0.86) 29% 45%, rgba(120, 70, 28, 0.18) 46% 65%, transparent 66%);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35, 0.22);
+  animation: mouth-shadow-bite 1450ms cubic-bezier(.2,.86,.18,1) infinite;
+}
+
+.jaw {
+  position: absolute;
+  left: 50%;
+  width: 168px;
+  height: 76px;
+  opacity: 0;
+  filter:
+    drop-shadow(0 3px 0 rgba(55, 26, 12, 0.96))
+    drop-shadow(0 0 8px rgba(255, 238, 175, 0.72));
+}
+
+.jaw::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 146px;
+  height: 34px;
+  border-radius: 50% 50% 12px 12px;
+  background: linear-gradient(180deg, rgba(71, 32, 18, 0.94), rgba(25, 8, 5, 0.98));
+  transform: translateX(-50%);
+}
+
+.upper::before {
+  top: -2px;
+  box-shadow: inset 0 -8px 0 rgba(255, 235, 176, 0.12);
+}
+
+.lower::before {
+  top: -2px;
+  box-shadow: inset 0 -8px 0 rgba(255, 235, 176, 0.12);
+}
+
+.jaw .fang {
+  position: absolute;
+  top: 18px;
+  width: 30px;
+  height: 62px;
+  background:
+    linear-gradient(135deg, #fffef0 0 38%, #fff2b2 39% 62%, #d19a45 63% 100%);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  transform-origin: 50% 0;
+  border-radius: 4px 4px 14px 14px;
+}
+
+.upper {
+  top: 10px;
+  transform: translate(-50%, -64px);
+  animation: upper-jaw-bite 1450ms cubic-bezier(.2,.86,.18,1) infinite;
+}
+
+.lower {
+  bottom: 10px;
+  transform: translate(-50%, 64px) rotate(180deg);
+  animation: lower-jaw-bite 1450ms cubic-bezier(.2,.86,.18,1) infinite;
+}
+
+.upper .t1, .lower .t1 { left: 18px; transform: rotate(20deg) scaleY(0.96); }
+.upper .t2, .lower .t2 { left: 54px; transform: rotate(6deg) scaleY(1.14); }
+.upper .t3, .lower .t3 { left: 90px; transform: rotate(-6deg) scaleY(1.14); }
+.upper .t4, .lower .t4 { left: 126px; transform: rotate(-20deg) scaleY(0.96); }
+
+.tooth-hole {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(41, 12, 6, 0.86);
+  border: 2px solid rgba(255, 218, 120, 0.36);
+  opacity: 0;
+  transform-origin: 50% 50%;
+  box-shadow: inset 0 4px 0 rgba(0,0,0,0.45), 0 0 6px rgba(255, 220, 90, 0.34);
+  animation: tooth-hole-show 1450ms ease-out infinite;
+}
+
+.h1 { transform: translate(-58px, -43px) rotate(20deg); }
+.h2 { transform: translate(-24px, -55px) rotate(6deg); }
+.h3 { transform: translate(16px, -55px) rotate(-6deg); }
+.h4 { transform: translate(50px, -43px) rotate(-20deg); }
+.h5 { transform: translate(-58px, 21px) rotate(-20deg); }
+.h6 { transform: translate(-24px, 33px) rotate(-6deg); }
+.h7 { transform: translate(16px, 33px) rotate(6deg); }
+.h8 { transform: translate(50px, 21px) rotate(20deg); }
+
+.pressure-ring {
+  position: absolute;
+  inset: 26px;
+  border: 4px solid rgba(255, 225, 128, 0.72);
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.42);
+  animation: pressure-ring-pop 1450ms ease-out infinite;
+}
+
+@keyframes attacker-bite-lunge {
+  0%, 16%, 100% {
+    transform: translate(0, 0) scale(1);
+    filter: none;
+  }
+  30% {
+    transform: translate(155px, -74px) scale(1.12);
+    filter: brightness(1.2);
+  }
+  43% {
+    transform: translate(143px, -68px) scale(1.04);
+  }
+  62% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes mouth-shadow-bite {
+  0%, 24%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.25, 0.14);
+  }
+  34% {
+    opacity: 0.78;
+    transform: translate(-50%, -50%) scale(1.08, 0.88);
+  }
+  43%, 56% {
+    opacity: 0.94;
+    transform: translate(-50%, -50%) scale(0.88, 0.55);
+  }
+  76% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.52, 0.26);
+  }
+}
+
+@keyframes upper-jaw-bite {
+  0%, 22%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -66px) scaleX(1.16);
+  }
+  31% {
+    opacity: 1;
+    transform: translate(-50%, -30px) scaleX(1.08);
+  }
+  42%, 55% {
+    opacity: 1;
+    transform: translate(-50%, 14px) scaleX(0.96);
+  }
+  74% {
+    opacity: 0;
+    transform: translate(-50%, -24px) scaleX(1.04);
+  }
+}
+
+@keyframes lower-jaw-bite {
+  0%, 22%, 100% {
+    opacity: 0;
+    transform: translate(-50%, 66px) rotate(180deg) scaleX(1.16);
+  }
+  31% {
+    opacity: 1;
+    transform: translate(-50%, 30px) rotate(180deg) scaleX(1.08);
+  }
+  42%, 55% {
+    opacity: 1;
+    transform: translate(-50%, -14px) rotate(180deg) scaleX(0.96);
+  }
+  74% {
+    opacity: 0;
+    transform: translate(-50%, 24px) rotate(180deg) scaleX(1.04);
+  }
+}
+
+@keyframes tooth-hole-show {
+  0%, 40% {
+    opacity: 0;
+    scale: 0.35;
+  }
+  48%, 68% {
+    opacity: 0.88;
+    scale: 1;
+  }
+  86%, 100% {
+    opacity: 0;
+    scale: 0.72;
+  }
+}
+
+@keyframes pressure-ring-pop {
+  0%, 40% {
+    opacity: 0;
+    transform: scale(0.42);
+  }
+  50% {
+    opacity: 0.9;
+  }
+  82%, 100% {
+    opacity: 0;
+    transform: scale(1.58);
+  }
+}
+
+@keyframes target-bitten {
+  0%, 28%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  42% {
+    transform: translate(8px, -4px) rotate(2deg) scale(0.98, 1.02);
+  }
+  52% {
+    transform: translate(-8px, 5px) rotate(-2deg) scale(1.02, 0.98);
+  }
+  62% {
+    transform: translate(4px, -2px) rotate(1deg);
+  }
+}
+
+@keyframes target-bite-filter {
+  0%, 30%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0,0,0,0.26));
+  }
+  42%, 62% {
+    filter:
+      drop-shadow(0 10px 0 rgba(0,0,0,0.26))
+      drop-shadow(0 0 12px rgba(255, 214, 83, 0.72))
+      brightness(0.82)
+      contrast(1.2)
+      saturate(0.9);
+  }
+}

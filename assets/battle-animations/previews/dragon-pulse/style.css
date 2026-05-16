@@ -1,0 +1,298 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #07121d;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #091326;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(224, 238, 255, 0.82) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(224, 238, 255, 0.82) 0 13%, transparent 14%),
+    linear-gradient(180deg, #5e78a4 0 28%, #314d76 29% 52%, #102438 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.26));
+}
+
+.attacker {
+  left: 13%;
+  bottom: 17%;
+  animation: attacker-dragon-focus 1250ms ease-in-out infinite;
+}
+
+.attacker img {
+  transform: scaleX(-1);
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-dragon-hit 820ms ease-in-out infinite;
+}
+
+.target img {
+  animation: target-dragon-filter 1250ms ease-in-out infinite;
+}
+
+.dragon-pulse-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: saturate(1.28) contrast(1.12) drop-shadow(0 0 15px rgba(94, 255, 211, 0.65));
+}
+
+.dragon-impact {
+  position: absolute;
+  right: 14%;
+  top: 16%;
+  z-index: 10;
+  width: 170px;
+  height: 170px;
+  pointer-events: none;
+  transform: translate(22%, 5%);
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 16px rgba(106, 240, 193, 0.72));
+}
+
+.dragon-head {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 116px;
+  height: 92px;
+  border-radius: 48% 52% 44% 56%;
+  background:
+    radial-gradient(circle at 38% 34%, rgba(255,255,255,0.9) 0 8%, transparent 9%),
+    radial-gradient(circle at 62% 34%, rgba(255,255,255,0.78) 0 7%, transparent 8%),
+    linear-gradient(135deg, rgba(132,255,222,0.9), rgba(97,113,255,0.62) 58%, rgba(26,48,104,0));
+  opacity: 0;
+  clip-path: polygon(8% 44%, 26% 14%, 48% 4%, 77% 16%, 98% 42%, 74% 58%, 85% 90%, 51% 70%, 16% 90%, 28% 58%);
+  transform: translate(-50%, -50%) scale(0.25) rotate(-10deg);
+  animation: dragon-head-bite 1250ms ease-out infinite;
+}
+
+.dragon-head .snout {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 54px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(9, 19, 37, 0.78), rgba(116,255,220,0.16) 68%, transparent 69%);
+  transform: translateX(-50%);
+}
+
+.horn {
+  position: absolute;
+  top: -10px;
+  width: 18px;
+  height: 34px;
+  background: linear-gradient(180deg, #fffef2, #74ffdc);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.h1 {
+  left: 24px;
+  transform: rotate(-24deg);
+}
+
+.h2 {
+  right: 24px;
+  transform: rotate(24deg);
+}
+
+.eye {
+  position: absolute;
+  top: 31px;
+  width: 10px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f7ff7b;
+  box-shadow: 0 0 10px rgba(247,255,123,0.95);
+}
+
+.e1 { left: 38px; }
+.e2 { right: 38px; }
+
+.fang {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 50px;
+  background: linear-gradient(180deg, #fffef2, #b9ffef 56%, rgba(116,255,220,0));
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  opacity: 0;
+  transform-origin: 50% 0;
+  animation: dragon-fang-strike 1250ms ease-out infinite;
+}
+
+.f1 { --x: -46px; --y: -22px; --angle: 24deg; animation-delay: 70ms; }
+.f2 { --x: -16px; --y: -28px; --angle: 8deg; animation-delay: 100ms; }
+.f3 { --x: 16px; --y: -28px; --angle: -8deg; animation-delay: 130ms; }
+.f4 { --x: 46px; --y: -22px; --angle: -24deg; animation-delay: 160ms; }
+
+.arc {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 132px;
+  height: 132px;
+  border: 5px solid transparent;
+  border-top-color: rgba(255,255,255,0.86);
+  border-right-color: rgba(116,255,220,0.84);
+  border-radius: 50%;
+  opacity: 0;
+  transform-origin: 50% 50%;
+  animation: dragon-impact-arc 1250ms ease-out infinite;
+}
+
+.a1 { --angle: -18deg; animation-delay: 40ms; }
+.a2 { --angle: 58deg; animation-delay: 120ms; }
+.a3 { --angle: 138deg; animation-delay: 200ms; }
+
+.shockwave {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 124px;
+  height: 78px;
+  border-radius: 50%;
+  border: 5px solid rgba(116,255,220,0.78);
+  border-left-color: rgba(255,255,255,0.88);
+  border-bottom-color: rgba(97,113,255,0.32);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35) rotate(-8deg);
+  animation: dragon-shockwave-pop 1250ms ease-out infinite;
+}
+
+@keyframes attacker-dragon-focus {
+  0%, 100% {
+    transform: translate(0, 0);
+    filter: none;
+  }
+  22% {
+    transform: translate(7px, -3px);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes target-dragon-hit {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  34% {
+    transform: translate(7px, -4px) rotate(1deg);
+  }
+  68% {
+    transform: translate(-5px, 3px) rotate(-1deg);
+  }
+}
+
+@keyframes target-dragon-filter {
+  0%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0,0,0,0.26));
+  }
+  42%, 74% {
+    filter:
+      drop-shadow(0 10px 0 rgba(0,0,0,0.26))
+      drop-shadow(0 0 14px rgba(116,255,220,0.85))
+      brightness(1.18)
+      saturate(1.32)
+      hue-rotate(18deg);
+  }
+}
+
+@keyframes dragon-head-bite {
+  0%, 22% {
+    opacity: 0;
+    transform: translate(-80%, -50%) scale(0.25) rotate(-18deg);
+  }
+  40%, 56% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1) rotate(4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-24%, -50%) scale(1.18) rotate(18deg);
+  }
+}
+
+@keyframes dragon-fang-strike {
+  0%, 30% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) - 34px)) rotate(var(--angle)) scaleY(0.25);
+  }
+  44%, 60% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--angle)) scaleY(1);
+  }
+  86%, 100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y) + 16px)) rotate(var(--angle)) scaleY(0.7);
+  }
+}
+
+@keyframes dragon-impact-arc {
+  0%, 28% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) scale(0.35);
+  }
+  48% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(calc(var(--angle) + 150deg)) scale(1.5);
+  }
+}
+
+@keyframes dragon-shockwave-pop {
+  0%, 34% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.35) rotate(-8deg);
+  }
+  48% {
+    opacity: 0.9;
+  }
+  88%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.7) rotate(28deg);
+  }
+}

@@ -1,0 +1,463 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #111827;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #0b1020;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(240, 220, 130, 0.95) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(240, 220, 130, 0.95) 0 13%, transparent 14%),
+    linear-gradient(180deg, #9fd681 0 28%, #77c869 29% 52%, #50b55a 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24));
+}
+
+.attacker {
+  left: 14%;
+  bottom: 18%;
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-shock 260ms steps(2, end) infinite;
+}
+
+.target img {
+  animation: target-flash 260ms steps(2, end) infinite;
+}
+
+.electric-beam-svg {
+  position: absolute;
+  left: 29%;
+  top: 57%;
+  z-index: 8;
+  width: 54%;
+  height: 28%;
+  pointer-events: none;
+  overflow: visible;
+  transform: translateY(-50%) rotate(-23deg);
+  transform-origin: 0 50%;
+  mix-blend-mode: screen;
+  animation: beam-presence 720ms steps(4, end) infinite;
+}
+
+.beam-lines {
+  transform-origin: 0 50%;
+  animation: beam-jitter 90ms steps(2, end) infinite;
+}
+
+.bolt {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+}
+
+.bolt-wide {
+  stroke: rgba(255, 235, 72, 0.42);
+  stroke-width: 17;
+}
+
+.bolt-core {
+  stroke: #ffffff;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 14px #fff35c) drop-shadow(0 0 24px #68e8ff);
+}
+
+.bolt.a {
+  animation: bolt-a 150ms steps(1, end) infinite;
+}
+
+.bolt.b {
+  animation: bolt-b 150ms steps(1, end) infinite;
+}
+
+.branch {
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 8px #fff35c);
+  animation: branch-flicker 180ms steps(2, end) infinite;
+}
+
+.electric-impact {
+  position: absolute;
+  right: 25%;
+  top: 39%;
+  z-index: 9;
+  width: 72px;
+  height: 72px;
+  pointer-events: none;
+  transform: translate(50%, -50%) scale(0.2);
+  border-radius: 999px;
+  mix-blend-mode: screen;
+  animation: contact-zap 260ms steps(2, end) infinite;
+}
+
+.electric-impact::before,
+.electric-impact::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.electric-impact::before {
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.95) 0 8%, transparent 9%),
+    conic-gradient(from 18deg, transparent 0 8%, #fff35c 9% 13%, transparent 14% 22%, #68e8ff 23% 28%, transparent 29% 44%, #fff35c 45% 49%, transparent 50%);
+  box-shadow: 0 0 30px rgba(255, 239, 112, 0.95);
+}
+
+.electric-impact::after {
+  inset: -28%;
+  border: 0;
+  background:
+    linear-gradient(34deg, transparent 0 42%, #fff 43% 48%, transparent 49%),
+    linear-gradient(118deg, transparent 0 40%, #fff35c 41% 48%, transparent 49%),
+    linear-gradient(156deg, transparent 0 44%, #68e8ff 45% 51%, transparent 52%);
+  opacity: 0.95;
+  animation: contact-fork 130ms steps(2, end) infinite;
+}
+
+.electric-impact i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: #fff35c;
+  box-shadow: 0 0 10px rgba(255, 239, 112, 0.95);
+  transform:
+    translate(-50%, -50%)
+    rotate(calc(var(--shard) * 45deg))
+    translateX(0)
+    rotate(calc(var(--shard) * -45deg));
+  opacity: 0;
+  animation: impact-shard 760ms ease-out infinite;
+  animation-delay: calc(var(--shard) * 18ms);
+}
+
+.electrocuted-aura {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: -1;
+  width: 142px;
+  height: 160px;
+  border-radius: 48% 52% 44% 56%;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(ellipse, transparent 0 50%, rgba(255,255,255,0.8) 51% 54%, transparent 55%),
+    repeating-conic-gradient(from 10deg, rgba(255,243,92,0.95) 0 5deg, transparent 6deg 18deg, rgba(104,232,255,0.82) 19deg 23deg, transparent 24deg 40deg);
+  box-shadow:
+    0 0 20px rgba(255,243,92,0.9),
+    inset 0 0 22px rgba(104,232,255,0.68);
+  opacity: 0.85;
+  mix-blend-mode: screen;
+  animation: aura-shock 180ms steps(2, end) infinite;
+}
+
+.body-shock {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  z-index: 11;
+  width: 150px;
+  height: 170px;
+  overflow: visible;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 7px #fff35c) drop-shadow(0 0 14px rgba(104,232,255,0.8));
+}
+
+.body-arc {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  animation: body-arc-flicker 220ms steps(2, end) infinite;
+}
+
+.arc-a {
+  stroke: #fff35c;
+}
+
+.arc-b {
+  stroke: #68e8ff;
+  animation-delay: 70ms;
+}
+
+.arc-c {
+  stroke-width: 3;
+  animation-delay: 120ms;
+}
+
+.arc-d {
+  stroke: #fff35c;
+  stroke-width: 3;
+  animation-delay: 40ms;
+}
+
+.shock-spark {
+  position: absolute;
+  z-index: 10;
+  width: 34px;
+  height: 46px;
+  pointer-events: none;
+  filter: drop-shadow(0 0 7px rgba(255,243,92,0.95)) drop-shadow(0 0 14px rgba(104,232,255,0.75));
+  animation: spark-crawl 580ms steps(4, end) infinite;
+}
+
+.shock-spark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff35c;
+  clip-path: polygon(42% 0, 78% 0, 56% 34%, 84% 34%, 28% 100%, 42% 54%, 14% 54%);
+  box-shadow: 0 0 10px #fff35c;
+}
+
+.shock-spark.s1 {
+  left: 24%;
+  top: 18%;
+}
+
+.shock-spark.s2 {
+  right: 22%;
+  top: 20%;
+  animation-delay: 110ms;
+  transform: scale(0.78) rotate(18deg);
+}
+
+.shock-spark.s3 {
+  left: 28%;
+  bottom: 18%;
+  animation-delay: 220ms;
+  transform: scale(0.62) rotate(-20deg);
+}
+
+.shock-spark.s4 {
+  right: 28%;
+  bottom: 20%;
+  animation-delay: 330ms;
+  transform: scale(0.68) rotate(28deg);
+}
+
+@keyframes beam-presence {
+  0% {
+    opacity: 0.75;
+  }
+  20% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.88;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.78;
+  }
+}
+
+@keyframes beam-jitter {
+  0% { transform: translate(0, 0) scaleY(1); }
+  100% { transform: translate(2px, -3px) scaleY(1.06); }
+}
+
+@keyframes bolt-a {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.18; }
+}
+
+@keyframes bolt-b {
+  0%, 49% { opacity: 0.18; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes branch-flicker {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes impact-burst {
+  0% {
+    opacity: 0;
+    transform: translate(50%, -50%) scale(0.1);
+  }
+  16% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.9;
+    transform: translate(50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(50%, -50%) scale(1.25);
+  }
+}
+
+@keyframes contact-zap {
+  0% {
+    opacity: 0.55;
+    transform: translate(50%, -50%) scale(0.75) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(50%, -50%) scale(1.15) rotate(16deg);
+  }
+  100% {
+    opacity: 0.8;
+    transform: translate(50%, -50%) scale(0.95) rotate(-10deg);
+  }
+}
+
+@keyframes contact-fork {
+  0% {
+    transform: scale(0.8) rotate(0deg);
+  }
+  100% {
+    transform: scale(1.2) rotate(28deg);
+  }
+}
+
+@keyframes impact-ring {
+  to {
+    opacity: 0;
+    transform: scale(2.1);
+  }
+}
+
+@keyframes impact-shard {
+  10% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform:
+      translate(-50%, -50%)
+      rotate(calc(var(--shard) * 45deg))
+      translateX(58px)
+      rotate(calc(var(--shard) * -45deg));
+  }
+}
+
+@keyframes target-shock {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(7px, -3px);
+  }
+  50% {
+    transform: translate(-6px, 4px);
+  }
+  75% {
+    transform: translate(5px, 3px);
+  }
+}
+
+@keyframes target-flash {
+  0%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24));
+  }
+  50% {
+    filter:
+      brightness(1.65)
+      saturate(1.5)
+      drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24))
+      drop-shadow(0 0 12px rgba(255,243,92,0.95))
+      drop-shadow(0 0 24px rgba(104,232,255,0.78));
+  }
+}
+
+@keyframes aura-shock {
+  0% {
+    opacity: 0.38;
+    transform: translate(-50%, -50%) scale(0.86) rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) scale(1.08) rotate(10deg);
+  }
+  100% {
+    opacity: 0.62;
+    transform: translate(-50%, -50%) scale(0.98) rotate(-8deg);
+  }
+}
+
+@keyframes body-arc-flicker {
+  0% {
+    opacity: 0.12;
+    stroke-dasharray: 10 18;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    opacity: 1;
+    stroke-dasharray: 26 8;
+    stroke-dashoffset: 18;
+  }
+  100% {
+    opacity: 0.42;
+    stroke-dasharray: 8 12;
+    stroke-dashoffset: 34;
+  }
+}
+
+@keyframes spark-crawl {
+  0% {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  25%, 70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 -18px;
+  }
+}

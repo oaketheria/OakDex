@@ -1,0 +1,175 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #0d1f2e;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #0b1020;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(223, 250, 255, 0.95) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(223, 250, 255, 0.95) 0 13%, transparent 14%),
+    linear-gradient(180deg, #9fe6ff 0 28%, #5eb8e8 29% 52%, #2878bb 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24));
+}
+
+.attacker {
+  left: 14%;
+  bottom: 18%;
+  animation: attacker-bubble-pulse 1050ms ease-in-out infinite;
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-bubble-hit 620ms ease-in-out infinite;
+}
+
+.target img {
+  animation: target-wet-glow 1050ms ease-in-out infinite;
+}
+
+.bubble-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: saturate(1.2) drop-shadow(0 0 12px rgba(142, 234, 255, 0.68));
+}
+
+.bubble-impact {
+  position: absolute;
+  right: 14%;
+  top: 16%;
+  z-index: 9;
+  width: 150px;
+  height: 150px;
+  pointer-events: none;
+  transform: translate(24%, 8%);
+  filter: drop-shadow(0 0 12px rgba(142,234,255,0.72));
+}
+
+.wet-ring {
+  position: absolute;
+  inset: 28px;
+  border: 5px solid rgba(223,250,255,0.76);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgba(97,217,255,0.82), inset 0 0 12px rgba(47,156,255,0.42);
+  opacity: 0;
+  animation: wet-ring-pop 1050ms ease-out infinite;
+}
+
+.pop {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  border: 4px solid rgba(223,250,255,0.86);
+  border-radius: 999px;
+  opacity: 0;
+  animation: bubble-pop-ring 1050ms ease-out infinite;
+}
+
+.p1 { --x: -44px; --y: -20px; animation-delay: 90ms; }
+.p2 { --x: 36px; --y: -34px; animation-delay: 180ms; }
+.p3 { --x: -24px; --y: 38px; animation-delay: 260ms; }
+.p4 { --x: 42px; --y: 28px; animation-delay: 340ms; }
+
+@keyframes wet-ring-pop {
+  0%, 22% {
+    opacity: 0;
+    transform: scale(0.35);
+  }
+  42% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@keyframes bubble-pop-ring {
+  0%, 24% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(0.2);
+  }
+  42% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(1.4);
+  }
+}
+
+@keyframes attacker-bubble-pulse {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  24% {
+    transform: translate(5px, -2px);
+  }
+}
+
+@keyframes target-bubble-hit {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  38% {
+    transform: translate(4px, -2px);
+  }
+  72% {
+    transform: translate(-3px, 2px);
+  }
+}
+
+@keyframes target-wet-glow {
+  0%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24)) saturate(1);
+  }
+  42%, 78% {
+    filter:
+      drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24))
+      drop-shadow(0 0 12px rgba(142,234,255,0.88))
+      brightness(1.08)
+      saturate(1.12);
+  }
+}

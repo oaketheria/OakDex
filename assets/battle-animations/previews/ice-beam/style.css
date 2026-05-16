@@ -1,0 +1,213 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #07131e;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #0b1020;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(238, 252, 255, 0.96) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(238, 252, 255, 0.96) 0 13%, transparent 14%),
+    linear-gradient(180deg, #c8f3ff 0 28%, #77c4e8 29% 52%, #3975ad 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24));
+}
+
+.attacker {
+  left: 14%;
+  bottom: 18%;
+  animation: attacker-freeze-pulse 860ms ease-in-out infinite;
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-freeze-hit 520ms ease-in-out infinite;
+}
+
+.target img {
+  animation: target-frozen-glow 1100ms ease-in-out infinite;
+}
+
+.ice-beam-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: saturate(1.1) contrast(1.08) drop-shadow(0 0 14px rgba(202, 248, 255, 0.82));
+}
+
+.freeze-shell {
+  position: absolute;
+  right: 14%;
+  top: 16%;
+  z-index: 9;
+  width: 150px;
+  height: 160px;
+  pointer-events: none;
+  transform: translate(28%, 2%);
+  filter: drop-shadow(0 0 14px rgba(202,248,255,0.86));
+}
+
+.ice-glass {
+  position: absolute;
+  inset: 4px 12px 10px;
+  border-radius: 48% 48% 42% 42%;
+  background:
+    linear-gradient(118deg, transparent 0 20%, rgba(255,255,255,0.62) 21% 26%, transparent 27% 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.46), rgba(184,240,255,0.42), rgba(65,154,255,0.16));
+  border: 3px solid rgba(223,250,255,0.78);
+  box-shadow: inset 0 0 24px rgba(255,255,255,0.62), 0 0 24px rgba(142,224,255,0.58);
+  opacity: 0;
+  animation: ice-glass-freeze 1100ms ease-out infinite;
+}
+
+.crack {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 66px;
+  height: 3px;
+  background: rgba(255,255,255,0.86);
+  box-shadow: 0 0 8px rgba(202,248,255,0.9);
+  opacity: 0;
+  transform-origin: 0 50%;
+  animation: ice-crack-show 1100ms ease-out infinite;
+}
+
+.c1 { transform: translate(-46px, -18px) rotate(24deg); animation-delay: 180ms; }
+.c2 { transform: translate(-22px, 8px) rotate(-32deg); animation-delay: 280ms; }
+.c3 { transform: translate(-36px, 34px) rotate(12deg); animation-delay: 360ms; }
+
+.ice-shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 48px;
+  background: linear-gradient(180deg, #ffffff 0 18%, #b8f0ff 19% 62%, rgba(65,154,255,0.24) 63% 100%);
+  clip-path: polygon(50% 0, 100% 34%, 66% 100%, 34% 100%, 0 34%);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  animation: ice-shard-pop 1100ms ease-out infinite;
+}
+
+.s1 { --angle: -48deg; --dist: 54px; animation-delay: 120ms; }
+.s2 { --angle: 24deg; --dist: 48px; animation-delay: 210ms; }
+.s3 { --angle: 74deg; --dist: 60px; animation-delay: 300ms; }
+.s4 { --angle: 128deg; --dist: 44px; animation-delay: 390ms; }
+
+@keyframes ice-glass-freeze {
+  0%, 18% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  42%, 78% {
+    opacity: 0.92;
+    transform: scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
+@keyframes ice-crack-show {
+  0%, 34% {
+    opacity: 0;
+    scale: 0.2 1;
+  }
+  52%, 82% {
+    opacity: 0.82;
+    scale: 1 1;
+  }
+  100% {
+    opacity: 0;
+    scale: 1.1 1;
+  }
+}
+
+@keyframes ice-shard-pop {
+  0%, 24% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0.2);
+  }
+  46% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -0.55)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -1)) scale(0.72);
+  }
+}
+
+@keyframes attacker-freeze-pulse {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  24% {
+    transform: translate(6px, -2px);
+  }
+}
+
+@keyframes target-freeze-hit {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(-3px, -2px);
+  }
+  70% {
+    transform: translate(4px, 2px);
+  }
+}
+
+@keyframes target-frozen-glow {
+  0%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0,0,0,0.24)) saturate(1);
+  }
+  42%, 78% {
+    filter:
+      drop-shadow(0 10px 0 rgba(0,0,0,0.24))
+      drop-shadow(0 0 14px rgba(202,248,255,0.92))
+      brightness(1.24)
+      saturate(0.68);
+  }
+}

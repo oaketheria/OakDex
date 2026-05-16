@@ -3200,7 +3200,7 @@
         <span class="rogue-kicker">${label}</span>
       </div>
       <div class="battle-stack count-${activeOnly || useTeamBalls ? 1 : Math.min(6, Math.max(1, mons.length))}">
-        ${useTeamBalls || activeOnly ? renderBattleSlot(active || orderedMons[0], true) : orderedMons.map((p) => renderBattleSlot(p, p === active)).join("")}
+        ${useTeamBalls || activeOnly ? renderBattleSlot(active || orderedMons[0], true, side) : orderedMons.map((p) => renderBattleSlot(p, p === active, side)).join("")}
         ${useTeamBalls ? renderBattleTeamBalls(mons, active) : ""}
       </div>
     `;
@@ -3350,7 +3350,7 @@
     }
   }
 
-  function renderBattleSlot(p, active) {
+  function renderBattleSlot(p, active, side = "") {
     const pct = Math.max(0, Math.round((p.currentHp / p.maxHp) * 100));
     const hpChanged = p.renderedHpValue !== p.currentHp || p.renderedMaxHpValue !== p.maxHp;
     const previousPct = hpChanged && Number.isFinite(p.renderedHpPct) ? p.renderedHpPct : pct;
@@ -3364,7 +3364,8 @@
     const secondaryType = p.types?.[1] || primaryType;
     const primaryColor = TYPE_COLOR[primaryType] || "#6af0c1";
     const secondaryColor = TYPE_COLOR[secondaryType] || primaryColor;
-    return `<div class="battle-slot ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}" style="--mon-type-color:${primaryColor};--mon-type-color-2:${secondaryColor};">
+    const sideClass = side ? `side-${side}` : "";
+    return `<div class="battle-slot ${sideClass} ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}" style="--mon-type-color:${primaryColor};--mon-type-color-2:${secondaryColor};">
       <strong>${p.name} <small>Lv.${p.level}</small></strong>
       ${renderBattleTypeBadges(p.types || [])}
       ${heldItems(p).length ? `<div class="battle-held-items" aria-label="Relíquias equipadas">${heldItems(p).map((item) => `<span title="${item.name}: ${itemShortText(item)}"><img src="${itemSprite(item)}" alt="${item.name}"></span>`).join("")}</div>` : ""}
@@ -3637,11 +3638,14 @@
 
   const activeRealMoveAudios = new Set();
   const activeRealMoveTimers = new Set();
+  const activeMoveAnimationFrames = new Set();
 
   function clearActiveMoveEffects(root = document) {
     activeRealMoveTimers.forEach((timer) => window.clearInterval(timer));
     activeRealMoveTimers.clear();
-    root.querySelectorAll?.(".real-move-effect, .move-effect, .move-impact-effect").forEach((effect) => effect.remove());
+    activeMoveAnimationFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    activeMoveAnimationFrames.clear();
+    root.querySelectorAll?.(".real-move-effect, .move-effect, .electric-beam-effect, .electric-body-shock, .psychic-wave-effect, .psychic-body-shock, .surf-wave-effect, .vine-whip-effect, .leaf-stream-effect, .leaf-impact-effect, .flame-stream-effect, .flame-target-effect, .blizzard-canvas-effect, .blizzard-freeze-effect, .bubble-canvas-effect, .bubble-impact-effect, .ice-beam-canvas-effect, .ice-freeze-shell-effect, .dark-pulse-canvas-effect, .dark-impact-effect, .dragon-pulse-canvas-effect, .dragon-impact-effect, .metronome-canvas-effect, .metronome-clock-effect, .metronome-impact-effect, .snarl-canvas-effect, .snarl-impact-effect, .bite-impact-effect, .move-impact-effect").forEach((effect) => effect.remove());
   }
 
   function playRealMoveAudio(anim) {
@@ -3734,6 +3738,1275 @@
     });
   }
 
+  function animateFlameStreamEffect(battleGrid, target, fromX, fromY, toX, toY, moveId, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const beam = document.createElement("canvas");
+    const targetFire = document.createElement("canvas");
+    beam.className = "flame-stream-effect";
+    targetFire.className = "flame-target-effect";
+    battleGrid.append(beam, targetFire);
+    const beamCtx = beam.getContext("2d");
+    const targetCtx = targetFire.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const fit = (canvas, ctx) => {
+      canvas.width = Math.round(gridRect.width * dpr);
+      canvas.height = Math.round(gridRect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    fit(beam, beamCtx);
+    fit(targetFire, targetCtx);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const targetRect = target.getBoundingClientRect();
+    const targetSprite = target.querySelector?.(".pokemon-anim");
+    const spriteRect = targetSprite?.getBoundingClientRect() || targetRect;
+    const box = {
+      x: spriteRect.left - gridRect.left,
+      y: spriteRect.top - gridRect.top,
+      w: spriteRect.width,
+      h: spriteRect.height
+    };
+    const beamParticles = Array.from({ length: moveId === "ember" ? 70 : 130 }, () => ({}));
+    const targetFlames = Array.from({ length: moveId === "ember" ? 44 : 76 }, () => ({}));
+    const embers = Array.from({ length: moveId === "ember" ? 26 : 48 }, () => ({}));
+    const resetBeam = (p, burst = false) => {
+      p.t = burst ? rand(0, 0.92) : 0;
+      p.speed = rand(0.62, 1.08);
+      p.offset = rand(-34, 34);
+      p.wave = rand(0, Math.PI * 2);
+      p.waveSpeed = rand(5, 9);
+      p.size = rand(22, 58);
+      p.grow = rand(0.72, 1.34);
+      p.life = rand(0.78, 1);
+      p.hot = Math.random() > 0.38;
+    };
+    const resetTargetFlame = (f, burst = false) => {
+      f.x = box.x + rand(box.w * 0.12, box.w * 0.88);
+      f.baseY = box.y + rand(box.h * 0.42, box.h * 0.94);
+      f.t = burst ? rand(0, 1) : 0;
+      f.speed = rand(0.86, 1.65);
+      f.height = rand(box.h * 0.28, box.h * 0.62);
+      f.width = rand(18, 42);
+      f.wobble = rand(-18, 18);
+      f.phase = rand(0, Math.PI * 2);
+      f.hot = Math.random() > 0.32;
+    };
+    const resetEmber = (e, burst = false) => {
+      e.t = burst ? rand(0, 0.95) : 0;
+      e.speed = rand(0.48, 0.95);
+      e.offset = rand(-52, 52);
+      e.lift = rand(16, 58);
+      e.size = rand(2, 6);
+    };
+    beamParticles.forEach((p) => resetBeam(p, true));
+    targetFlames.forEach((f) => resetTargetFlame(f, true));
+    embers.forEach((e) => resetEmber(e, true));
+    const drawBlob = (ctx, x, y, radius, alpha, hot, squash = 0.82) => {
+      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      if (hot) {
+        gradient.addColorStop(0, `rgba(255,255,232,${alpha})`);
+        gradient.addColorStop(0.22, `rgba(255,238,96,${alpha * 0.95})`);
+        gradient.addColorStop(0.55, `rgba(255,126,24,${alpha * 0.72})`);
+        gradient.addColorStop(1, "rgba(205,24,14,0)");
+      } else {
+        gradient.addColorStop(0, `rgba(255,214,70,${alpha * 0.85})`);
+        gradient.addColorStop(0.42, `rgba(255,80,22,${alpha * 0.76})`);
+        gradient.addColorStop(1, "rgba(116,12,10,0)");
+      }
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.ellipse(x, y, radius * 1.35, radius * squash, rand(-0.7, 0.7), 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const pointOnBeam = (p, time) => {
+      const x = fromX + (toX - fromX) * p.t;
+      const y = fromY + (toY - fromY) * p.t;
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const wobble = Math.sin(p.wave + time * p.waveSpeed + p.t * 9) * 12;
+      const spread = p.offset * (0.42 + p.t * 0.88);
+      return { x: x + nx * (spread + wobble), y: y + ny * (spread + wobble) - Math.sin(p.t * Math.PI) * 18 };
+    };
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      beamCtx.clearRect(0, 0, gridRect.width, gridRect.height);
+      targetCtx.clearRect(0, 0, gridRect.width, gridRect.height);
+      beamCtx.globalCompositeOperation = "lighter";
+      targetCtx.globalCompositeOperation = "lighter";
+      beamParticles.forEach((p) => {
+        p.t += dt * p.speed;
+        if (p.t > p.life) resetBeam(p);
+        const pos = pointOnBeam(p, time);
+        const fade = Math.min(1, p.t / 0.18) * Math.max(0, 1 - Math.max(0, p.t - 0.78) / 0.22);
+        drawBlob(beamCtx, pos.x, pos.y, p.size * (0.65 + Math.sin(p.t * Math.PI) * 0.45) * p.grow, 0.34 * fade, p.hot);
+      });
+      embers.forEach((e) => {
+        e.t += dt * e.speed;
+        if (e.t > 1) resetEmber(e);
+        const x = fromX + (toX - fromX) * e.t;
+        const y = fromY + (toY - fromY) * e.t + e.offset * 0.36 - Math.sin(e.t * Math.PI) * e.lift;
+        const alpha = Math.sin(e.t * Math.PI);
+        beamCtx.fillStyle = `rgba(255,238,120,${alpha})`;
+        beamCtx.shadowColor = "rgba(255,72,20,0.9)";
+        beamCtx.shadowBlur = 12;
+        beamCtx.beginPath();
+        beamCtx.arc(x, y, e.size, 0, Math.PI * 2);
+        beamCtx.fill();
+        beamCtx.shadowBlur = 0;
+      });
+      drawBlob(beamCtx, fromX, fromY, 30 + Math.sin(time * 18) * 5, 0.68, true);
+      const glow = targetCtx.createRadialGradient(toX, toY, 0, toX, toY, box.w * 0.72);
+      glow.addColorStop(0, "rgba(255,238,96,0.24)");
+      glow.addColorStop(0.55, "rgba(255,80,22,0.18)");
+      glow.addColorStop(1, "rgba(255,40,10,0)");
+      targetCtx.fillStyle = glow;
+      targetCtx.fillRect(box.x - 30, box.y - 30, box.w + 60, box.h + 60);
+      targetFlames.forEach((f) => {
+        f.t += dt * f.speed;
+        if (f.t > 1) resetTargetFlame(f);
+        const fade = Math.sin(f.t * Math.PI);
+        const x = f.x + Math.sin(time * 9 + f.phase) * f.wobble * (0.2 + f.t);
+        const y = f.baseY - f.height * f.t;
+        const radius = f.width * (0.6 + fade * 0.9);
+        drawBlob(targetCtx, x, y, radius, 0.42 * fade, f.hot, 1.18);
+        drawBlob(targetCtx, x, y + radius * 0.32, radius * 0.62, 0.32 * fade, true, 0.74);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-burning-target");
+    void target.offsetWidth;
+    target.classList.add("is-burning-target");
+    window.setTimeout(() => target.classList.remove("is-burning-target"), battleDelay(980));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      beam.remove();
+      targetFire.remove();
+    }, battleDelay(1150));
+    playRealMoveAudio({ audio: moveId === "ember" ? "ember.ogg" : moveId === "flamethrower" ? "magic-coat.ogg" : moveId === "flame-wheel" ? "bounce.ogg" : "barrier.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateBlizzardEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "blizzard-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const snow = Array.from({ length: 150 }, () => ({}));
+    const gusts = Array.from({ length: 34 }, () => ({}));
+    const frost = Array.from({ length: 44 }, () => ({}));
+    const resetSnow = (p, burst = false) => {
+      p.t = burst ? rand(0, 1) : 0;
+      p.speed = rand(0.7, 1.55);
+      p.offset = rand(-70, 70);
+      p.size = rand(2, 7);
+      p.spin = rand(0, Math.PI * 2);
+      p.spinSpeed = rand(5, 12);
+      p.alpha = rand(0.45, 0.95);
+    };
+    const resetGust = (g, burst = false) => {
+      g.t = burst ? rand(0, 1) : 0;
+      g.speed = rand(0.52, 1);
+      g.offset = rand(-82, 82);
+      g.length = rand(80, 190);
+      g.width = rand(2, 5);
+      g.alpha = rand(0.16, 0.42);
+    };
+    const resetFrost = (f, burst = false) => {
+      f.t = burst ? rand(0, 1) : 0;
+      f.speed = rand(0.4, 0.85);
+      f.x = toX + rand(-58, 58);
+      f.y = toY + rand(-50, 62);
+      f.r = rand(5, 18);
+      f.drift = rand(-10, 12);
+    };
+    snow.forEach((p) => resetSnow(p, true));
+    gusts.forEach((g) => resetGust(g, true));
+    frost.forEach((f) => resetFrost(f, true));
+    const beamPoint = (item, time) => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const wobble = Math.sin(time * 7 + item.t * 11 + item.offset) * 14;
+      return { x: fromX + dx * item.t + nx * (item.offset + wobble), y: fromY + dy * item.t + ny * (item.offset + wobble) };
+    };
+    const drawSnowflake = (x, y, r, spin, alpha) => {
+      ctx.strokeStyle = `rgba(240,252,255,${alpha})`;
+      ctx.lineWidth = Math.max(1, r * 0.22);
+      ctx.lineCap = "round";
+      for (let i = 0; i < 3; i += 1) {
+        const a = spin + i * Math.PI / 3;
+        ctx.beginPath();
+        ctx.moveTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        ctx.lineTo(x - Math.cos(a) * r, y - Math.sin(a) * r);
+        ctx.stroke();
+      }
+    };
+    const impact = document.createElement("span");
+    impact.className = "blizzard-freeze-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `<span class="frost-aura"></span>${Array.from({ length: 6 }, (_, i) => `<i class="ice-shard is${i + 1}"></i>`).join("")}`;
+    battleGrid.appendChild(impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      gusts.forEach((g) => {
+        g.t += dt * g.speed;
+        if (g.t > 1) resetGust(g);
+        const pos = beamPoint(g, time);
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+        const alpha = Math.sin(g.t * Math.PI) * g.alpha;
+        const grad = ctx.createLinearGradient(pos.x - Math.cos(angle) * g.length * 0.5, pos.y - Math.sin(angle) * g.length * 0.5, pos.x + Math.cos(angle) * g.length * 0.5, pos.y + Math.sin(angle) * g.length * 0.5);
+        grad.addColorStop(0, "rgba(255,255,255,0)");
+        grad.addColorStop(0.5, `rgba(230,250,255,${alpha})`);
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = g.width;
+        ctx.beginPath();
+        ctx.moveTo(pos.x - Math.cos(angle) * g.length * 0.5, pos.y - Math.sin(angle) * g.length * 0.5);
+        ctx.lineTo(pos.x + Math.cos(angle) * g.length * 0.5, pos.y + Math.sin(angle) * g.length * 0.5);
+        ctx.stroke();
+      });
+      snow.forEach((p) => {
+        p.t += dt * p.speed;
+        if (p.t > 1) resetSnow(p);
+        const pos = beamPoint(p, time);
+        drawSnowflake(pos.x, pos.y, p.size, p.spin + time * p.spinSpeed, Math.sin(p.t * Math.PI) * p.alpha);
+      });
+      frost.forEach((f) => {
+        f.t += dt * f.speed;
+        if (f.t > 1) resetFrost(f);
+        const alpha = Math.sin(f.t * Math.PI) * 0.56;
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
+        grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        grad.addColorStop(0.38, `rgba(202,248,255,${alpha * 0.72})`);
+        grad.addColorStop(1, "rgba(88,190,255,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(f.x + f.drift * f.t, f.y - f.t * 22, f.r * 1.2, f.r * 0.7, 0, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-frozen-hit");
+    void target.offsetWidth;
+    target.classList.add("is-frozen-hit");
+    window.setTimeout(() => target.classList.remove("is-frozen-hit"), battleDelay(1000));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      impact.remove();
+    }, battleDelay(1180));
+    playRealMoveAudio({ audio: "ice-beam.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateBubbleEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "bubble-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const bubbles = Array.from({ length: 42 }, () => ({}));
+    const bursts = Array.from({ length: 34 }, () => ({}));
+    const resetBubble = (b, burst = false) => {
+      b.t = burst ? rand(0, 1) : 0;
+      b.speed = rand(0.42, 0.9);
+      b.offset = rand(-48, 48);
+      b.radius = rand(8, 24);
+      b.phase = rand(0, Math.PI * 2);
+      b.wobble = rand(10, 26);
+      b.alpha = rand(0.58, 0.95);
+    };
+    const resetBurst = (p, burst = false) => {
+      p.t = burst ? rand(0, 1) : 0;
+      p.speed = rand(0.55, 1.1);
+      p.x = toX + rand(-54, 54);
+      p.y = toY + rand(-42, 50);
+      p.radius = rand(5, 18);
+      p.driftX = rand(-42, 42);
+      p.driftY = rand(-54, 34);
+    };
+    bubbles.forEach((b) => resetBubble(b, true));
+    bursts.forEach((p) => resetBurst(p, true));
+    const beamPoint = (item, time) => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      const nx = -dy / len;
+      const ny = dx / len;
+      const bob = Math.sin(time * 5 + item.phase + item.t * 8) * item.wobble;
+      return {
+        x: fromX + dx * item.t + nx * (item.offset + bob),
+        y: fromY + dy * item.t + ny * (item.offset + bob) - Math.sin(item.t * Math.PI) * 18
+      };
+    };
+    const drawBubble = (x, y, r, alpha) => {
+      const grad = ctx.createRadialGradient(x - r * 0.28, y - r * 0.32, 0, x, y, r);
+      grad.addColorStop(0, `rgba(255,255,255,${alpha * 0.92})`);
+      grad.addColorStop(0.18, `rgba(223,250,255,${alpha * 0.28})`);
+      grad.addColorStop(0.72, `rgba(97,217,255,${alpha * 0.18})`);
+      grad.addColorStop(1, `rgba(47,156,255,${alpha * 0.04})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(223,250,255,${alpha * 0.82})`;
+      ctx.lineWidth = Math.max(1.5, r * 0.12);
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.beginPath();
+      ctx.ellipse(x - r * 0.32, y - r * 0.38, r * 0.22, r * 0.14, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const impact = document.createElement("span");
+    impact.className = "bubble-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `<span class="wet-ring"></span><i class="pop p1"></i><i class="pop p2"></i><i class="pop p3"></i><i class="pop p4"></i>`;
+    battleGrid.appendChild(impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      bubbles.forEach((b) => {
+        b.t += dt * b.speed;
+        if (b.t > 1) resetBubble(b);
+        const pos = beamPoint(b, time);
+        const fade = Math.min(1, b.t / 0.16) * Math.max(0, 1 - Math.max(0, b.t - 0.82) / 0.18);
+        drawBubble(pos.x, pos.y, b.radius * (0.82 + Math.sin(b.t * Math.PI) * 0.18), b.alpha * fade);
+      });
+      bursts.forEach((p) => {
+        p.t += dt * p.speed;
+        if (p.t > 1) resetBurst(p);
+        drawBubble(p.x + p.driftX * p.t, p.y + p.driftY * p.t, p.radius * (0.5 + p.t * 0.9), Math.sin(p.t * Math.PI) * 0.75);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-bubbled-hit");
+    void target.offsetWidth;
+    target.classList.add("is-bubbled-hit");
+    window.setTimeout(() => target.classList.remove("is-bubbled-hit"), battleDelay(900));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      impact.remove();
+    }, battleDelay(1120));
+    playRealMoveAudio({ audio: "lovely-kiss.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateIceBeamEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "ice-beam-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const particles = Array.from({ length: 90 }, () => ({}));
+    const crystals = Array.from({ length: 28 }, () => ({}));
+    const resetParticle = (p, burst = false) => {
+      p.t = burst ? rand(0, 1) : 0;
+      p.speed = rand(0.8, 1.55);
+      p.offset = rand(-26, 26);
+      p.size = rand(2, 6);
+      p.phase = rand(0, Math.PI * 2);
+      p.alpha = rand(0.42, 0.92);
+    };
+    const resetCrystal = (c, burst = false) => {
+      c.t = burst ? rand(0, 1) : 0;
+      c.speed = rand(0.52, 1.1);
+      c.offset = rand(-42, 42);
+      c.size = rand(8, 22);
+      c.spin = rand(0, Math.PI * 2);
+      c.spinSpeed = rand(4, 10);
+    };
+    particles.forEach((p) => resetParticle(p, true));
+    crystals.forEach((c) => resetCrystal(c, true));
+    const basis = () => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dx, dy, len, nx: -dy / len, ny: dx / len };
+    };
+    const point = (item, time) => {
+      const b = basis();
+      const wobble = Math.sin(time * 10 + item.phase + item.t * 12) * 5;
+      return { x: fromX + b.dx * item.t + b.nx * (item.offset + wobble), y: fromY + b.dy * item.t + b.ny * (item.offset + wobble) };
+    };
+    const drawCrystal = (x, y, size, angle, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(223,250,255,${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.9})`;
+      ctx.lineWidth = Math.max(1, size * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size * 0.42, 0);
+      ctx.lineTo(0, size);
+      ctx.lineTo(-size * 0.42, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+    const shell = document.createElement("span");
+    shell.className = "ice-freeze-shell-effect";
+    shell.style.setProperty("--impact-x", `${toX}px`);
+    shell.style.setProperty("--impact-y", `${toY}px`);
+    shell.innerHTML = `
+      <span class="ice-glass"></span>
+      <i class="crack c1"></i>
+      <i class="crack c2"></i>
+      <i class="crack c3"></i>
+      <i class="ice-shard s1"></i>
+      <i class="ice-shard s2"></i>
+      <i class="ice-shard s3"></i>
+      <i class="ice-shard s4"></i>
+    `;
+    battleGrid.appendChild(shell);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      const b = basis();
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.lineCap = "round";
+      for (let i = 0; i < 4; i += 1) {
+        const wiggle = Math.sin(time * 18 + i) * 8;
+        const grad = ctx.createLinearGradient(fromX, fromY, toX, toY);
+        grad.addColorStop(0, "rgba(255,255,255,0.05)");
+        grad.addColorStop(0.18, i === 0 ? "rgba(255,255,255,0.92)" : "rgba(184,240,255,0.46)");
+        grad.addColorStop(0.72, i === 0 ? "rgba(202,248,255,0.88)" : "rgba(65,154,255,0.34)");
+        grad.addColorStop(1, "rgba(255,255,255,0.02)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = i === 0 ? 8 : 20 + i * 9;
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.bezierCurveTo(fromX + b.dx * 0.28 + b.nx * wiggle, fromY + b.dy * 0.28 + b.ny * wiggle, fromX + b.dx * 0.64 - b.nx * wiggle, fromY + b.dy * 0.64 - b.ny * wiggle, toX, toY);
+        ctx.stroke();
+      }
+      particles.forEach((p) => {
+        p.t += dt * p.speed;
+        if (p.t > 1) resetParticle(p);
+        const pos = point(p, time);
+        const alpha = Math.sin(p.t * Math.PI) * p.alpha;
+        const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, p.size * 3);
+        grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        grad.addColorStop(0.36, `rgba(202,248,255,${alpha * 0.72})`);
+        grad.addColorStop(1, "rgba(65,154,255,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, p.size * 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      crystals.forEach((c) => {
+        c.t += dt * c.speed;
+        if (c.t > 1) resetCrystal(c);
+        const pos = point(c, time);
+        drawCrystal(pos.x, pos.y, c.size, c.spin + time * c.spinSpeed, Math.sin(c.t * Math.PI) * 0.78);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-ice-beam-frozen");
+    void target.offsetWidth;
+    target.classList.add("is-ice-beam-frozen");
+    window.setTimeout(() => target.classList.remove("is-ice-beam-frozen"), battleDelay(1000));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      shell.remove();
+    }, battleDelay(1180));
+    playRealMoveAudio({ audio: "light-screen.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateDarkPulseEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "dark-pulse-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const rings = Array.from({ length: 9 }, () => ({}));
+    const motes = Array.from({ length: 72 }, () => ({}));
+    const smoke = Array.from({ length: 24 }, () => ({}));
+    const resetRing = (r, burst = false) => {
+      r.t = burst ? rand(0, 1) : 0;
+      r.speed = rand(0.52, 0.92);
+      r.offset = rand(-30, 30);
+      r.radius = rand(28, 58);
+      r.phase = rand(0, Math.PI * 2);
+    };
+    const resetMote = (m, burst = false) => {
+      m.t = burst ? rand(0, 1) : 0;
+      m.speed = rand(0.62, 1.28);
+      m.offset = rand(-58, 58);
+      m.size = rand(3, 9);
+      m.phase = rand(0, Math.PI * 2);
+    };
+    const resetSmoke = (s, burst = false) => {
+      s.t = burst ? rand(0, 1) : 0;
+      s.speed = rand(0.34, 0.74);
+      s.offset = rand(-72, 72);
+      s.radius = rand(28, 62);
+      s.phase = rand(0, Math.PI * 2);
+    };
+    rings.forEach((r) => resetRing(r, true));
+    motes.forEach((m) => resetMote(m, true));
+    smoke.forEach((s) => resetSmoke(s, true));
+    const basis = () => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dx, dy, len, nx: -dy / len, ny: dx / len, angle: Math.atan2(dy, dx) };
+    };
+    const point = (item, time) => {
+      const b = basis();
+      const wobble = Math.sin(time * 6 + item.phase + item.t * 9) * 14;
+      return { x: fromX + b.dx * item.t + b.nx * (item.offset + wobble), y: fromY + b.dy * item.t + b.ny * (item.offset + wobble) };
+    };
+    const drawRing = (x, y, radius, angle, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.scale(1.25, 0.62);
+      const grad = ctx.createRadialGradient(0, 0, radius * 0.48, 0, 0, radius);
+      grad.addColorStop(0, "rgba(0,0,0,0)");
+      grad.addColorStop(0.58, `rgba(68,18,118,${alpha * 0.52})`);
+      grad.addColorStop(0.78, `rgba(184,92,255,${alpha})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(5, radius * 0.18);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const drawMote = (x, y, size, alpha) => {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 2.4);
+      grad.addColorStop(0, `rgba(245,215,255,${alpha})`);
+      grad.addColorStop(0.32, `rgba(184,92,255,${alpha * 0.72})`);
+      grad.addColorStop(1, "rgba(35,10,66,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, size * 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const impact = document.createElement("span");
+    impact.className = "dark-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `
+      <span class="shadow-core"></span>
+      <span class="shadow-ring r1"></span>
+      <span class="shadow-ring r2"></span>
+      <i class="dark-spark s1"></i>
+      <i class="dark-spark s2"></i>
+      <i class="dark-spark s3"></i>
+      <i class="dark-spark s4"></i>
+      <i class="dark-spark s5"></i>
+      <i class="dark-spark s6"></i>
+    `;
+    battleGrid.appendChild(impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      const b = basis();
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      smoke.forEach((s) => {
+        s.t += dt * s.speed;
+        if (s.t > 1) resetSmoke(s);
+        const pos = point(s, time);
+        const alpha = Math.sin(s.t * Math.PI) * 0.16;
+        const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, s.radius);
+        grad.addColorStop(0, `rgba(184,92,255,${alpha})`);
+        grad.addColorStop(0.5, `rgba(61,20,108,${alpha * 0.82})`);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(pos.x, pos.y, s.radius * 1.4, s.radius * 0.8, b.angle, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      rings.forEach((r) => {
+        r.t += dt * r.speed;
+        if (r.t > 1) resetRing(r);
+        const pos = point(r, time);
+        drawRing(pos.x, pos.y, r.radius * (0.6 + r.t * 0.7), b.angle, Math.sin(r.t * Math.PI) * 0.9);
+      });
+      motes.forEach((m) => {
+        m.t += dt * m.speed;
+        if (m.t > 1) resetMote(m);
+        const pos = point(m, time);
+        drawMote(pos.x, pos.y, m.size, Math.sin(m.t * Math.PI) * 0.86);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-dark-pulsed");
+    void target.offsetWidth;
+    target.classList.add("is-dark-pulsed");
+    window.setTimeout(() => target.classList.remove("is-dark-pulsed"), battleDelay(980));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      impact.remove();
+    }, battleDelay(1150));
+    playRealMoveAudio({ audio: "night-shade.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateBiteEffect(battleGrid, target, toX, toY, crit = false) {
+    const impact = document.createElement("span");
+    impact.className = "bite-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `
+      <span class="mouth-shadow"></span>
+      <span class="jaw upper">
+        <i class="fang t1"></i><i class="fang t2"></i><i class="fang t3"></i><i class="fang t4"></i>
+      </span>
+      <span class="jaw lower">
+        <i class="fang t1"></i><i class="fang t2"></i><i class="fang t3"></i><i class="fang t4"></i>
+      </span>
+      <span class="tooth-hole h1"></span>
+      <span class="tooth-hole h2"></span>
+      <span class="tooth-hole h3"></span>
+      <span class="tooth-hole h4"></span>
+      <span class="tooth-hole h5"></span>
+      <span class="tooth-hole h6"></span>
+      <span class="tooth-hole h7"></span>
+      <span class="tooth-hole h8"></span>
+      <span class="pressure-ring"></span>
+    `;
+    battleGrid.appendChild(impact);
+
+    target.classList.remove("is-bitten-target");
+    void target.offsetWidth;
+    target.classList.add("is-bitten-target");
+    window.setTimeout(() => target.classList.remove("is-bitten-target"), battleDelay(900));
+    window.setTimeout(() => impact.remove(), battleDelay(1050));
+    playRealMoveAudio({ audio: "bite.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateDragonPulseEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "dragon-pulse-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const scale = Math.max(0.72, Math.min(1.18, gridRect.width / 920));
+    const pulses = Array.from({ length: 7 }, () => ({}));
+    const sparks = Array.from({ length: 70 }, () => ({}));
+    const scales = Array.from({ length: 24 }, () => ({}));
+    const basis = () => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dx, dy, len, nx: -dy / len, ny: dx / len, angle: Math.atan2(dy, dx) };
+    };
+    const resetPulse = (p, burst = false) => {
+      p.t = burst ? rand(0, 1) : 0;
+      p.speed = rand(0.46, 0.78);
+      p.offset = rand(-22, 22) * scale;
+      p.radius = rand(30, 68) * scale;
+      p.phase = rand(0, Math.PI * 2);
+      p.twist = rand(-1, 1);
+    };
+    const resetSpark = (s, burst = false) => {
+      s.t = burst ? rand(0, 1) : 0;
+      s.speed = rand(0.72, 1.36);
+      s.offset = rand(-54, 54) * scale;
+      s.size = rand(3, 8) * scale;
+      s.phase = rand(0, Math.PI * 2);
+    };
+    const resetScale = (s, burst = false) => {
+      s.t = burst ? rand(0, 1) : 0;
+      s.speed = rand(0.5, 1);
+      s.offset = rand(-46, 46) * scale;
+      s.size = rand(10, 21) * scale;
+      s.spin = rand(0, Math.PI * 2);
+      s.spinSpeed = rand(3, 8);
+    };
+    pulses.forEach((p) => resetPulse(p, true));
+    sparks.forEach((s) => resetSpark(s, true));
+    scales.forEach((s) => resetScale(s, true));
+    const point = (item, time) => {
+      const b = basis();
+      const coil = Math.sin(time * 7 + item.phase + item.t * 12) * 18 * scale;
+      return { x: fromX + b.dx * item.t + b.nx * (item.offset + coil), y: fromY + b.dy * item.t + b.ny * (item.offset + coil) };
+    };
+    const drawPulse = (x, y, radius, angle, alpha, twist) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle + twist);
+      ctx.scale(1.55, 0.62);
+      const grad = ctx.createRadialGradient(0, 0, radius * 0.25, 0, 0, radius);
+      grad.addColorStop(0, "rgba(255,255,255,0)");
+      grad.addColorStop(0.48, `rgba(98,118,255,${alpha * 0.42})`);
+      grad.addColorStop(0.72, `rgba(116,255,220,${alpha})`);
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = Math.max(5, radius * 0.16);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const drawSpark = (x, y, size, alpha) => {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 2.8);
+      grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+      grad.addColorStop(0.35, `rgba(116,255,220,${alpha * 0.8})`);
+      grad.addColorStop(1, "rgba(98,118,255,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, size * 2.8, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const drawScale = (x, y, size, angle, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(116,255,220,${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
+      ctx.lineWidth = Math.max(1, size * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(0, -size);
+      ctx.lineTo(size * 0.72, -size * 0.1);
+      ctx.lineTo(size * 0.38, size);
+      ctx.lineTo(-size * 0.38, size);
+      ctx.lineTo(-size * 0.72, -size * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+    const impact = document.createElement("span");
+    impact.className = "dragon-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `
+      <span class="dragon-head">
+        <i class="snout"></i>
+        <i class="horn h1"></i>
+        <i class="horn h2"></i>
+        <i class="eye e1"></i>
+        <i class="eye e2"></i>
+      </span>
+      <i class="fang f1"></i>
+      <i class="fang f2"></i>
+      <i class="fang f3"></i>
+      <i class="fang f4"></i>
+      <i class="arc a1"></i>
+      <i class="arc a2"></i>
+      <i class="arc a3"></i>
+      <span class="shockwave"></span>
+    `;
+    battleGrid.appendChild(impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const b = basis();
+      const time = now / 1000;
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 0; i < 3; i += 1) {
+        const wobble = Math.sin(time * 9 + i * 2) * 16 * scale;
+        const grad = ctx.createLinearGradient(fromX, fromY, toX, toY);
+        grad.addColorStop(0, "rgba(255,255,255,0.02)");
+        grad.addColorStop(0.16, i === 0 ? "rgba(255,255,255,0.74)" : "rgba(116,255,220,0.34)");
+        grad.addColorStop(0.68, i === 0 ? "rgba(116,255,220,0.68)" : "rgba(98,118,255,0.34)");
+        grad.addColorStop(1, "rgba(255,255,255,0.02)");
+        ctx.strokeStyle = grad;
+        ctx.lineCap = "round";
+        ctx.lineWidth = i === 0 ? 7 * scale : (20 + i * 12) * scale;
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.bezierCurveTo(fromX + b.dx * 0.28 + b.nx * wobble, fromY + b.dy * 0.28 + b.ny * wobble, fromX + b.dx * 0.66 - b.nx * wobble, fromY + b.dy * 0.66 - b.ny * wobble, toX, toY);
+        ctx.stroke();
+      }
+      pulses.forEach((p) => {
+        p.t += dt * p.speed;
+        if (p.t > 1) resetPulse(p);
+        const pos = point(p, time);
+        drawPulse(pos.x, pos.y, p.radius * (0.7 + p.t * 0.7), b.angle, Math.sin(p.t * Math.PI) * 0.9, p.twist + time * 0.5);
+      });
+      sparks.forEach((s) => {
+        s.t += dt * s.speed;
+        if (s.t > 1) resetSpark(s);
+        const pos = point(s, time);
+        drawSpark(pos.x, pos.y, s.size, Math.sin(s.t * Math.PI) * 0.82);
+      });
+      scales.forEach((s) => {
+        s.t += dt * s.speed;
+        if (s.t > 1) resetScale(s);
+        const pos = point(s, time);
+        drawScale(pos.x, pos.y, s.size, s.spin + time * s.spinSpeed, Math.sin(s.t * Math.PI) * 0.58);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-dragon-pulsed");
+    void target.offsetWidth;
+    target.classList.add("is-dragon-pulsed");
+    window.setTimeout(() => target.classList.remove("is-dragon-pulsed"), battleDelay(980));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      impact.remove();
+    }, battleDelay(1180));
+    playRealMoveAudio({ audio: "mind-reader.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateMetronomeEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "metronome-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const scale = Math.max(0.72, Math.min(1.18, gridRect.width / 920));
+    const notes = Array.from({ length: 12 }, () => ({}));
+    const stars = Array.from({ length: 42 }, () => ({}));
+    const bolts = Array.from({ length: 18 }, () => ({}));
+    const resetNote = (n, burst = false) => {
+      n.t = burst ? rand(0, 1) : 0;
+      n.speed = rand(0.28, 0.56);
+      n.radius = rand(34, 108) * scale;
+      n.angle = rand(0, Math.PI * 2);
+      n.spin = rand(-1.8, 1.8);
+      n.size = rand(16, 26) * scale;
+      n.symbol = Math.random() > 0.5 ? "?" : "!";
+    };
+    const resetStar = (s, burst = false) => {
+      s.t = burst ? rand(0, 1) : 0;
+      s.speed = rand(0.5, 1.1);
+      s.offset = rand(-70, 70) * scale;
+      s.size = rand(6, 13) * scale;
+      s.phase = rand(0, Math.PI * 2);
+    };
+    const resetBolt = (b, burst = false) => {
+      b.t = burst ? rand(0.46, 1) : 0;
+      b.speed = rand(0.9, 1.5);
+      b.offset = rand(-36, 36) * scale;
+      b.size = rand(7, 15) * scale;
+      b.phase = rand(0, Math.PI * 2);
+    };
+    notes.forEach((n) => resetNote(n, true));
+    stars.forEach((s) => resetStar(s, true));
+    bolts.forEach((b) => resetBolt(b, true));
+    const basis = () => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dx, dy, len, nx: -dy / len, ny: dx / len };
+    };
+    const point = (item, time) => {
+      const b = basis();
+      const wobble = Math.sin(time * 10 + item.phase + item.t * 12) * 10 * scale;
+      return { x: fromX + b.dx * item.t + b.nx * (item.offset + wobble), y: fromY + b.dy * item.t + b.ny * (item.offset + wobble) };
+    };
+    const drawStar = (x, y, size, alpha, angle) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(255, 246, 181, ${alpha})`;
+      ctx.strokeStyle = `rgba(106, 240, 193, ${alpha * 0.8})`;
+      ctx.lineWidth = Math.max(1, size * 0.12);
+      ctx.beginPath();
+      for (let i = 0; i < 10; i += 1) {
+        const r = i % 2 === 0 ? size : size * 0.42;
+        const a = -Math.PI / 2 + i * Math.PI / 5;
+        const px = Math.cos(a) * r;
+        const py = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+    const drawBolt = (x, y, size, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = `rgba(255, 219, 84, ${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.2, -size);
+      ctx.lineTo(size * 0.55, -size * 0.1);
+      ctx.lineTo(size * 0.12, -size * 0.1);
+      ctx.lineTo(size * 0.34, size);
+      ctx.lineTo(-size * 0.58, -size * 0.02);
+      ctx.lineTo(-size * 0.12, -size * 0.02);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+    const clock = document.createElement("span");
+    clock.className = "metronome-clock-effect";
+    clock.style.setProperty("--clock-x", `${fromX}px`);
+    clock.style.setProperty("--clock-y", `${fromY}px`);
+    clock.innerHTML = `
+      <span class="body"></span>
+      <span class="dial"></span>
+      <span class="pendulum"></span>
+      <span class="bob"></span>
+      <span class="pivot"></span>
+      <span class="tick t1">?</span>
+      <span class="tick t2">!</span>
+      <span class="tick t3">*</span>
+    `;
+    const impact = document.createElement("span");
+    impact.className = "metronome-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `
+      <span class="mystery-card">?</span>
+      <span class="impact-pop"></span>
+      <span class="wild-symbol q1">?</span>
+      <span class="wild-symbol q2">!</span>
+      <span class="wild-symbol q3">*</span>
+      <span class="wild-symbol q4">?</span>
+      <i class="burst-shard s1"></i>
+      <i class="burst-shard s2"></i>
+      <i class="burst-shard s3"></i>
+      <i class="burst-shard s4"></i>
+      <i class="burst-shard s5"></i>
+      <i class="burst-shard s6"></i>
+    `;
+    battleGrid.append(clock, impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const time = now / 1000;
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      notes.forEach((n) => {
+        n.t += dt * n.speed;
+        if (n.t > 1) resetNote(n);
+        const swirl = n.angle + time * n.spin + n.t * Math.PI * 2.4;
+        const radius = n.radius * (1 - n.t * 0.35);
+        const x = fromX + Math.cos(swirl) * radius;
+        const y = fromY + Math.sin(swirl) * radius * 0.58 - n.t * 24 * scale;
+        const alpha = Math.sin(n.t * Math.PI) * 0.9;
+        ctx.font = `900 ${n.size}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = `rgba(255, 246, 181, ${alpha})`;
+        ctx.strokeStyle = `rgba(106, 240, 193, ${alpha * 0.7})`;
+        ctx.lineWidth = 3;
+        ctx.strokeText(n.symbol, x, y);
+        ctx.fillText(n.symbol, x, y);
+      });
+      stars.forEach((s) => {
+        s.t += dt * s.speed;
+        if (s.t > 1) resetStar(s);
+        const pos = point(s, time);
+        drawStar(pos.x, pos.y, s.size, Math.sin(s.t * Math.PI) * 0.82, time * 2 + s.phase);
+      });
+      bolts.forEach((b) => {
+        b.t += dt * b.speed;
+        if (b.t > 1) resetBolt(b);
+        const pos = point(b, time);
+        drawBolt(pos.x, pos.y, b.size, Math.sin(b.t * Math.PI) * 0.9);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-metronome-hit");
+    void target.offsetWidth;
+    target.classList.add("is-metronome-hit");
+    window.setTimeout(() => target.classList.remove("is-metronome-hit"), battleDelay(1100));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      clock.remove();
+      impact.remove();
+    }, battleDelay(1350));
+    playRealMoveAudio({ audio: "metronome.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
+  function animateSnarlEffect(battleGrid, target, fromX, fromY, toX, toY, crit = false) {
+    const gridRect = battleGrid.getBoundingClientRect();
+    const canvas = document.createElement("canvas");
+    canvas.className = "snarl-canvas-effect";
+    battleGrid.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(gridRect.width * dpr);
+    canvas.height = Math.round(gridRect.height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const rand = (min, max) => min + Math.random() * (max - min);
+    const scale = Math.max(0.72, Math.min(1.18, gridRect.width / 920));
+    const waves = Array.from({ length: 8 }, () => ({}));
+    const wisps = Array.from({ length: 34 }, () => ({}));
+    const shards = Array.from({ length: 24 }, () => ({}));
+    const basis = () => {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dx, dy, len, nx: -dy / len, ny: dx / len, angle: Math.atan2(dy, dx) };
+    };
+    const resetWave = (w, burst = false) => {
+      w.t = burst ? rand(0, 1) : 0;
+      w.speed = rand(0.5, 0.92);
+      w.offset = rand(-26, 26) * scale;
+      w.radius = rand(30, 72) * scale;
+      w.phase = rand(0, Math.PI * 2);
+    };
+    const resetWisp = (w, burst = false) => {
+      w.t = burst ? rand(0, 1) : 0;
+      w.speed = rand(0.6, 1.2);
+      w.offset = rand(-74, 74) * scale;
+      w.size = rand(16, 42) * scale;
+      w.phase = rand(0, Math.PI * 2);
+    };
+    const resetShard = (s, burst = false) => {
+      s.t = burst ? rand(0, 1) : 0;
+      s.speed = rand(0.8, 1.5);
+      s.offset = rand(-44, 44) * scale;
+      s.size = rand(8, 18) * scale;
+      s.spin = rand(0, Math.PI * 2);
+      s.spinSpeed = rand(4, 9);
+    };
+    waves.forEach((w) => resetWave(w, true));
+    wisps.forEach((w) => resetWisp(w, true));
+    shards.forEach((s) => resetShard(s, true));
+    const point = (item, time) => {
+      const b = basis();
+      const tremble = Math.sin(time * 16 + item.phase + item.t * 18) * 12 * scale;
+      return { x: fromX + b.dx * item.t + b.nx * (item.offset + tremble), y: fromY + b.dy * item.t + b.ny * (item.offset + tremble) };
+    };
+    const drawWave = (x, y, radius, angle, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.scale(1.5, 0.58);
+      ctx.strokeStyle = `rgba(185,160,255,${alpha})`;
+      ctx.lineWidth = Math.max(5, radius * 0.14);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, -Math.PI * 0.82, Math.PI * 0.82);
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(10,8,18,${alpha * 0.55})`;
+      ctx.lineWidth = Math.max(3, radius * 0.08);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * 0.78, -Math.PI * 0.72, Math.PI * 0.72);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const drawWisp = (x, y, size, alpha) => {
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+      grad.addColorStop(0, `rgba(236,224,255,${alpha * 0.55})`);
+      grad.addColorStop(0.45, `rgba(139,92,246,${alpha * 0.38})`);
+      grad.addColorStop(1, "rgba(10,8,18,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.ellipse(x, y, size * 1.35, size * 0.72, 0, 0, Math.PI * 2);
+      ctx.fill();
+    };
+    const drawShard = (x, y, size, angle, alpha) => {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.fillStyle = `rgba(185,160,255,${alpha})`;
+      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.65})`;
+      ctx.lineWidth = Math.max(1, size * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(-size, -size * 0.16);
+      ctx.lineTo(size * 0.32, -size * 0.5);
+      ctx.lineTo(size, size * 0.16);
+      ctx.lineTo(-size * 0.28, size * 0.48);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    };
+    const impact = document.createElement("span");
+    impact.className = "snarl-impact-effect";
+    impact.style.setProperty("--impact-x", `${toX}px`);
+    impact.style.setProperty("--impact-y", `${toY}px`);
+    impact.innerHTML = `
+      <span class="shadow-vortex"></span>
+      <span class="sound-ring r1"></span>
+      <span class="sound-ring r2"></span>
+      <i class="fear-mark m1">!</i>
+      <i class="fear-mark m2">!</i>
+      <i class="slash s1"></i>
+      <i class="slash s2"></i>
+      <i class="slash s3"></i>
+    `;
+    battleGrid.appendChild(impact);
+    let last = performance.now();
+    let frameId = 0;
+    const draw = (now) => {
+      const dt = Math.min(32, now - last) / 1000;
+      last = now;
+      const b = basis();
+      const time = now / 1000;
+      ctx.clearRect(0, 0, gridRect.width, gridRect.height);
+      ctx.globalCompositeOperation = "lighter";
+      wisps.forEach((w) => {
+        w.t += dt * w.speed;
+        if (w.t > 1) resetWisp(w);
+        const pos = point(w, time);
+        drawWisp(pos.x, pos.y, w.size, Math.sin(w.t * Math.PI) * 0.72);
+      });
+      waves.forEach((w) => {
+        w.t += dt * w.speed;
+        if (w.t > 1) resetWave(w);
+        const pos = point(w, time);
+        drawWave(pos.x, pos.y, w.radius * (0.65 + w.t * 0.85), b.angle, Math.sin(w.t * Math.PI) * 0.88);
+      });
+      shards.forEach((s) => {
+        s.t += dt * s.speed;
+        if (s.t > 1) resetShard(s);
+        const pos = point(s, time);
+        drawShard(pos.x, pos.y, s.size, s.spin + time * s.spinSpeed, Math.sin(s.t * Math.PI) * 0.66);
+      });
+      activeMoveAnimationFrames.delete(frameId);
+      frameId = window.requestAnimationFrame(draw);
+      activeMoveAnimationFrames.add(frameId);
+    };
+    frameId = window.requestAnimationFrame(draw);
+    activeMoveAnimationFrames.add(frameId);
+    target.classList.remove("is-snarled");
+    void target.offsetWidth;
+    target.classList.add("is-snarled");
+    window.setTimeout(() => target.classList.remove("is-snarled"), battleDelay(920));
+    window.setTimeout(() => {
+      window.cancelAnimationFrame(frameId);
+      activeMoveAnimationFrames.delete(frameId);
+      canvas.remove();
+      impact.remove();
+    }, battleDelay(1080));
+    playRealMoveAudio({ audio: "supersonic.ogg" });
+    battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+    void battleGrid.offsetWidth;
+    battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+    window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+  }
+
   function animateMoveEffect(attacker, target, type, move = null, crit = false) {
     const battleGrid = document.querySelector(".battle-grid");
     if (!battleGrid || !attacker || !target) return;
@@ -3741,8 +5014,12 @@
     const gridRect = battleGrid.getBoundingClientRect();
     const fromRect = attacker.getBoundingClientRect();
     const toRect = target.getBoundingClientRect();
-    const fromX = fromRect.left + fromRect.width / 2 - gridRect.left;
-    const fromY = fromRect.top + fromRect.height * 0.62 - gridRect.top;
+    const attackerSprite = attacker.querySelector?.(".pokemon-anim");
+    const attackerSpriteRect = attackerSprite?.getBoundingClientRect();
+    const fromX = (attackerSpriteRect || fromRect).left + (attackerSpriteRect || fromRect).width / 2 - gridRect.left;
+    const fromY = attackerSpriteRect
+      ? attackerSpriteRect.top + attackerSpriteRect.height * 0.38 - gridRect.top
+      : fromRect.top + fromRect.height * 0.45 - gridRect.top;
     const targetSprite = target.querySelector?.(".pokemon-anim");
     const targetSpriteRect = targetSprite?.getBoundingClientRect();
     const toX = (targetSpriteRect || toRect).left + (targetSpriteRect || toRect).width / 2 - gridRect.left;
@@ -3751,6 +5028,305 @@
       : toRect.top + toRect.height * 0.45 - gridRect.top;
     const useTowerStyle = battleGrid.classList.contains("tower-battle-grid") || document.body.classList.contains("is-tower-battle");
     const realAnim = realMoveAnim(move);
+    const moveId = String(move?.id || "").toLowerCase();
+    if (["ember", "flame-wheel", "flamethrower", "burn"].includes(moveId)) {
+      animateFlameStreamEffect(battleGrid, target, fromX, fromY, toX, toY, moveId, crit);
+      return;
+    }
+    if (moveId === "blizzard") {
+      animateBlizzardEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "bubble") {
+      animateBubbleEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "ice-beam") {
+      animateIceBeamEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "dark-pulse") {
+      animateDarkPulseEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "dragon-pulse") {
+      animateDragonPulseEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "metronome") {
+      animateMetronomeEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "snarl") {
+      animateSnarlEffect(battleGrid, target, fromX, fromY, toX, toY, crit);
+      return;
+    }
+    if (moveId === "bite") {
+      animateBiteEffect(battleGrid, target, toX, toY, crit);
+      return;
+    }
+    if (moveId === "thundershock") {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      const beam = document.createElement("span");
+      beam.className = `electric-beam-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${crit ? "is-critical" : ""}`;
+      beam.style.setProperty("--beam-x", `${fromX}px`);
+      beam.style.setProperty("--beam-y", `${fromY}px`);
+      beam.style.setProperty("--beam-length", `${length}px`);
+      beam.style.setProperty("--beam-angle", `${angle}deg`);
+      beam.innerHTML = `
+        <svg viewBox="0 0 620 190" aria-hidden="true">
+          <g>
+            <polyline class="beam-bolt beam-wide beam-a" points="8,96 58,70 96,112 146,55 198,128 256,79 318,108 374,44 438,122 504,70 612,95"></polyline>
+            <polyline class="beam-bolt beam-wide beam-b" points="8,96 66,120 112,78 168,132 226,62 286,114 342,73 414,135 466,64 530,112 612,95"></polyline>
+            <polyline class="beam-bolt beam-core beam-a" points="8,96 58,70 96,112 146,55 198,128 256,79 318,108 374,44 438,122 504,70 612,95"></polyline>
+            <polyline class="beam-bolt beam-core beam-b" points="8,96 66,120 112,78 168,132 226,62 286,114 342,73 414,135 466,64 530,112 612,95"></polyline>
+            <polyline class="beam-bolt beam-branch branch-one" points="198,128 178,176 224,146"></polyline>
+            <polyline class="beam-bolt beam-branch branch-two" points="374,44 414,16 402,68"></polyline>
+            <polyline class="beam-bolt beam-branch branch-three" points="466,64 506,30 500,86"></polyline>
+          </g>
+        </svg>
+      `;
+      battleGrid.appendChild(beam);
+
+      const shock = document.createElement("span");
+      shock.className = "electric-body-shock";
+      shock.style.setProperty("--impact-x", `${toX}px`);
+      shock.style.setProperty("--impact-y", `${toY}px`);
+      shock.innerHTML = `
+        <span class="shock-aura"></span>
+        <svg class="shock-body" viewBox="0 0 150 170" aria-hidden="true">
+          <polyline class="shock-arc arc-a" points="44,18 30,48 50,74 28,106 48,144"></polyline>
+          <polyline class="shock-arc arc-b" points="104,20 122,52 98,82 126,116 104,150"></polyline>
+          <polyline class="shock-arc arc-c" points="62,8 84,36 66,66 88,98 70,132 84,164"></polyline>
+          <polyline class="shock-arc arc-d" points="18,82 46,72 72,88 102,76 132,88"></polyline>
+        </svg>
+        <span class="contact-zap"></span>
+      `;
+      battleGrid.appendChild(shock);
+
+      target.classList.remove("is-electrocuted");
+      void target.offsetWidth;
+      target.classList.add("is-electrocuted");
+      window.setTimeout(() => target.classList.remove("is-electrocuted"), battleDelay(780));
+      playRealMoveAudio({ audio: "thunder-shock.ogg" });
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => beam.remove(), battleDelay(820));
+      window.setTimeout(() => shock.remove(), battleDelay(920));
+      return;
+    }
+    if (["confusion", "psyshock", "pulse", "psybeam"].includes(moveId)) {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      const wave = document.createElement("span");
+      wave.className = `psychic-wave-effect ${moveEffectClass(type)} ${moveIdClass(move)} ${crit ? "is-critical" : ""}`;
+      wave.style.setProperty("--wave-x", `${fromX}px`);
+      wave.style.setProperty("--wave-y", `${fromY}px`);
+      wave.style.setProperty("--wave-length", `${length}px`);
+      wave.style.setProperty("--wave-angle", `${angle}deg`);
+      wave.innerHTML = `
+        <span class="wave-front front-a"></span>
+        <span class="wave-front front-b"></span>
+        <span class="wave-front front-c"></span>
+        <span class="wave-front front-d"></span>
+        <span class="wave-trail"></span>
+      `;
+      battleGrid.appendChild(wave);
+
+      const impact = document.createElement("span");
+      impact.className = "psychic-body-shock";
+      impact.style.setProperty("--impact-x", `${toX}px`);
+      impact.style.setProperty("--impact-y", `${toY}px`);
+      impact.innerHTML = `
+        <span class="mind-ring ring-a"></span>
+        <span class="mind-ring ring-b"></span>
+        <span class="mind-ring ring-c"></span>
+        <span class="mind-core"></span>
+      `;
+      battleGrid.appendChild(impact);
+
+      target.classList.remove("is-psychic-hit");
+      void target.offsetWidth;
+      target.classList.add("is-psychic-hit");
+      window.setTimeout(() => target.classList.remove("is-psychic-hit"), battleDelay(860));
+      playRealMoveAudio({ audio: "calm-mind.ogg" });
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => wave.remove(), battleDelay(880));
+      window.setTimeout(() => impact.remove(), battleDelay(980));
+      return;
+    }
+    if (moveId === "vine-whip") {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      const vine = document.createElement("span");
+      vine.className = `vine-whip-effect ${moveEffectClass(type)} ${crit ? "is-critical" : ""}`;
+      vine.style.setProperty("--vine-x", `${fromX}px`);
+      vine.style.setProperty("--vine-y", `${fromY}px`);
+      vine.style.setProperty("--vine-length", `${length}px`);
+      vine.style.setProperty("--vine-angle", `${angle}deg`);
+      vine.style.setProperty("--vine-scale", useTowerStyle ? "1.5" : "1");
+      vine.innerHTML = `
+        <svg class="vine-svg" viewBox="0 0 620 210" preserveAspectRatio="none" aria-hidden="true">
+          <path class="vine-shadow vine-one" pathLength="1" d="M14 116 C88 72 164 64 244 94 C326 124 390 80 500 84 C548 86 584 102 612 122"></path>
+          <path class="vine-shadow vine-two" pathLength="1" d="M12 118 C90 140 170 150 246 122 C326 92 392 134 498 130 C548 128 584 112 612 90"></path>
+          <path class="vine-main vine-one" pathLength="1" d="M14 116 C88 72 164 64 244 94 C326 124 390 80 500 84 C548 86 584 102 612 122"></path>
+          <path class="vine-main vine-two" pathLength="1" d="M12 118 C90 140 170 150 246 122 C326 92 392 134 498 130 C548 128 584 112 612 90"></path>
+          <path class="vine-highlight vine-one" pathLength="1" d="M14 116 C88 72 164 64 244 94 C326 124 390 80 500 84 C548 86 584 102 612 122"></path>
+          <path class="vine-highlight vine-two" pathLength="1" d="M12 118 C90 140 170 150 246 122 C326 92 392 134 498 130 C548 128 584 112 612 90"></path>
+        </svg>
+        <i class="leaf l1"></i>
+        <i class="leaf l2"></i>
+        <i class="leaf l3"></i>
+        <i class="leaf l4"></i>
+        <span class="whip-tip tip-one"></span>
+        <span class="whip-tip tip-two"></span>
+        <span class="vine-impact">
+          <span class="impact-flash"></span>
+          <span class="hit-mark mark-one"></span>
+          <span class="hit-mark mark-two"></span>
+          <i class="impact-leaf il1"></i>
+          <i class="impact-leaf il2"></i>
+          <i class="impact-leaf il3"></i>
+          <i class="impact-leaf il4"></i>
+        </span>
+      `;
+      battleGrid.appendChild(vine);
+
+      target.classList.remove("is-vine-whipped");
+      void target.offsetWidth;
+      target.classList.add("is-vine-whipped");
+      window.setTimeout(() => target.classList.remove("is-vine-whipped"), battleDelay(900));
+      playRealMoveAudio({ audio: "vine-whip.ogg" });
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => vine.remove(), battleDelay(1220));
+      return;
+    }
+    if (moveId === "petal-storm") {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const length = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+      const leaves = document.createElement("span");
+      leaves.className = `leaf-stream-effect ${moveEffectClass(type)} ${crit ? "is-critical" : ""}`;
+      leaves.style.setProperty("--leaf-x", `${fromX}px`);
+      leaves.style.setProperty("--leaf-y", `${fromY}px`);
+      leaves.style.setProperty("--leaf-length", `${length}px`);
+      leaves.style.setProperty("--leaf-angle", `${angle}deg`);
+      leaves.style.setProperty("--leaf-scale", useTowerStyle ? "1.45" : "1");
+      leaves.innerHTML = `
+        <span class="wind-ribbon"></span>
+        <i class="leaf l1"></i>
+        <i class="leaf l2"></i>
+        <i class="leaf l3"></i>
+        <i class="leaf l4"></i>
+        <i class="leaf l5"></i>
+        <i class="leaf l6"></i>
+        <i class="leaf l7"></i>
+        <i class="leaf l8"></i>
+        <i class="leaf l9"></i>
+        <i class="leaf l10"></i>
+        <i class="leaf l11"></i>
+        <i class="leaf l12"></i>
+      `;
+      battleGrid.appendChild(leaves);
+
+      const impact = document.createElement("span");
+      impact.className = "leaf-impact-effect";
+      impact.style.setProperty("--impact-x", `${toX}px`);
+      impact.style.setProperty("--impact-y", `${toY}px`);
+      impact.style.setProperty("--leaf-scale", useTowerStyle ? "1.45" : "1");
+      impact.innerHTML = `
+        <i class="cut c1"></i>
+        <i class="cut c2"></i>
+        <i class="cut c3"></i>
+        <i class="cut c4"></i>
+        <i class="leaf burst b1"></i>
+        <i class="leaf burst b2"></i>
+        <i class="leaf burst b3"></i>
+        <i class="leaf burst b4"></i>
+        <i class="leaf burst b5"></i>
+        <i class="leaf burst b6"></i>
+      `;
+      battleGrid.appendChild(impact);
+
+      target.classList.remove("is-leaf-stormed");
+      void target.offsetWidth;
+      target.classList.add("is-leaf-stormed");
+      window.setTimeout(() => target.classList.remove("is-leaf-stormed"), battleDelay(880));
+      playRealMoveAudio({ audio: "sleep-powder.ogg" });
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => leaves.remove(), battleDelay(1040));
+      window.setTimeout(() => impact.remove(), battleDelay(1120));
+      return;
+    }
+    if (moveId === "surf") {
+      const surf = document.createElement("span");
+      surf.className = `surf-wave-effect ${moveEffectClass(type)} ${crit ? "is-critical" : ""}`;
+      surf.style.setProperty("--impact-x", `${toX}px`);
+      surf.style.setProperty("--impact-y", `${toY}px`);
+      surf.style.setProperty("--surf-scale", useTowerStyle ? "1.75" : "1");
+      surf.innerHTML = `
+        <span class="surf-water-pool"></span>
+        <span class="surf-wave-break">
+          <svg class="surf-sea-wave" viewBox="0 0 220 150" aria-hidden="true">
+            <path class="surf-wave-shape shadow" d="M8 132 C34 108 62 98 96 104 C128 110 152 106 174 86 C194 68 196 46 174 36 C197 28 215 46 216 74 C218 110 184 137 130 141 C86 144 47 135 8 132 Z"></path>
+            <path class="surf-wave-shape body" d="M8 132 C34 108 62 98 96 104 C128 110 152 106 174 86 C194 68 196 46 174 36 C197 28 215 46 216 74 C218 110 184 137 130 141 C86 144 47 135 8 132 Z"></path>
+            <path class="surf-wave-shape light" d="M24 126 C58 108 88 111 116 116 C151 122 180 106 210 82 C200 116 166 138 121 139 C82 140 52 132 24 126 Z"></path>
+            <path class="surf-foam crest" d="M151 38 C164 19 198 25 209 55 C195 47 184 50 176 62 C164 80 139 80 119 68 C136 62 155 54 151 38 Z"></path>
+            <path class="surf-foam lip" d="M54 100 C88 78 120 87 146 84 C163 82 174 74 183 63"></path>
+            <path class="surf-foam base" d="M18 132 C55 120 83 132 118 132 C151 132 178 121 210 104"></path>
+            <circle class="surf-foam-dot fd1" cx="158" cy="47" r="7"></circle>
+            <circle class="surf-foam-dot fd2" cx="178" cy="58" r="5"></circle>
+            <circle class="surf-foam-dot fd3" cx="128" cy="64" r="4"></circle>
+            <circle class="surf-foam-dot fd4" cx="68" cy="108" r="5"></circle>
+          </svg>
+        </span>
+        <span class="surf-wet-impact">
+          <span class="wet-sheen"></span>
+          <i class="water-stream s1"></i>
+          <i class="water-stream s2"></i>
+          <i class="water-stream s3"></i>
+          <i class="water-stream s4"></i>
+          <i class="water-drop d1"></i>
+          <i class="water-drop d2"></i>
+          <i class="water-drop d3"></i>
+          <i class="water-drop d4"></i>
+          <i class="water-drop d5"></i>
+          <i class="water-drop d6"></i>
+        </span>
+      `;
+      battleGrid.appendChild(surf);
+
+      target.classList.remove("is-surf-hit");
+      void target.offsetWidth;
+      target.classList.add("is-surf-hit");
+      window.setTimeout(() => target.classList.remove("is-surf-hit"), battleDelay(980));
+      playRealMoveAudio({ audio: "reflect.ogg" });
+      battleGrid.classList.remove("is-battle-flash", "is-battle-critical");
+      void battleGrid.offsetWidth;
+      battleGrid.classList.add(crit ? "is-battle-critical" : "is-battle-flash");
+      window.setTimeout(() => battleGrid.classList.remove("is-battle-flash", "is-battle-critical"), battleDelay(crit ? 520 : 320));
+      window.setTimeout(() => surf.remove(), battleDelay(1220));
+      return;
+    }
     if (realAnim) {
       const effect = document.createElement("span");
       const variantClass = realAnim.variant ? ` real-variant-${String(realAnim.variant).replace(/[^a-z0-9-]/gi, "").toLowerCase()}` : "";

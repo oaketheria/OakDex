@@ -1,0 +1,182 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #07131e;
+  font-family: Arial, sans-serif;
+}
+
+.preview-stage {
+  width: min(920px, 100vw);
+  padding: 20px;
+}
+
+.battle-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 4px solid #0b1020;
+  background:
+    radial-gradient(ellipse at 22% 72%, rgba(238, 252, 255, 0.96) 0 13%, transparent 14%),
+    radial-gradient(ellipse at 78% 36%, rgba(238, 252, 255, 0.96) 0 13%, transparent 14%),
+    linear-gradient(180deg, #c8f3ff 0 28%, #77c4e8 29% 52%, #3975ad 53% 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+
+.pokemon {
+  position: absolute;
+  z-index: 4;
+  width: 180px;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.pokemon img {
+  width: 150px;
+  max-height: 150px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 10px 0 rgba(0, 0, 0, 0.24));
+}
+
+.attacker {
+  left: 14%;
+  bottom: 18%;
+  animation: attacker-cold-pulse 1000ms ease-in-out infinite;
+}
+
+.target {
+  right: 14%;
+  top: 16%;
+  animation: target-freeze-hit 520ms ease-in-out infinite;
+}
+
+.target img {
+  animation: target-frosted 1100ms ease-in-out infinite;
+}
+
+.blizzard-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  filter: saturate(1.12) contrast(1.08) drop-shadow(0 0 12px rgba(202, 248, 255, 0.7));
+}
+
+.freeze-impact {
+  position: absolute;
+  right: 14%;
+  top: 16%;
+  z-index: 9;
+  width: 160px;
+  height: 170px;
+  pointer-events: none;
+  transform: translate(20%, 0);
+  filter: drop-shadow(0 0 14px rgba(202,248,255,0.8));
+}
+
+.frost-aura {
+  position: absolute;
+  inset: 10px 18px;
+  border-radius: 48% 48% 44% 44%;
+  background:
+    radial-gradient(ellipse, rgba(255,255,255,0.52) 0 14%, rgba(184,240,255,0.42) 15% 54%, transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.3), rgba(88,190,255,0.16));
+  box-shadow: inset 0 0 22px rgba(255,255,255,0.5), 0 0 24px rgba(142,224,255,0.55);
+  opacity: 0;
+  animation: frost-aura-pulse 1100ms ease-out infinite;
+}
+
+.ice-shard {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 48px;
+  background: linear-gradient(180deg, #ffffff 0 18%, #b8f0ff 19% 62%, rgba(65,154,255,0.24) 63% 100%);
+  clip-path: polygon(50% 0, 100% 34%, 66% 100%, 34% 100%, 0 34%);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  animation: ice-shard-pop 1100ms ease-out infinite;
+}
+
+.is1 { --angle: -56deg; --dist: 52px; animation-delay: 80ms; }
+.is2 { --angle: -28deg; --dist: 44px; animation-delay: 160ms; }
+.is3 { --angle: 8deg; --dist: 56px; animation-delay: 40ms; }
+.is4 { --angle: 38deg; --dist: 46px; animation-delay: 220ms; }
+.is5 { --angle: 72deg; --dist: 58px; animation-delay: 300ms; }
+.is6 { --angle: 118deg; --dist: 42px; animation-delay: 360ms; }
+
+@keyframes frost-aura-pulse {
+  0%, 18% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+  46%, 78% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes ice-shard-pop {
+  0%, 24% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0.2);
+  }
+  46% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -0.55)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -1)) scale(0.72);
+  }
+}
+
+@keyframes attacker-cold-pulse {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(5px, -2px);
+  }
+}
+
+@keyframes target-freeze-hit {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  35% {
+    transform: translate(-3px, -2px);
+  }
+  70% {
+    transform: translate(4px, 2px);
+  }
+}
+
+@keyframes target-frosted {
+  0%, 100% {
+    filter: drop-shadow(0 10px 0 rgba(0,0,0,0.24)) saturate(1);
+  }
+  42%, 78% {
+    filter:
+      drop-shadow(0 10px 0 rgba(0,0,0,0.24))
+      drop-shadow(0 0 14px rgba(202,248,255,0.9))
+      brightness(1.22)
+      saturate(0.72);
+  }
+}

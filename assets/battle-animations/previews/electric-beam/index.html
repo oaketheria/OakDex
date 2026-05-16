@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview - Raio Continuo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="preview-stage">
+    <section class="battle-scene" aria-label="Previa de golpe raio continuo">
+      <div class="pokemon attacker">
+        <img src="https://play.pokemonshowdown.com/sprites/ani/pikachu.gif" alt="Pikachu atacante">
+      </div>
+
+      <div class="pokemon target">
+        <img src="https://play.pokemonshowdown.com/sprites/ani/squirtle.gif" alt="Squirtle alvo">
+        <span class="electrocuted-aura"></span>
+        <svg class="body-shock" viewBox="0 0 150 170" aria-hidden="true">
+          <polyline class="body-arc arc-a" points="44,18 30,48 50,74 28,106 48,144"></polyline>
+          <polyline class="body-arc arc-b" points="104,20 122,52 98,82 126,116 104,150"></polyline>
+          <polyline class="body-arc arc-c" points="62,8 84,36 66,66 88,98 70,132 84,164"></polyline>
+          <polyline class="body-arc arc-d" points="18,82 46,72 72,88 102,76 132,88"></polyline>
+        </svg>
+        <span class="shock-spark s1"></span>
+        <span class="shock-spark s2"></span>
+        <span class="shock-spark s3"></span>
+        <span class="shock-spark s4"></span>
+      </div>
+
+      <svg class="electric-beam-svg" viewBox="0 0 620 190" aria-hidden="true">
+        <defs>
+          <filter id="beam-glow" x="-20%" y="-80%" width="140%" height="260%">
+            <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
+            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 1  0 1 0 0 .86  0 0 1 0 .18  0 0 0 1 0" result="gold"></feColorMatrix>
+            <feMerge>
+              <feMergeNode in="gold"></feMergeNode>
+              <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <g class="beam-lines" filter="url(#beam-glow)">
+          <polyline class="bolt bolt-wide a" points="8,96 58,70 96,112 146,55 198,128 256,79 318,108 374,44 438,122 504,70 612,95"></polyline>
+          <polyline class="bolt bolt-wide b" points="8,96 66,120 112,78 168,132 226,62 286,114 342,73 414,135 466,64 530,112 612,95"></polyline>
+          <polyline class="bolt bolt-core a" points="8,96 58,70 96,112 146,55 198,128 256,79 318,108 374,44 438,122 504,70 612,95"></polyline>
+          <polyline class="bolt bolt-core b" points="8,96 66,120 112,78 168,132 226,62 286,114 342,73 414,135 466,64 530,112 612,95"></polyline>
+          <polyline class="bolt branch branch-one" points="198,128 178,176 224,146"></polyline>
+          <polyline class="bolt branch branch-two" points="374,44 414,16 402,68"></polyline>
+          <polyline class="bolt branch branch-three" points="466,64 506,30 500,86"></polyline>
+        </g>
+      </svg>
+      <span class="electric-impact">
+        <i style="--shard:0"></i>
+        <i style="--shard:1"></i>
+        <i style="--shard:2"></i>
+        <i style="--shard:3"></i>
+        <i style="--shard:4"></i>
+        <i style="--shard:5"></i>
+        <i style="--shard:6"></i>
+        <i style="--shard:7"></i>
+      </span>
+    </section>
+  </main>
+</body>
+</html>
