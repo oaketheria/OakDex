@@ -1036,6 +1036,7 @@
   let draftTurnCountdownTimer = null;
   let draftMatchClockTimer = null;
   let draftAuthWaiter = null;
+  let draftHistoryViewRows = null;
   const DRAFT_HISTORY_KEY = "oak_rogue_draft_history_v1";
   const DRAFT_RANK_KEY = "oak_rogue_draft_rank_v1";
   const DRAFT_AUTH_KEY = "oak_rogue_draft_auth_v1";
@@ -3339,9 +3340,43 @@
     document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
   }
 
-  function showDraftHistory() {
-    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
-    const rank = draftRankState();
+  async function showDraftHistory() {
+    let history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    let rank = draftRankState();
+    let sourceLabel = history.length ? "Clique em uma partida para abrir o resultado final salvo." : "Nenhuma partida salva ainda.";
+    if (draftAuthToken()) {
+      try {
+        const [mePayload, historyPayload] = await Promise.all([
+          draftApi("/api/me"),
+          draftApi("/api/history"),
+        ]);
+        const user = mePayload.user || {};
+        rank = {
+          points: user.points || 0,
+          wins: user.wins || 0,
+          losses: user.losses || 0,
+          streak: user.streak || 0,
+          tier: draftRankTier(user.points || 0),
+        };
+        history = (Array.isArray(historyPayload.rows) ? historyPayload.rows : []).map((entry) => ({
+          id: entry.id,
+          date: entry.created_at,
+          casual: false,
+          won: !!entry.won,
+          score: { me: entry.score_me || 0, rival: entry.score_rival || 0 },
+          rival: entry.rival_nick || "Rival",
+          rankDelta: entry.rank_delta || 0,
+          points: entry.points_after || 0,
+          durationMs: entry.duration_ms || 0,
+          arena: entry.arena_name || "",
+          onlineSummary: true,
+        }));
+        sourceLabel = history.length ? "Histórico ranqueado salvo no servidor." : "Nenhuma partida ranqueada salva no servidor.";
+      } catch (error) {
+        sourceLabel = `${error.message || "Histórico online indisponível."} Mostrando histórico local deste navegador.`;
+      }
+    }
+    draftHistoryViewRows = history;
     const formatDate = (date) => {
       if (!date) return "sem data";
       try {
@@ -3352,7 +3387,7 @@
     };
     $("choice-kicker").textContent = "Histórico";
     $("choice-title").textContent = "Draft Battle";
-    $("choice-copy").textContent = history.length ? "Clique em uma partida para abrir o resultado final salvo." : "Nenhuma partida salva ainda.";
+    $("choice-copy").textContent = sourceLabel;
     $("choice-grid").innerHTML = `
       <div class="draft-history-panel">
         <div class="draft-history-summary">
@@ -3366,9 +3401,9 @@
               <span class="${entry.won ? "is-win" : "is-loss"}">${entry.won ? "Vitória" : "Derrota"}</span>
               <strong>${entry.score?.me || 0} x ${entry.score?.rival || 0} vs ${entry.rival || "Rival"}</strong>
               <small>${formatDate(entry.date)}</small>
-              <p>${formatDraftDuration(entry.durationMs || entry.result?.durationMs || 0)} ? ${entry.casual ? "Casual" : `MVP ${entry.mvp?.name || "-"} / ${entry.rankDelta > 0 ? "+" : ""}${entry.rankDelta || 0} pts`}</p>
+              <p>${formatDraftDuration(entry.durationMs || entry.result?.durationMs || 0)} - ${entry.casual ? "Casual" : entry.onlineSummary ? `${entry.arena || "Arena"} / ${entry.rankDelta > 0 ? "+" : ""}${entry.rankDelta || 0} pts` : `MVP ${entry.mvp?.name || "-"} / ${entry.rankDelta > 0 ? "+" : ""}${entry.rankDelta || 0} pts`}</p>
             </button>
-          `).join("") || "<p>Jogue uma partida para preencher o historico.</p>"}
+          `).join("") || "<p>Jogue uma partida para preencher o histórico.</p>"}
         </div>
         <div class="draft-build-footer">
           <span>${rank.tier || draftRankTier(rank.points)} - ${rank.points || 0} pts</span>
@@ -3381,7 +3416,7 @@
   }
 
   function showDraftHistoryDetail(index) {
-    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    const history = draftHistoryViewRows || draftStorageRead(DRAFT_HISTORY_KEY, []);
     const entry = history[index];
     if (!entry) return showDraftHistory();
     const previous = {
@@ -3416,19 +3451,21 @@
     }
     $("choice-kicker").textContent = entry.won ? "Vitória salva" : "Derrota salva";
     $("choice-title").textContent = `${entry.score?.me || 0} x ${entry.score?.rival || 0}`;
-    $("choice-copy").textContent = "Esta partida foi salva antes do historico detalhado existir.";
+    $("choice-copy").textContent = entry.onlineSummary
+      ? "Resumo ranqueado salvo no servidor. Os detalhes completos ficam disponíveis nas partidas salvas neste navegador."
+      : "Esta partida foi salva antes do histórico detalhado existir.";
     $("choice-grid").innerHTML = `
       <div class="draft-history-panel draft-history-detail">
         <div class="draft-history-summary">
           <article><span>Rival</span><strong>${entry.rival || "Rival"}</strong><small>${entry.won ? "Vitória" : "Derrota"}</small></article>
-          <article><span>MVP</span><strong>${entry.mvp?.name || "-"}</strong><small>${entry.mvp?.dealt || 0} dano</small></article>
+          <article><span>${entry.onlineSummary ? "Arena" : "MVP"}</span><strong>${entry.onlineSummary ? entry.arena || "-" : entry.mvp?.name || "-"}</strong><small>${entry.onlineSummary ? `${entry.rankDelta > 0 ? "+" : ""}${entry.rankDelta || 0} pts` : `${entry.mvp?.dealt || 0} dano`}</small></article>
           <article><span>Duração</span><strong>${formatDraftDuration(entry.durationMs || 0)}</strong><small>${entry.points || 0} pts</small></article>
         </div>
         <div class="draft-history-old-team">
           ${(entry.team || []).map((name) => `<span>${name}</span>`).join("") || "<p>Time não registrado.</p>"}
         </div>
         <div class="draft-build-footer">
-          <span>Resumo antigo do historico.</span>
+          <span>${entry.onlineSummary ? "Resumo online da partida ranqueada." : "Resumo antigo do histórico."}</span>
           <button class="draft-confirm-button" type="button" data-action="draft-history">Voltar</button>
         </div>
       </div>
