@@ -305,6 +305,26 @@ async function authUserFromRequest(request) {
   return publicUser(rows[0]);
 }
 
+async function authUserFromToken(token = "") {
+  if (!token || !(await ensureDb())) return null;
+  if (hasSupabaseAuth()) {
+    try {
+      return await profileForAuthUser(await supabaseAuthRequest("/auth/v1/user", { token }));
+    } catch {
+      return null;
+    }
+  }
+  const payload = verifyAuthToken(token);
+  if (!payload) return null;
+  const { rows } = await dbPool.query(`
+    select u.id, u.login, u.email, u.nick, r.points, r.wins, r.losses, r.streak
+    from users u
+    left join rank_profiles r on r.user_id = u.id
+    where u.id = $1
+  `, [payload.userId]);
+  return publicUser(rows[0]);
+}
+
 function requestJson(url) {
   return new Promise((resolve, reject) => {
     https
@@ -1798,37 +1818,18 @@ function createDraftBattleServer(httpServer) {
     socket.emit("draft:ready", { playerId: socket.id });
 
     socket.on("auth:token", async (payload = {}) => {
-      const token = String(payload.token || "");
-      if (!token || !(await ensureDb())) {
-        socket.data.user = null;
-        socket.emit("auth:status", { user: null });
-        return;
-      }
-      let user = null;
-      if (hasSupabaseAuth()) {
-        try {
-          user = await profileForAuthUser(await supabaseAuthRequest("/auth/v1/user", { token }));
-        } catch {
-          user = null;
-        }
-      } else {
-        const tokenPayload = verifyAuthToken(token);
-        if (tokenPayload) {
-          const { rows } = await dbPool.query(`
-            select u.id, u.login, u.email, u.nick, r.points, r.wins, r.losses, r.streak
-            from users u
-            left join rank_profiles r on r.user_id = u.id
-            where u.id = $1
-          `, [tokenPayload.userId]);
-          user = publicUser(rows[0]);
-        }
-      }
+      const user = await authUserFromToken(String(payload.token || ""));
       socket.data.user = user;
       socket.data.playerName = user?.nick || socket.data.playerName;
       socket.emit("auth:status", { user });
     });
 
     socket.on("queue:join", async (payload = {}) => {
+      if (payload.mode !== "ai" && !socket.data.user && payload.token) {
+        const user = await authUserFromToken(String(payload.token || ""));
+        socket.data.user = user;
+        socket.emit("auth:status", { user });
+      }
       socket.data.playerName = socket.data.user?.nick || String(payload.playerName || "").trim().slice(0, 18) || "Player";
       if (payload.mode !== "ai" && !socket.data.user) {
         socket.emit("queue:status", { position: 0, message: "Entre na sua conta para jogar ranqueada contra player." });

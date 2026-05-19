@@ -1035,6 +1035,7 @@
   let draftBattleStartFallbackTimer = null;
   let draftTurnCountdownTimer = null;
   let draftMatchClockTimer = null;
+  let draftAuthWaiter = null;
   const DRAFT_HISTORY_KEY = "oak_rogue_draft_history_v1";
   const DRAFT_RANK_KEY = "oak_rogue_draft_rank_v1";
   const DRAFT_AUTH_KEY = "oak_rogue_draft_auth_v1";
@@ -2278,6 +2279,23 @@
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || "Falha na comunicação online.");
     return payload;
+  }
+
+  function waitDraftAuth(socket, timeoutMs = 5000) {
+    const token = draftAuthToken();
+    if (!token) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = (user) => {
+        if (done) return;
+        done = true;
+        if (draftAuthWaiter?.finish === finish) draftAuthWaiter = null;
+        resolve(user || null);
+      };
+      draftAuthWaiter = { finish };
+      socket.emit("auth:token", { token });
+      window.setTimeout(() => finish(draftAuthUser()), timeoutMs);
+    });
   }
 
   function saveDraftAuth(payload) {
@@ -3987,6 +4005,7 @@
     });
     draftSocket.on("auth:status", ({ user }) => {
       if (user) saveDraftAuth({ token: draftAuthToken(), user });
+      if (draftAuthWaiter) draftAuthWaiter.finish(user || null);
     });
     draftSocket.on("draft:ready", ({ playerId }) => {
       draftState.playerId = draftSocket.id || playerId;
@@ -4164,7 +4183,7 @@
     return draftSocket;
   }
 
-  function joinDraftBattleQueue(mode = "ranked") {
+  async function joinDraftBattleQueue(mode = "ranked") {
     const socket = connectDraftBattle();
     const casual = mode === "ai";
     if (!casual && !draftAuthToken()) return showDraftAuth("login", "Entre ou crie uma conta para jogar Contra Player ranqueado.");
@@ -4176,6 +4195,10 @@
       show("choice");
       document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
       return;
+    }
+    if (!casual) {
+      const user = await waitDraftAuth(socket);
+      if (!user) return showDraftAuth("login", "Sua sessão expirou. Entre novamente para jogar Contra Player ranqueado.");
     }
     $("choice-copy").textContent = casual ? "Preparando uma partida casual contra a IA." : "Aguardando outro treinador para iniciar o draft alternado.";
     $("choice-grid").innerHTML = `
