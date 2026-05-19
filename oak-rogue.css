@@ -15972,7 +15972,7 @@ body.oak-rogue-page .rogue-stage.has-draft-modal .choice-panel:has(.draft-histor
 .draft-history-row,
 .draft-history-list article {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr) 90px minmax(130px, auto);
+  grid-template-columns: 92px minmax(260px, 1fr) 118px minmax(210px, max-content);
   align-items: center;
   gap: 10px;
   width: 100%;
@@ -16013,6 +16013,7 @@ body.oak-rogue-page .rogue-stage.has-draft-modal .choice-panel:has(.draft-histor
 .draft-history-row strong {
   color: #eaf7f2;
   font-size: 0.78rem;
+  min-width: 0;
 }
 
 .draft-history-list small,
@@ -16025,6 +16026,13 @@ body.oak-rogue-page .rogue-stage.has-draft-modal .choice-panel:has(.draft-histor
 }
 
 .draft-history-row p {
+  min-width: 210px;
+  text-align: right;
+}
+
+.draft-history-row small {
+  justify-self: end;
+  min-width: 110px;
   text-align: right;
 }
 
