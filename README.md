@@ -43,6 +43,16 @@ Arquivos principais:
 - `oak-rogue.js`
 - `oak-rogue.css`
 
+Draft Battle online:
+
+- Para contas online, ranqueada e recuperação de senha, configure no Render as variáveis `DATABASE_URL`, `SUPABASE_URL` e `SUPABASE_ANON_KEY`.
+- O Supabase Auth guarda e recupera senha por e-mail; a tabela local `users` guarda apenas perfil do jogo, nick, pontos e histórico.
+- No Supabase, adicione a URL do jogo em Authentication > URL Configuration > Redirect URLs, por exemplo `https://SEU-APP.onrender.com/oak-rogue.html`.
+- Em desenvolvimento local, use também `http://127.0.0.1:5500/oak-rogue.html` como Redirect URL se for testar recuperação de senha.
+- O modo Contra IA é casual. O modo Contra Player exige conta online e salva ranking/histórico no banco.
+- A recuperação de senha aparece em `Esqueci` na tela de conta e usa o link enviado pelo Supabase para abrir `oak-rogue.html#auth=reset`.
+- O Draft usa `draft-pokemon-pools.json` e sprites locais em `assets/draft-sprites/`.
+
 Recursos:
 
 - Roguelike Pokémon com oito ginásios, Liga, mapa ramificado, NPCs por arena, eventos, treino, move tutor e evolução.

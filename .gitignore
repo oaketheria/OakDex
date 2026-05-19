@@ -17,6 +17,8 @@ tools/firered-extraction/*.sav
 
 socialrom_repo/
 _backups/
+server*.log
+server*.err
 
 # Raw animation source packs kept only for local extraction/reference
 assets/battle-animations/downloads/

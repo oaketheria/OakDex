@@ -5,5 +5,10 @@
   "description": "PokeDex com interface customizada e integracao com a PokeAPI.",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.21.0",
+    "socket.io": "^4.7.5",
+    "socket.io-client": "^4.8.3"
   }
 }

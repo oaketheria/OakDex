@@ -13,7 +13,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./mascot.css" />
-    <link rel="stylesheet" href="./oak-rogue.css?v=20260514-battle-sendout-fx" />
+    <link rel="stylesheet" href="./oak-rogue.css?v=20260518-supabase-auth-2" />
   </head>
   <body class="oak-rogue-page">
     <div class="rogue-shell">
@@ -44,12 +44,34 @@
 
           <section class="rogue-screen is-active" id="screen-title" aria-label="Inicio">
             <div class="rogue-title-scene">
+              <button class="draft-account-shortcut" id="draft-account-shortcut" type="button" data-action="draft-login">
+                <span class="draft-account-mark" aria-hidden="true">ID</span>
+                <span class="draft-account-copy">
+                  <span>Conta</span>
+                  <strong id="draft-account-shortcut-label">Entrar</strong>
+                </span>
+              </button>
               <div class="title-copy-panel">
                 <span class="rogue-kicker">Professor Oak apresenta</span>
                 <h1>Oak Rogue</h1>
                 <p>Uma rota roguelike pelos oito ginásios: escolha encontros, equipe itens, evolua no tempo certo e sobreviva aos líderes.</p>
                 <div class="run-mode-carousel" aria-label="Escolha o modo da run">
                   <div class="run-mode-grid">
+                    <article class="run-mode-card run-card-main run-card-draft" aria-label="Draft Battle">
+                      <span>
+                        <strong>Draft Battle</strong>
+                        <small>Casual contra IA ou online ranqueado.</small>
+                      </span>
+                      <ul>
+                        <li>1 contra 1 online</li>
+                        <li>6 escolhas, 1 de 3 por turno</li>
+                        <li>Batalha automática ranqueada</li>
+                      </ul>
+                      <span class="run-card-actions">
+                        <button class="run-card-primary" type="button" data-draft-battle="preview">Escolher modo</button>
+                        <button class="run-card-secondary" type="button" data-draft-battle="rules">Ver regras</button>
+                      </span>
+                    </article>
                     <article class="run-mode-card run-card-main run-card-normal" style="--run-card-image: url('assets/oak-rogue-card-normal.png');">
                       <input id="run-normal" name="run-mode" type="radio" value="normal" checked />
                       <span>
@@ -164,8 +186,11 @@
               <div class="battle-titlebar">
                 <h2 id="battle-title">Batalha</h2>
                 <p id="battle-log" aria-live="polite"></p>
+                <div id="battle-draft-bans"></div>
               </div>
               <div class="tower-vs-badge" aria-hidden="true">VS</div>
+              <aside class="draft-active-popup left" id="draft-active-left"></aside>
+              <aside class="draft-active-popup right" id="draft-active-right"></aside>
               <article class="battle-roster player" id="player-card"></article>
               <article class="battle-roster enemy" id="enemy-card"></article>
               <div class="move-grid" id="move-grid"></div>
@@ -187,6 +212,7 @@
     </div>
 
     <script src="./mascot.js"></script>
-    <script src="./oak-rogue.js?v=20260514-battle-sendout-fx"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./oak-rogue.js?v=20260518-supabase-auth-2"></script>
   </body>
 </html>

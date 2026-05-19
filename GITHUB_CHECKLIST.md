@@ -13,6 +13,8 @@ Use este checklist sempre antes de fazer commit ou push para o GitHub.
 - Confirmar que saídas locais de `tools/firered-extraction/` não serão commitadas.
 - Confirmar que `socialrom_repo/` não será commitado.
 - Confirmar que backups em `_backups/` não serão commitados.
+- Confirmar que arquivos de log locais (`server.log`, `server.err`, `server-*.log`, `server-*.err`) não serão commitados.
+- Confirmar que `.env` e valores reais de `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `JWT_SECRET` ou chaves privadas não aparecem em arquivos versionados.
 - Confirmar que arquivos grandes ou privados não aparecem como `A` no Git.
 
 ## `.gitignore` obrigatório
@@ -31,6 +33,8 @@ tools/firered-extraction/output/
 tools/firered-extraction/extracted/
 socialrom_repo/
 _backups/
+server*.log
+server*.err
 ```
 
 ## Comandos obrigatórios antes do commit
@@ -92,6 +96,13 @@ node --check info-pages.js
 node --check roms.js
 ```
 
+Se `oak-rogue.js` ou `server.js` foram alterados, rode também:
+
+```powershell
+node --check oak-rogue.js
+node --check server.js
+```
+
 ## Checagem antes de commitar
 
 Depois de `git add`, revisar:
@@ -109,10 +120,45 @@ Confirmar que a lista staged não inclui:
 - `*.bin`
 - `*.gba`
 - `*.sav`
+- `server.log`
+- `server.err`
+- `server-*.log`
+- `server-*.err`
 - ROMs comerciais
 - saídas locais de `tools/firered-extraction/`
 - `socialrom_repo/`
 - `_backups/`
+
+## Arquivos esperados na atualização do Draft Battle online
+
+Se o commit for da atualização de contas/Supabase/Draft Battle, estes arquivos podem entrar:
+
+- `README.md`
+- `GPT.md`
+- `GITHUB_CHECKLIST.md`
+- `oak-rogue.html`
+- `oak-rogue.css`
+- `oak-rogue.js`
+- `server.js`
+- `package.json`
+- `package-lock.json`
+- `draft-pokemon-pools.json`
+- `assets/draft-sprites/`
+- `tools/build-draft-pokemon-pools.js`
+- `tools/download-draft-sprites.js`
+
+Antes de subir essa atualização, conferir no Render:
+
+- `DATABASE_URL`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+
+No Supabase, conferir em `Authentication > URL Configuration > Redirect URLs`:
+
+- URL pública do Render terminando em `/oak-rogue.html`
+- opcional para teste local: `http://127.0.0.1:5500/oak-rogue.html`
+
+Não colocar valores reais dessas variáveis em README, GPT, checklist ou código.
 
 ## Commit e push
 

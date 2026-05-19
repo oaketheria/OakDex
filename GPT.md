@@ -57,8 +57,12 @@ Servidor padrão:
 - `oak-challenge.js`: lógica de runs, time/box, PokeAPI, rotas, overlay OBS, EmulatorJS direto no overlay e Pokédex integrada.
 - `oak-challenge.css`: layout do Oak Challenge, HUD de streamer, overlay OBS, painéis e tutorial.
 - `oak-rogue.html`: tela Oak Rogue com escolha de modo, mapa, batalha, escolhas, Pokédex da run e fim da expedição.
-- `oak-rogue.js`: lógica do roguelike, Nuzlocke, saves por modo, combate automático, relíquias, mapa, eventos, recrutamento, shinies, formas regionais, Torre e chefes.
+- `oak-rogue.js`: lógica do roguelike, Nuzlocke, saves por modo, combate automático, relíquias, mapa, eventos, recrutamento, shinies, formas regionais, Torre, chefes e Draft Battle.
 - `oak-rogue.css`: layout do Oak Rogue, cards de rota, batalha, popups, carrosséis, relíquias e responsividade.
+- `draft-pokemon-pools.json`: pool local do Draft Battle com Pokémon em formas finais e variações.
+- `assets/draft-sprites/`: sprites locais usados pelo Draft Battle para reduzir dependência externa.
+- `tools/build-draft-pokemon-pools.js`: gera/atualiza pools do Draft Battle.
+- `tools/download-draft-sprites.js`: baixa sprites do Draft Battle.
 - `pokedex.html`: Pokédex principal e modo embed.
 - `app.js`: lógica da Pokédex, busca, voz, cries e `postMessage`.
 - `pokedex.css`: visual da Pokédex e overrides do modo embed.
@@ -137,6 +141,23 @@ Funcionalidades principais:
 - OakBit tem tutorial específico no Oak Rogue para modos, mapa, relíquias, Pokédex da run, Torre e Nuzlocke.
 - Textos visíveis do Oak Rogue devem ficar em português revisado, com acentos e termos consistentes.
 - Validar mudanças com `node --check oak-rogue.js`.
+
+### Draft Battle online
+
+- Draft Battle fica em `oak-rogue.html`, `oak-rogue.js`, `oak-rogue.css` e usa Socket.IO em `server.js`.
+- O modo Contra IA é casual e pode funcionar sem login.
+- O modo Contra Player exige conta online e usa fila ranqueada.
+- Contas usam Supabase Auth com e-mail/senha; o servidor não deve guardar senha nova localmente.
+- A tabela local `users` guarda perfil do jogo: `auth_id`, `email`, `nick` e dados ligados ao ranking/histórico.
+- `rank_profiles` guarda pontos, vitórias, derrotas e sequência.
+- `match_history` guarda o histórico local por usuário.
+- Recuperação de senha usa Supabase Auth: `/api/auth/recover` envia e-mail e `/api/auth/update-password` troca senha após link de recuperação.
+- Variáveis esperadas no Render: `DATABASE_URL`, `SUPABASE_URL` e `SUPABASE_ANON_KEY`.
+- `JWT_SECRET` ficou apenas como fallback antigo; o fluxo principal deve validar token do Supabase.
+- No Supabase, configurar `Authentication > URL Configuration > Redirect URLs` com a URL pública do Render terminando em `/oak-rogue.html`.
+- Para testar localmente recuperação, também adicionar `http://127.0.0.1:5500/oak-rogue.html` como Redirect URL.
+- Ao alterar autenticação, validar `node --check server.js` e `node --check oak-rogue.js`.
+- Ao alterar ranking/histórico online, conferir `showDraftRanked`, `showDraftHistory`, endpoints `/api/ranked`, `/api/history` e persistência em `persistRankedResult`.
 
 ## OakDuo
 

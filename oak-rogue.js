@@ -1,16 +1,54 @@
-(function () {
+﻿(function () {
   "use strict";
 
   const SPRITE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/";
   const MINI_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
   const ANIM_BASE = "https://play.pokemonshowdown.com/sprites/ani/";
   const ANIM_SHINY_BASE = "https://play.pokemonshowdown.com/sprites/ani-shiny/";
+  const LOCAL_DRAFT_ANIM_BASE = "assets/draft-sprites/ani/";
+  const LOCAL_DRAFT_ANIM_SHINY_BASE = "assets/draft-sprites/ani-shiny/";
+  const LOCAL_DRAFT_STATIC_BASE = "assets/draft-sprites/static/";
+  const LOCAL_DRAFT_STATIC_SHINY_BASE = "assets/draft-sprites/static-shiny/";
   const ITEM_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/";
   const BADGE_BASE = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/badges/";
   const TRAINER_BASE = "https://play.pokemonshowdown.com/sprites/trainers/";
   const TRAINER_BACK_BASE = "https://play.pokemonshowdown.com/sprites/trainers-back/";
   const PLAYER_TRAINER_BACK_SPRITE = "assets/battle-animations/red-back-sheet-transparent.png";
   const API_BASE = "https://pokeapi.co/api/v2";
+  const SPRITE_SLUG_ALIASES = {
+    "great-tusk": "greattusk",
+    "scream-tail": "screamtail",
+    "brute-bonnet": "brutebonnet",
+    "flutter-mane": "fluttermane",
+    "slither-wing": "slitherwing",
+    "sandy-shocks": "sandyshocks",
+    "roaring-moon": "roaringmoon",
+    "walking-wake": "walkingwake",
+    "gouging-fire": "gougingfire",
+    "raging-bolt": "ragingbolt",
+    "iron-treads": "irontreads",
+    "iron-bundle": "ironbundle",
+    "iron-hands": "ironhands",
+    "iron-jugulis": "ironjugulis",
+    "iron-moth": "ironmoth",
+    "iron-thorns": "ironthorns",
+    "iron-valiant": "ironvaliant",
+    "iron-leaves": "ironleaves",
+    "iron-boulder": "ironboulder",
+    "iron-crown": "ironcrown",
+  };
+  const DRAFT_STATIC_ONLY_SPRITES = new Set([
+    "ironboulder",
+    "ironbundle",
+    "ironcrown",
+    "ironhands",
+    "ironjugulis",
+    "ironleaves",
+    "ironmoth",
+    "ironthorns",
+    "irontreads",
+    "ironvaliant",
+  ]);
   const NATIONAL_DEX_LIMIT = 1025;
   const MAX_HELD_ITEMS = 2;
   const BATTLE_SENDOUT_DURATION = 2360;
@@ -286,7 +324,7 @@
       leader: "Misty", trainer: "misty", badge: 2, arena: "Cascata",
       team: [
         { id: 120, name: "Staryu", types: ["Water"], hp: 82, atk: 72, def: 58, spd: 92, trait: "Corrente" },
-        { id: 121, name: "Starmie Prisma", types: ["Water", "Psychic"], hp: 115, atk: 88, def: 76, spd: 118, trait: "Refracao" }
+        { id: 121, name: "Starmie Prisma", types: ["Water", "Psychic"], hp: 115, atk: 88, def: 76, spd: 118, trait: "Refração" }
       ]
     },
     {
@@ -310,11 +348,11 @@
       team: [
         { id: 109, name: "Koffing", types: ["Poison"], hp: 118, atk: 86, def: 102, spd: 58, trait: "Gas" },
         { id: 89, name: "Muk", types: ["Poison"], hp: 152, atk: 104, def: 92, spd: 54, trait: "Lodo" },
-        { id: 110, name: "Weezing Toxico", types: ["Poison"], hp: 142, atk: 98, def: 112, spd: 66, trait: "Nevoa" }
+        { id: 110, name: "Weezing Toxico", types: ["Poison"], hp: 142, atk: 98, def: 112, spd: 66, trait: "Névoa" }
       ]
     },
     {
-      leader: "Sabrina", trainer: "sabrina", badge: 6, arena: "Pantano",
+      leader: "Sabrina", trainer: "sabrina", badge: 6, arena: "Pântano",
       team: [
         { id: 64, name: "Kadabra", types: ["Psychic"], hp: 100, atk: 112, def: 54, spd: 118, trait: "Dobra" },
         { id: 122, name: "Mr. Mime", types: ["Psychic", "Fairy"], hp: 118, atk: 102, def: 74, spd: 102, trait: "Barreira" },
@@ -371,7 +409,7 @@
     {
       leader: "Lance", trainer: "lance", arena: "Dragao",
       team: [
-        { id: 130, name: "Gyarados", types: ["Water", "Flying"], hp: 172, atk: 154, def: 108, spd: 112, trait: "Furia" },
+        { id: 130, name: "Gyarados", types: ["Water", "Flying"], hp: 172, atk: 154, def: 108, spd: 112, trait: "Fúria" },
         { id: 148, name: "Dragonair", types: ["Dragon"], hp: 150, atk: 128, def: 104, spd: 118, trait: "Escalar" },
         { id: 142, name: "Aerodactyl", types: ["Rock", "Flying"], hp: 158, atk: 150, def: 98, spd: 170, trait: "Rapina" },
         { id: 149, name: "Dragonite Elite", types: ["Dragon", "Flying"], hp: 206, atk: 178, def: 124, spd: 112, trait: "Imperio" }
@@ -384,7 +422,7 @@
         { id: 65, name: "Alakazam Campeao", types: ["Psychic"], hp: 158, atk: 172, def: 82, spd: 166, trait: "Mente" },
         { id: 112, name: "Rhydon Campeao", types: ["Ground", "Rock"], hp: 206, atk: 176, def: 142, spd: 72, trait: "Terremoto" },
         { id: 59, name: "Arcanine Campeao", types: ["Fire"], hp: 188, atk: 164, def: 112, spd: 132, trait: "Chama" },
-        { id: 9, name: "Blastoise Campeao", types: ["Water"], hp: 214, atk: 158, def: 150, spd: 104, trait: "Canhao" }
+        { id: 9, name: "Blastoise Campeao", types: ["Water"], hp: 214, atk: 158, def: 150, spd: 104, trait: "Canhão" }
       ]
     }
   ];
@@ -411,7 +449,7 @@
     { id: "choice-specs", sprite: "choice-specs", name: "Choice Specs", text: "+16% de dano final.", kind: "damage" },
     { id: "expert-belt", sprite: "expert-belt", name: "Faixa Expert", text: "+16% de dano final.", kind: "damage" },
     { id: "black-belt", sprite: "black-belt", name: "Black Belt", text: "+14% de ataque.", kind: "atk" },
-    { id: "mystic-water", sprite: "mystic-water", name: "Agua Mistica", text: "+14% de ataque.", kind: "atk" },
+    { id: "mystic-water", sprite: "mystic-water", name: "Água Mística", text: "+14% de ataque.", kind: "atk" },
     { id: "charcoal", sprite: "charcoal", name: "Carvao", text: "+14% de ataque.", kind: "atk" },
     { id: "miracle-seed", sprite: "miracle-seed", name: "Semente Milagrosa", text: "+14% de ataque.", kind: "atk" },
     { id: "magnet", sprite: "magnet", name: "Ima", text: "+14% de ataque.", kind: "atk" },
@@ -519,7 +557,7 @@
       { id: "earth-power", name: "Poder da Terra", type: "Ground", power: 1.36, cost: 2, level: 28 }
     ],
     Fighting: [
-      { id: "karate-chop", name: "Golpe Karate", type: "Fighting", power: 1.02, cost: 0, level: 1 },
+      { id: "karate-chop", name: "Golpe Karaté", type: "Fighting", power: 1.02, cost: 0, level: 1 },
       { id: "detect", name: "Detectar", type: "Fighting", power: 1.06, cost: 0, extra: 0.12, level: 6 },
       { id: "low-kick", name: "Chute Baixo", type: "Fighting", power: 1.12, cost: 1, level: 10 },
       { id: "double-kick", name: "Chute Duplo", type: "Fighting", power: 1.2, cost: 1, extra: 0.25, level: 18 },
@@ -574,7 +612,7 @@
       { id: "headbutt", name: "Cabecada", type: "Normal", power: 1.16, cost: 1, level: 14 },
       { id: "false-swipe", name: "Falso Corte", type: "Normal", power: 1.2, cost: 1, level: 18 },
       { id: "body-slam", name: "Corpo Pesado", type: "Normal", power: 1.24, cost: 1, level: 22 }
-      ,{ id: "flail", name: "Debater", type: "Normal", power: 1.3, cost: 1, level: 26 }
+      ,{ id: "flail", name: "Debatér", type: "Normal", power: 1.3, cost: 1, level: 26 }
       ,{ id: "endure", name: "Resistir", type: "Normal", power: 1.34, cost: 2, level: 30 }
       ,{ id: "metronome", name: "Metronomo", type: "Normal", power: 1.38, cost: 2, extra: 0.22, level: 32 }
     ],
@@ -582,7 +620,7 @@
       { id: "metal-claw", name: "Garra Metal", type: "Steel", power: 1.02, cost: 0, level: 1 },
       { id: "bullet-punch", name: "Soco Bala", type: "Steel", power: 1.12, cost: 1, level: 10 },
       { id: "iron-head", name: "Cabeca de Ferro", type: "Steel", power: 1.22, cost: 1, level: 16 },
-      { id: "flash-cannon", name: "Canhao Flash", type: "Steel", power: 1.38, cost: 2, level: 28 }
+      { id: "flash-cannon", name: "Canhão Flash", type: "Steel", power: 1.38, cost: 2, level: 28 }
     ],
     Fairy: [
       { id: "fairy-wind", name: "Vento Fada", type: "Fairy", power: 0.94, cost: 0, level: 1 },
@@ -623,7 +661,7 @@
     specialForm(20110, "weezing-galar", "Weezing de Galar", ["Poison", "Fairy"], 65, 95, 120, 60, "Chaminé Real"),
     specialForm(20215, "sneasel-hisui", "Sneasel de Hisui", ["Fighting", "Poison"], 55, 95, 55, 115, "Escalada"),
     specialForm(20019, "rattata-alola", "Rattata de Alola", ["Dark", "Normal"], 30, 56, 35, 72, "Noturno"),
-    specialForm(20020, "raticate-alola", "Raticate de Alola", ["Dark", "Normal"], 75, 71, 70, 77, "Chefe Noturno"),
+    specialForm(20020, "raticate-alola", "Raticaté de Alola", ["Dark", "Normal"], 75, 71, 70, 77, "Chefe Noturno"),
     specialForm(20027.1, "sandshrew-alola", "Sandshrew de Alola", ["Ice", "Steel"], 50, 75, 90, 40, "Iglu"),
     specialForm(20028.1, "sandslash-alola", "Sandslash de Alola", ["Ice", "Steel"], 75, 100, 120, 65, "Garras Geladas"),
     specialForm(20050, "diglett-alola", "Diglett de Alola", ["Ground", "Steel"], 10, 55, 40, 90, "Cabelo Metal"),
@@ -636,7 +674,7 @@
     specialForm(20865, "sirfetchd", "Sirfetch'd", ["Fighting"], 62, 135, 95, 65, "Cavaleiro"),
     specialForm(20199, "slowpoke-galar", "Slowpoke de Galar", ["Psychic"], 90, 65, 65, 15, "Tempero"),
     specialForm(20080, "slowbro-galar", "Slowbro de Galar", ["Poison", "Psychic"], 95, 100, 95, 30, "Canhão Tóxico"),
-    specialForm(20199.1, "slowking-galar", "Slowking de Galar", ["Poison", "Psychic"], 95, 110, 95, 30, "Poção Real"),
+    specialForm(20199.1, "slowking-galar", "Slowking de Galar", ["Poison", "Psychic"], 95, 110, 95, 30, "Poço Real"),
     specialForm(20122, "mr-mime-galar", "Mr. Mime de Galar", ["Ice", "Psychic"], 50, 90, 75, 100, "Sapateado"),
     specialForm(20866, "mr-rime", "Mr. Rime", ["Ice", "Psychic"], 80, 110, 85, 70, "Mímico Gelado"),
     specialForm(20144, "articuno-galar", "Articuno de Galar", ["Psychic", "Flying"], 90, 110, 95, 95, "Olhar Congelante"),
@@ -690,7 +728,7 @@
     4: { into: { id: 5, name: "Charmeleon", types: ["Fire"], hp: 58, atk: 72, def: 58, spd: 80, trait: "Pressão" }, level: 16 },
     5: { into: { id: 6, name: "Charizard", types: ["Fire", "Flying"], hp: 78, atk: 96, def: 78, spd: 100, trait: "Inferno" }, level: 36 },
     7: { into: { id: 8, name: "Wartortle", types: ["Water"], hp: 66, atk: 63, def: 80, spd: 58, trait: "Guarda" }, level: 16 },
-    8: { into: { id: 9, name: "Blastoise", types: ["Water"], hp: 84, atk: 88, def: 105, spd: 78, trait: "Canhao" }, level: 36 },
+    8: { into: { id: 9, name: "Blastoise", types: ["Water"], hp: 84, atk: 88, def: 105, spd: 78, trait: "Canhão" }, level: 36 },
     25: { into: { id: 26, name: "Raichu", types: ["Electric"], hp: 66, atk: 90, def: 55, spd: 110, trait: "Voltagem" }, stone: "thunder" },
     27: { into: { id: 28, name: "Sandslash", types: ["Ground"], hp: 75, atk: 100, def: 110, spd: 65, trait: "Areia" }, level: 22 },
     37: { into: { id: 38, name: "Ninetales", types: ["Fire"], hp: 73, atk: 90, def: 75, spd: 100, trait: "Raposa" }, stone: "fire" },
@@ -701,7 +739,7 @@
     44: {
       options: [
         { into: { id: 45, name: "Vileplume", types: ["Grass", "Poison"], hp: 75, atk: 100, def: 85, spd: 50, trait: "Esporos" }, stone: "leaf" },
-        { into: { id: 182, name: "Bellossom", types: ["Grass"], hp: 75, atk: 90, def: 95, spd: 50, trait: "Danca" }, stone: "sun" }
+        { into: { id: 182, name: "Bellossom", types: ["Grass"], hp: 75, atk: 90, def: 95, spd: 50, trait: "Dança" }, stone: "sun" }
       ],
       stone: "choice"
     },
@@ -732,7 +770,7 @@
     92: { into: { id: 93, name: "Haunter", types: ["Ghost", "Poison"], hp: 45, atk: 105, def: 45, spd: 95, trait: "Assombro" }, level: 25 },
     93: { into: { id: 94, name: "Gengar", types: ["Ghost", "Poison"], hp: 60, atk: 130, def: 60, spd: 110, trait: "Assombro" }, level: 40 },
     96: { into: { id: 97, name: "Hypno", types: ["Psychic"], hp: 85, atk: 83, def: 80, spd: 67, trait: "Hipnose" }, level: 26 },
-    98: { into: { id: 99, name: "Kingler", types: ["Water"], hp: 55, atk: 130, def: 115, spd: 75, trait: "Pinca" }, level: 28 },
+    98: { into: { id: 99, name: "Kingler", types: ["Water"], hp: 55, atk: 130, def: 115, spd: 75, trait: "Pinça" }, level: 28 },
     100: { into: { id: 101, name: "Electrode", types: ["Electric"], hp: 60, atk: 80, def: 70, spd: 150, trait: "Estouro" }, level: 30 },
     102: { into: { id: 103, name: "Exeggutor", types: ["Grass", "Psychic"], hp: 95, atk: 125, def: 85, spd: 55, trait: "Oraculo" }, stone: "leaf" },
     104: { into: { id: 105, name: "Marowak", types: ["Ground"], hp: 60, atk: 80, def: 110, spd: 45, trait: "Osso" }, level: 28 },
@@ -750,18 +788,18 @@
     155: { into: { id: 156, name: "Quilava", types: ["Fire"], hp: 58, atk: 75, def: 58, spd: 80, trait: "Brasa" }, level: 14 },
     156: { into: { id: 157, name: "Typhlosion", types: ["Fire"], hp: 78, atk: 109, def: 78, spd: 100, trait: "Erupcao" }, level: 36 },
     158: { into: { id: 159, name: "Croconaw", types: ["Water"], hp: 65, atk: 80, def: 80, spd: 58, trait: "Mordida" }, level: 18 },
-    159: { into: { id: 160, name: "Feraligatr", types: ["Water"], hp: 85, atk: 105, def: 100, spd: 78, trait: "Mandibula" }, level: 30 },
+    159: { into: { id: 160, name: "Feraligatr", types: ["Water"], hp: 85, atk: 105, def: 100, spd: 78, trait: "Mandíbula" }, level: 30 },
     252: { into: { id: 253, name: "Grovyle", types: ["Grass"], hp: 50, atk: 85, def: 45, spd: 95, trait: "Agilidade" }, level: 16 },
-    253: { into: { id: 254, name: "Sceptile", types: ["Grass"], hp: 70, atk: 105, def: 65, spd: 120, trait: "Lamina" }, level: 36 },
+    253: { into: { id: 254, name: "Sceptile", types: ["Grass"], hp: 70, atk: 105, def: 65, spd: 120, trait: "Lâmina" }, level: 36 },
     255: { into: { id: 256, name: "Combusken", types: ["Fire", "Fighting"], hp: 60, atk: 85, def: 60, spd: 55, trait: "Chama" }, level: 16 },
     256: { into: { id: 257, name: "Blaziken", types: ["Fire", "Fighting"], hp: 80, atk: 120, def: 70, spd: 80, trait: "Impeto" }, level: 36 },
     258: { into: { id: 259, name: "Marshtomp", types: ["Water", "Ground"], hp: 70, atk: 85, def: 70, spd: 50, trait: "Lama" }, level: 16 },
-    259: { into: { id: 260, name: "Swampert", types: ["Water", "Ground"], hp: 100, atk: 110, def: 90, spd: 60, trait: "Pantano" }, level: 36 },
+    259: { into: { id: 260, name: "Swampert", types: ["Water", "Ground"], hp: 100, atk: 110, def: 90, spd: 60, trait: "Pântano" }, level: 36 },
     280: { into: { id: 281, name: "Kirlia", types: ["Psychic", "Fairy"], hp: 38, atk: 65, def: 45, spd: 50, trait: "Sincronia" }, level: 20 },
     281: {
       options: [
         { into: { id: 282, name: "Gardevoir", types: ["Psychic", "Fairy"], hp: 68, atk: 100, def: 80, spd: 80, trait: "Graca Psi" }, level: 30 },
-        { into: { id: 475, name: "Gallade", types: ["Psychic", "Fighting"], hp: 68, atk: 125, def: 85, spd: 80, trait: "Lamina Psi" }, level: 30 }
+        { into: { id: 475, name: "Gallade", types: ["Psychic", "Fighting"], hp: 68, atk: 125, def: 85, spd: 80, trait: "Lâmina Psi" }, level: 30 }
       ],
       level: 30
     },
@@ -776,7 +814,7 @@
     498: { into: { id: 499, name: "Pignite", types: ["Fire", "Fighting"], hp: 90, atk: 93, def: 55, spd: 55, trait: "Carga" }, level: 17 },
     499: { into: { id: 500, name: "Emboar", types: ["Fire", "Fighting"], hp: 110, atk: 123, def: 65, spd: 65, trait: "Investida" }, level: 36 },
     501: { into: { id: 502, name: "Dewott", types: ["Water"], hp: 75, atk: 75, def: 60, spd: 60, trait: "Concha" }, level: 17 },
-    502: { into: { id: 503, name: "Samurott", types: ["Water"], hp: 95, atk: 108, def: 85, spd: 70, trait: "Lamina" }, level: 36 },
+    502: { into: { id: 503, name: "Samurott", types: ["Water"], hp: 95, atk: 108, def: 85, spd: 70, trait: "Lâmina" }, level: 36 },
     650: { into: { id: 651, name: "Quilladin", types: ["Grass"], hp: 61, atk: 78, def: 95, spd: 57, trait: "Casca" }, level: 16 },
     651: { into: { id: 652, name: "Chesnaught", types: ["Grass", "Fighting"], hp: 88, atk: 107, def: 122, spd: 64, trait: "Escudo" }, level: 36 },
     653: { into: { id: 654, name: "Braixen", types: ["Fire"], hp: 59, atk: 85, def: 58, spd: 73, trait: "Mente" }, level: 16 },
@@ -787,7 +825,7 @@
     723: { into: { id: 724, name: "Decidueye", types: ["Grass", "Ghost"], hp: 78, atk: 107, def: 75, spd: 70, trait: "Arqueiro" }, level: 34 },
     725: { into: { id: 726, name: "Torracat", types: ["Fire"], hp: 65, atk: 85, def: 50, spd: 90, trait: "Garra" }, level: 17 },
     726: { into: { id: 727, name: "Incineroar", types: ["Fire", "Dark"], hp: 95, atk: 115, def: 90, spd: 60, trait: "Intimidar" }, level: 34 },
-    728: { into: { id: 729, name: "Brionne", types: ["Water"], hp: 60, atk: 91, def: 69, spd: 50, trait: "Cancao" }, level: 17 },
+    728: { into: { id: 729, name: "Brionne", types: ["Water"], hp: 60, atk: 91, def: 69, spd: 50, trait: "Canção" }, level: 17 },
     729: { into: { id: 730, name: "Primarina", types: ["Water", "Fairy"], hp: 80, atk: 126, def: 74, spd: 60, trait: "Sereia" }, level: 34 },
     810: { into: { id: 811, name: "Thwackey", types: ["Grass"], hp: 70, atk: 85, def: 70, spd: 80, trait: "Ritmo" }, level: 16 },
     811: { into: { id: 812, name: "Rillaboom", types: ["Grass"], hp: 100, atk: 125, def: 90, spd: 85, trait: "Tambor" }, level: 35 },
@@ -798,12 +836,12 @@
     906: { into: { id: 907, name: "Floragato", types: ["Grass"], hp: 61, atk: 80, def: 63, spd: 83, trait: "Flor" }, level: 16 },
     907: { into: { id: 908, name: "Meowscarada", types: ["Grass", "Dark"], hp: 76, atk: 110, def: 70, spd: 123, trait: "Mascara" }, level: 36 },
     909: { into: { id: 910, name: "Crocalor", types: ["Fire"], hp: 81, atk: 75, def: 78, spd: 49, trait: "Fornalha" }, level: 16 },
-    910: { into: { id: 911, name: "Skeledirge", types: ["Fire", "Ghost"], hp: 104, atk: 110, def: 100, spd: 66, trait: "Cancao Flamejante" }, level: 36 },
+    910: { into: { id: 911, name: "Skeledirge", types: ["Fire", "Ghost"], hp: 104, atk: 110, def: 100, spd: 66, trait: "Canção Flamejante" }, level: 36 },
     912: { into: { id: 913, name: "Quaxwell", types: ["Water"], hp: 70, atk: 85, def: 65, spd: 65, trait: "Passo" }, level: 16 },
-    913: { into: { id: 914, name: "Quaquaval", types: ["Water", "Fighting"], hp: 85, atk: 120, def: 80, spd: 85, trait: "Danca" }, level: 36 },
+    913: { into: { id: 914, name: "Quaquaval", types: ["Water", "Fighting"], hp: 85, atk: 120, def: 80, spd: 85, trait: "Dança" }, level: 36 },
     133: {
       options: [
-        { into: { id: 134, name: "Vaporeon", types: ["Water"], hp: 130, atk: 80, def: 70, spd: 65, trait: "Absorver Agua" }, stone: "water" },
+        { into: { id: 134, name: "Vaporeon", types: ["Water"], hp: 130, atk: 80, def: 70, spd: 65, trait: "Absorver Água" }, stone: "water" },
         { into: { id: 135, name: "Jolteon", types: ["Electric"], hp: 65, atk: 110, def: 60, spd: 130, trait: "Voltagem" }, stone: "thunder" },
         { into: { id: 136, name: "Flareon", types: ["Fire"], hp: 65, atk: 130, def: 70, spd: 65, trait: "Chama" }, stone: "fire" },
         { into: { id: 196, name: "Espeon", types: ["Psychic"], hp: 65, atk: 130, def: 60, spd: 110, trait: "Sincronia" }, stone: "sun" },
@@ -815,7 +853,7 @@
       stone: "choice"
     },
     215: { into: { id: 461, name: "Weavile", types: ["Dark", "Ice"], hp: 70, atk: 120, def: 65, spd: 125, trait: "Emboscada" }, stone: "dark" },
-    624: { into: { id: 625, name: "Bisharp", types: ["Dark", "Steel"], hp: 65, atk: 125, def: 100, spd: 70, trait: "Lamina Sombria" }, level: 52 },
+    624: { into: { id: 625, name: "Bisharp", types: ["Dark", "Steel"], hp: 65, atk: 125, def: 100, spd: 70, trait: "Lâmina Sombria" }, level: 52 },
     625: { into: { id: 983, name: "Kingambit", types: ["Dark", "Steel"], hp: 100, atk: 135, def: 120, spd: 50, trait: "General Supremo" }, stone: "leader" }
   };
 
@@ -867,14 +905,14 @@
     { type: "question", label: "Evento", icon: "?", sprite: "question", copy: "Evento aleatório de risco/recompensa." },
     { type: "move_tutor", label: "Tutor", icon: "M", sprite: "tm", copy: "Desbloqueia habilidade ou move." },
     { type: "stone", label: "Pedra", icon: "E", sprite: "stone", copy: "Força evolução compatível." },
-    { type: "legendary", label: "Lendario", icon: "MB", sprite: "masterball", copy: "Uma Master Ball desperta um lendario aleatorio." },
+    { type: "legendary", label: "Lendário", icon: "MB", sprite: "masterball", copy: "Uma Master Ball desperta um lendário aleatório." },
     { type: "camp", label: "Centro", icon: "+", sprite: "center", copy: "Cura o time e reduz risco." },
     { type: "train", label: "Treino", icon: "T", sprite: "npc", copy: "Fortalece um membro." }
   ];
 
   const ARENAS = [
     { id: "rock", name: "Ginasio Rocha Basalto", trainer: "brock", npc: "Brock", floorFrom: 0, floorTo: 8, badge: 1 },
-    { id: "water", name: "Ginasio Aquario Prisma", trainer: "misty", npc: "Misty", floorFrom: 8, floorTo: 16, badge: 2 },
+    { id: "water", name: "Ginásio Aquário Prisma", trainer: "misty", npc: "Misty", floorFrom: 8, floorTo: 16, badge: 2 },
     { id: "electric", name: "Ginasio Usina Neon", trainer: "ltsurge", npc: "Lt. Surge", floorFrom: 16, floorTo: 24, badge: 3 },
     { id: "grass", name: "Ginásio Jardim Celadon", trainer: "erika", npc: "Erika", floorFrom: 24, floorTo: 32, badge: 4 },
     { id: "poison", name: "Ginasio Dojo Toxico", trainer: "koga", npc: "Koga", floorFrom: 32, floorTo: 40, badge: 5 },
@@ -939,14 +977,31 @@
   const dynamicEvolutionCache = new Map();
   let nationalDexIndex = [];
   let nationalDexLoadStarted = false;
+  const slug = (name) => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const normalizedSpriteSlug = (value) => {
+    const key = slug(value);
+    return SPRITE_SLUG_ALIASES[key] || key;
+  };
+  const pokemonSpriteSlug = (p) => normalizedSpriteSlug(p?.spriteSlug || baseDexName(p));
   const sprite = (p) => p.spriteSlug
-    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug}.gif`
+    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${pokemonSpriteSlug(p)}.gif`
+    : `${SPRITE_BASE}${p.shiny ? "shiny/" : ""}${p.id}.png`;
+  const draftStaticKey = (p) => p?.spriteSlug ? pokemonSpriteSlug(p) : p?.pokemonId || p?.id;
+  const draftPreviewSprite = (p) => `${p?.shiny ? LOCAL_DRAFT_STATIC_SHINY_BASE : LOCAL_DRAFT_STATIC_BASE}${draftStaticKey(p)}.png`;
+  const staticSprite = (p) => state.battle?.draft
+    ? `${p.shiny ? LOCAL_DRAFT_STATIC_SHINY_BASE : LOCAL_DRAFT_STATIC_BASE}${draftStaticKey(p)}.png`
     : `${SPRITE_BASE}${p.shiny ? "shiny/" : ""}${p.id}.png`;
   const mini = (p) => p.spriteSlug
-    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug}.gif`
+    ? `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${pokemonSpriteSlug(p)}.gif`
     : `${MINI_BASE}${p.shiny ? "shiny/" : ""}${p.id}.png`;
-  const slug = (name) => String(name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const animated = (p) => `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${p.spriteSlug || slug(baseDexName(p))}.gif`;
+  const localDraftAnimated = (p) => {
+    const key = pokemonSpriteSlug(p);
+    if (DRAFT_STATIC_ONLY_SPRITES.has(key)) return `${p.shiny ? LOCAL_DRAFT_STATIC_SHINY_BASE : LOCAL_DRAFT_STATIC_BASE}${key}.png`;
+    return `${p.shiny ? LOCAL_DRAFT_ANIM_SHINY_BASE : LOCAL_DRAFT_ANIM_BASE}${key}.gif`;
+  };
+  const animated = (p) => state.battle?.draft
+    ? localDraftAnimated(p)
+    : `${p.shiny ? ANIM_SHINY_BASE : ANIM_BASE}${pokemonSpriteSlug(p)}.gif`;
   const itemSprite = (item) => `${ITEM_BASE}${item.sprite || item.id}.png`;
   const badgeSprite = (badge) => `${BADGE_BASE}${badge}.png`;
   const trainerSprite = (name) => `${TRAINER_BASE}${name}.png`;
@@ -975,6 +1030,86 @@
   let towerOrderSuppressClickUntil = 0;
   let towerBagGlobalDropReady = false;
   let battleSpeedCountdownTimer = null;
+  let draftSocket = null;
+  let draftBattlePlaybackTimer = null;
+  let draftBattleStartFallbackTimer = null;
+  let draftTurnCountdownTimer = null;
+  let draftMatchClockTimer = null;
+  const DRAFT_HISTORY_KEY = "oak_rogue_draft_history_v1";
+  const DRAFT_RANK_KEY = "oak_rogue_draft_rank_v1";
+  const DRAFT_AUTH_KEY = "oak_rogue_draft_auth_v1";
+  const DRAFT_RANKED_PAGE_SIZE = 10;
+  const DRAFT_ARENA_EVENTS = [
+    { id: "neutral", name: "Arena Neutra", icon: "VS", text: "Sem bônus. Só draft e build." },
+    { id: "rain", name: "Chuva", icon: "WA", text: "Water +10%, Fire -5%." },
+    { id: "sun", name: "Sol Forte", icon: "FI", text: "Fire +10%, Water -5%." },
+    { id: "electric", name: "Campo Eletrico", icon: "EL", text: "Electric +10%." },
+    { id: "mist", name: "Névoa", icon: "CR", text: "Críticos reduzidos." },
+    { id: "storm", name: "Tempestade", icon: "DF", text: "Rock, Ground e Steel recebem defesa." },
+    { id: "garden", name: "Jardim Vivo", icon: "GR", text: "Grass cura ao atacar. Poison pressiona Grass." },
+    { id: "toxic", name: "Pântano Tóxico", icon: "PO", text: "Poison +10%. Fairy e Grass recebem +5% dano." },
+    { id: "glacier", name: "Glacial", icon: "IC", text: "Ice +12%. Dragon e Flying -6% no dano." },
+    { id: "spirit", name: "Ruínas", icon: "GH", text: "Ghost e Psychic +10%. Normal -8%." },
+    { id: "drake", name: "Covil Dracônico", icon: "DR", text: "Dragon +12%. Fairy recebe -8% dano." },
+    { id: "forge", name: "Forja Steel", icon: "ST", text: "Steel +10%. Fire causa +6% contra Steel." },
+    { id: "gravity", name: "Gravidade Pesada", icon: "GV", text: "Flying perde defesa. Ground +8%." },
+    { id: "tide", name: "Maré Alta", icon: "MA", text: "Water cura ao vencer. Electric pressiona Water." },
+    { id: "gale", name: "Vento Cortante", icon: "VE", text: "Flying e Bug aceleram. Rock pressiona esses tipos." },
+    { id: "night", name: "Noite Sombria", icon: "NO", text: "Dark e Ghost +10%. Psychic -6% no dano." },
+    { id: "psychic", name: "Campo Psíquico", icon: "PS", text: "Psychic +12%. Velocidade pesa menos." },
+    { id: "forest", name: "Floresta Fechada", icon: "FL", text: "Grass e Bug defendem melhor. Fire pressiona." },
+    { id: "eruption", name: "Erupção", icon: "ER", text: "Fire +12%. Ice e Grass recebem +6% dano." },
+    { id: "crystal", name: "Caverna Cristalina", icon: "CC", text: "Rock e Ice defendem melhor. Steel +6% contra eles." },
+  ];
+  const DRAFT_RELIC_DETAILS = [
+    { id: "focus-band", name: "Faixa Foco", sprite: "focus-band" },
+    { id: "shell-bell", name: "Sino Concha", sprite: "shell-bell" },
+    { id: "quick-claw", name: "Garra Rápida", sprite: "quick-claw" },
+    { id: "scope-lens", name: "Lente Mira", sprite: "scope-lens" },
+    { id: "leftovers", name: "Restos", sprite: "leftovers" },
+    { id: "type-charm", name: "Amuleto de Tipo", sprite: "expert-belt" },
+    { id: "life-orb", name: "Orbe Vida", sprite: "life-orb" },
+    { id: "muscle-band", name: "Faixa Músculo", sprite: "muscle-band" },
+    { id: "wise-glasses", name: "Óculos Sábios", sprite: "wise-glasses" },
+    { id: "choice-scarf", name: "Lenço Escolha", sprite: "choice-scarf" },
+    { id: "assault-vest", name: "Colete Assalto", sprite: "assault-vest" },
+    { id: "rocky-helmet", name: "Capacete Rochoso", sprite: "rocky-helmet" },
+    { id: "sitrus-berry", name: "Fruta Sitrus", sprite: "sitrus-berry" },
+    { id: "lum-berry", name: "Fruta Lum", sprite: "lum-berry" },
+    { id: "metronome", name: "Metrônomo", sprite: "metronome" },
+    { id: "razor-claw", name: "Garra Navalha", sprite: "razor-claw" },
+    { id: "king-rock", name: "Pedra Rei", sprite: "kings-rock" },
+    { id: "bright-powder", name: "Pó Claro", sprite: "bright-powder" },
+    { id: "charcoal", name: "Carvão Vivo", sprite: "charcoal" },
+    { id: "mystic-water", name: "Água Mística", sprite: "mystic-water" },
+    { id: "magnet", name: "Ímã", sprite: "magnet" },
+    { id: "miracle-seed", name: "Semente Milagre", sprite: "miracle-seed" },
+    { id: "black-belt", name: "Faixa Preta", sprite: "black-belt" },
+    { id: "dragon-fang", name: "Presa Dragão", sprite: "dragon-fang" },
+  ];
+  let draftState = {
+    playerId: "",
+    match: null,
+    options: [],
+    banOptions: [],
+    activeBanStep: 0,
+    submittedBanStep: 0,
+    arena: null,
+    buildOptions: [],
+    buildSelections: {},
+    builds: {},
+    battleResult: null,
+    lockedArenaId: "",
+    rouletteArenaId: "",
+    battleStartArenaId: "",
+    matchStartedAt: 0,
+    matchDurationMs: 0,
+    order: {},
+    orderTurn: "",
+    deadline: 0,
+    status: "offline"
+  };
+  let draftRankedPage = 0;
   const TOWER_DEBUG_UNLOCK_ALL = false;
   const TEMP_AVAILABLE_TOWER_MODES = new Set(["short"]);
   const SHINY_RATE = 0.12;
@@ -1198,7 +1333,7 @@
   }
 
   function shinySprite(p) {
-    return `${ANIM_SHINY_BASE}${p.spriteSlug || slug(baseDexName(p))}.gif`;
+    return `${ANIM_SHINY_BASE}${pokemonSpriteSlug(p)}.gif`;
   }
 
   function maybeMarkShiny(mon) {
@@ -1213,7 +1348,7 @@
     const genSeen = genOne.filter((p) => seen.has(p.id)).length;
     const genPct = genOne.length ? Math.round((genSeen / genOne.length) * 100) : 0;
     const pct = catalog.length ? Math.round((seen.size / catalog.length) * 100) : 0;
-    if ($("rogue-dex-generation")) $("rogue-dex-generation").textContent = tab === "variations" ? `VariaÃ§Ãµes - ${seen.size}/${catalog.length}` : `Gen I - ${genPct}%`;
+    if ($("rogue-dex-generation")) $("rogue-dex-generation").textContent = tab === "variations" ? `Variações - ${seen.size}/${catalog.length}` : `Gen I - ${genPct}%`;
     if ($("rogue-dex-generation-bar")) $("rogue-dex-generation-bar").style.width = `${tab === "variations" ? pct : genPct}%`;
     if ($("rogue-dex-summary")) $("rogue-dex-summary").textContent = tab === "variations" ? `Regionais e formas - ${pct}%` : `Todas as gens - ${pct}%`;
     if ($("rogue-dex-seen-bar")) $("rogue-dex-seen-bar").style.width = `${pct}%`;
@@ -1226,7 +1361,7 @@
       return `<button class="rogue-dex-card ${unlocked ? "seen" : "unknown"} ${tab === "shiny" ? "shiny-tab" : ""} ${isVariationTab ? "variation-tab" : ""}" type="button" ${unlocked ? `data-dex-mon="${p.id}"` : "disabled"}>
         <span>#${String(p.id).padStart(3, "0")}</span>
         <img src="${art}" alt="${unlocked ? p.name : ""}" onerror="this.src='${fallback}'">
-        <strong>${unlocked ? p.name : "???"}</strong>
+        <strong>${unlocked ? p.name : "à"}</strong>
         ${unlocked ? renderTypeChips(p.types || []) : "<small>Não visto</small>"}
       </button>`;
     }).join("");
@@ -1268,7 +1403,7 @@
     const gyms = Object.entries(GYM_POOLS).filter(([, mons]) => mons.some((entry) => entry.id === p.id)).map(([id]) => id);
     if (gyms.length) places.push(`Ginasio: ${gyms.join(", ")}`);
     if (ALL_BOSSES.some((boss) => boss.team.some((entry) => entry.id === p.id))) places.push("Líder/Liga");
-    return places.length ? places.join(" · ") : "Aparece em eventos especiais da run";
+    return places.length ? places.join(" ? ") : "Aparece em eventos especiais da run";
   }
 
   async function showDexDetail(id) {
@@ -1363,6 +1498,14 @@
     return setHeldItems(p, normalizeHeldItems(p));
   }
 
+  function heldItemIds(p) {
+    return new Set(heldItems(p).map((item) => item?.id).filter(Boolean));
+  }
+
+  function hasHeldItemId(p, id) {
+    return heldItemIds(p).has(id);
+  }
+
   function heldItemSummary(p) {
     const equipped = heldItems(p);
     if (!equipped.length) return "sem item";
@@ -1429,6 +1572,8 @@
       "choice-band": 0.18,
       "choice-specs": 0.17,
       "expert-belt": 0.14,
+      "type-charm": 0.14,
+      "life-orb": 0.2,
       "life-orb-plus": 0.2,
       "power-lens": 0.15,
       charm: 1,
@@ -1438,6 +1583,7 @@
       "zoom-lens": 1,
       metronome: 2,
       "king-s-rock": 1,
+      "king-rock": 0.12,
       sash: 1,
       "focus-band": 1,
       "red-card": 1,
@@ -1465,6 +1611,8 @@
       "healthy-feather": 0.1,
       "quick-claw": 0.15,
       "choice-scarf": 0.18,
+      "assault-vest": 0.12,
+      "lum-berry": 0.08,
       "power-anklet": 0.14,
       "swift-feather": 0.12
     };
@@ -1476,6 +1624,106 @@
     const value = itemBonusValue(item);
     if (["synergy", "sash"].includes(item?.kind)) return value > 1 ? `+${value}` : "1x";
     return `+${Math.round(value * 100)}%`;
+  }
+
+  function draftRelicOutgoingModifier(attacker, type) {
+    if (!state.battle?.draft || !attacker) return 1;
+    const ids = heldItemIds(attacker);
+    let modifier = 1;
+    if (ids.has("life-orb")) modifier *= 1.2;
+    if (ids.has("wise-glasses")) modifier *= 1.08;
+    if (ids.has("king-rock")) modifier *= 1.08;
+    if (ids.has("quick-claw")) modifier *= 0.95;
+    if (ids.has("choice-scarf")) modifier *= 0.92;
+    if (ids.has("shell-bell")) modifier *= 0.94;
+    if (ids.has("leftovers")) modifier *= 0.94;
+    if (ids.has("bright-powder")) modifier *= 0.94;
+    if (ids.has("lum-berry")) modifier *= 0.96;
+    if (ids.has("type-charm")) modifier *= attacker.types?.includes(type) ? 1.14 : 0.95;
+    const typedRelics = {
+      charcoal: "Fire",
+      "mystic-water": "Water",
+      magnet: "Electric",
+      "miracle-seed": "Grass",
+      "black-belt": "Fighting",
+      "dragon-fang": "Dragon",
+    };
+    Object.entries(typedRelics).forEach(([id, relicType]) => {
+      if (!ids.has(id)) return;
+      modifier *= type === relicType ? (id === "dragon-fang" ? 1.18 : 1.14) : 0.96;
+    });
+    if (ids.has("metronome")) {
+      const wonRounds = (state.battle.draftRounds || []).filter((round) => {
+        const side = round?.left?.pokemon?.id === attacker.id ? round.left : round?.right?.pokemon?.id === attacker.id ? round.right : null;
+        return side && round.winnerId === side.playerId;
+      }).length;
+      modifier *= Math.max(0.94, 0.94 + Math.min(0.24, wonRounds * 0.06));
+    }
+    return modifier;
+  }
+
+  function draftRelicIncomingModifier(defender) {
+    if (!state.battle?.draft || !defender) return 1;
+    const ids = heldItemIds(defender);
+    let modifier = 1;
+    if (ids.has("assault-vest")) modifier *= 0.88;
+    if (ids.has("rocky-helmet")) modifier *= 0.94;
+    if (ids.has("bright-powder")) modifier *= 0.92;
+    if (ids.has("lum-berry")) modifier *= 0.94;
+    if (ids.has("muscle-band")) modifier *= 1.06;
+    if (ids.has("scope-lens")) modifier *= 1.05;
+    if (ids.has("razor-claw")) modifier *= 1.08;
+    if (ids.has("king-rock")) modifier *= 1.04;
+    if (ids.has("wise-glasses")) modifier *= 1.04;
+    if (ids.has("magnet")) modifier *= 1.04;
+    if (ids.has("black-belt")) modifier *= 1.05;
+    return modifier;
+  }
+
+  function draftRelicStatModifier(p, stat) {
+    if (!state.battle?.draft || !p) return 1;
+    const ids = heldItemIds(p);
+    let modifier = 1;
+    if (stat === "spd") {
+      if (ids.has("choice-scarf")) modifier *= 1.18;
+      if (ids.has("quick-claw")) modifier *= 1.15;
+      if (ids.has("assault-vest")) modifier *= 0.92;
+      if (ids.has("muscle-band")) modifier *= 0.94;
+      if (ids.has("dragon-fang")) modifier *= 0.94;
+    }
+    if (stat === "def") {
+      if (ids.has("scope-lens")) modifier *= 0.95;
+      if (ids.has("razor-claw")) modifier *= 0.92;
+      if (ids.has("king-rock")) modifier *= 0.96;
+      if (ids.has("wise-glasses")) modifier *= 0.96;
+      if (ids.has("muscle-band")) modifier *= 0.94;
+    }
+    return modifier;
+  }
+
+  function draftRelicAfterHit(attacker, defender, amount) {
+    if (!state.battle?.draft || !attacker || !defender || amount <= 0) return "";
+    const notes = [];
+    if (hasHeldItemId(attacker, "life-orb") && attacker.currentHp > 1) {
+      const recoil = Math.min(attacker.currentHp - 1, Math.max(1, Math.ceil(attacker.maxHp * 0.06)));
+      attacker.currentHp -= recoil;
+      draftEnsureStats(attacker).taken += recoil;
+      notes.push(` ${attacker.name} sofreu ${recoil} de recuo.`);
+    }
+    if (hasHeldItemId(defender, "rocky-helmet") && attacker.currentHp > 1) {
+      const returnDamage = Math.min(attacker.currentHp - 1, Math.max(1, Math.ceil(attacker.maxHp * 0.04)));
+      attacker.currentHp -= returnDamage;
+      draftEnsureStats(attacker).taken += returnDamage;
+      notes.push(` ${attacker.name} sofreu ${returnDamage} do Capacete.`);
+    }
+    if (hasHeldItemId(attacker, "miracle-seed") && attacker.currentHp < attacker.maxHp) {
+      const beforeHeal = attacker.currentHp;
+      attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + Math.max(1, Math.ceil(amount * 0.04)));
+      draftTrackHealing(attacker, beforeHeal);
+      const healed = attacker.currentHp - beforeHeal;
+      if (healed > 0) notes.push(` ${attacker.name} curou ${healed}.`);
+    }
+    return notes.join("");
   }
 
   function bonusItems(kind, p = null) {
@@ -1629,11 +1877,11 @@
   }
 
   function defVal(p) {
-    return Math.round(scaledStat(p.def || 1, p.level || 1) * (1 + statBonus("def", p)));
+    return Math.round(scaledStat(p.def || 1, p.level || 1) * (1 + statBonus("def", p)) * draftRelicStatModifier(p, "def"));
   }
 
   function speedVal(p) {
-    return Math.round(scaledStat(p.spd || 1, p.level || 1) * (1 + statBonus("spd", p)));
+    return Math.round(scaledStat(p.spd || 1, p.level || 1) * (1 + statBonus("spd", p)) * draftRelicStatModifier(p, "spd"));
   }
 
   function legalMovesFor(p) {
@@ -1692,7 +1940,7 @@
       applyTowerBattleInlineLayout(false);
     }
     document.querySelectorAll(".rogue-screen").forEach((el) => el.classList.remove("is-active"));
-    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal", "has-tower-event-modal", "has-tower-choice-modal", "has-tower-order-modal", "has-tower-learn-modal", "has-recruit-replace-modal", "has-equip-item-modal");
+    document.querySelector(".rogue-stage")?.classList.remove("has-choice-modal", "has-battle-modal", "has-victory-modal", "has-evolution-modal", "has-simple-modal", "has-center-modal", "has-tower-event-modal", "has-tower-choice-modal", "has-tower-order-modal", "has-tower-learn-modal", "has-recruit-replace-modal", "has-equip-item-modal", "has-draft-modal");
     $("choice-grid")?.classList.remove("many-evolution-options");
     document.body.classList.toggle("is-rogue-battle-open", screen === "battle");
     document.body.classList.toggle("is-tower-battle", useTowerBattleStyle);
@@ -1768,7 +2016,7 @@
     const towerCards = TOWER_MODES.map((mode) => {
       const unlocked = isTowerModeUnlocked(mode, unlocks);
       const hasSavedRun = savedTowerMode === mode.id;
-      const floorLabel = mode.floors ? `${mode.floors}` : "∞";
+      const floorLabel = mode.floors ? `${mode.floors}` : "âˆž";
       const towerCardImage = mode.id === "short" ? ` style="--run-card-image: url('assets/oak-rogue-card-tower.png');"` : "";
       return `
         <article class="tower-mode-card tower-card-${mode.id} ${unlocked ? "is-unlocked" : "is-locked"} ${hasSavedRun ? "has-save" : ""}" role="button" tabindex="0" data-tower-mode="${mode.id}"${towerCardImage} ${unlocked ? "" : "aria-disabled=\"true\""}>
@@ -1991,6 +2239,1957 @@
     const unlocks = loadUnlocks();
     if (!isTowerModeUnlocked(mode, unlocks)) return showTowerLocked(mode);
     showTowerPreview(mode);
+  }
+
+  function draftAuthState() {
+    return draftStorageRead(DRAFT_AUTH_KEY, null);
+  }
+
+  function draftAuthToken() {
+    return draftAuthState()?.token || "";
+  }
+
+  function draftAuthUser() {
+    return draftAuthState()?.user || null;
+  }
+
+  function draftAuthHeader() {
+    const token = draftAuthToken();
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  function readSupabaseRecoveryToken() {
+    const hash = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+    const query = new URLSearchParams(location.search || "");
+    const accessToken = hash.get("access_token") || query.get("access_token") || "";
+    const type = hash.get("type") || query.get("type") || hash.get("auth") || "";
+    return type === "recovery" || type === "reset" ? accessToken : "";
+  }
+
+  async function draftApi(path, options = {}) {
+    const response = await fetch(path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...draftAuthHeader(),
+        ...(options.headers || {}),
+      },
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "Falha na comunicação online.");
+    return payload;
+  }
+
+  function saveDraftAuth(payload) {
+    draftStorageWrite(DRAFT_AUTH_KEY, payload);
+    updateDraftAccountButton();
+    if (draftSocket?.connected && payload?.token) draftSocket.emit("auth:token", { token: payload.token });
+  }
+
+  function clearDraftAuth() {
+    try { localStorage.removeItem(DRAFT_AUTH_KEY); } catch {}
+    updateDraftAccountButton();
+    if (draftSocket?.connected) draftSocket.emit("auth:token", { token: "" });
+  }
+
+  function draftAccountLabel() {
+    const user = draftAuthUser();
+    return user ? user.nick : "Entrar";
+  }
+
+  function updateDraftAccountButton() {
+    const label = $("draft-account-shortcut-label");
+    if (label) label.textContent = draftAccountLabel();
+  }
+
+  function showDraftAuth(mode = "login", message = "") {
+    const creating = mode === "register";
+    const recovering = mode === "recover";
+    const resetting = mode === "reset";
+    const title = creating ? "Criar conta" : recovering ? "Recuperar senha" : resetting ? "Nova senha" : "Entrar";
+    $("choice-kicker").textContent = "Conta online";
+    $("choice-title").textContent = title;
+    $("choice-copy").textContent = message || (
+      creating
+        ? "Crie sua conta com e-mail, senha e nick público."
+        : recovering
+        ? "Informe o e-mail da conta para receber o link de recuperação."
+        : resetting
+        ? "Defina uma nova senha para sua conta."
+        : "Entre para jogar Contra Player e disputar elo."
+    );
+    $("choice-grid").innerHTML = `
+      <div class="draft-auth-panel">
+        <div class="draft-auth-card-head">
+          <span class="draft-auth-mark" aria-hidden="true">ID</span>
+          <div>
+            <strong>${creating ? "Novo treinador" : recovering ? "Recuperação" : resetting ? "Trocar senha" : "Conta do treinador"}</strong>
+            <small>${creating ? "Seu nick aparece nas partidas e na tabela." : recovering ? "O Supabase envia um link seguro por e-mail." : resetting ? "Use pelo menos 6 caracteres." : "Use seu e-mail para jogar ranqueada online."}</small>
+          </div>
+        </div>
+        ${resetting ? "" : `
+          <label>
+            <span>E-mail</span>
+            <input id="draft-auth-email" maxlength="120" autocomplete="email" placeholder="voce@email.com">
+          </label>
+        `}
+        ${creating ? `
+          <label>
+            <span>Nick público</span>
+            <input id="draft-auth-nick" maxlength="18" autocomplete="nickname" placeholder="Seu Nick">
+          </label>
+        ` : ""}
+        ${recovering ? "" : `
+          <label>
+            <span>Senha</span>
+            <input id="draft-auth-password" type="password" maxlength="80" autocomplete="${creating || resetting ? "new-password" : "current-password"}" placeholder="${resetting ? "Nova senha" : "Mínimo 6 caracteres"}">
+          </label>
+        `}
+        <div class="draft-rules-actions">
+          <button class="draft-menu-action" type="button" data-action="${creating ? "draft-register-submit" : recovering ? "draft-recover-submit" : resetting ? "draft-reset-submit" : "draft-login-submit"}">
+            <strong>${creating ? "Criar conta" : recovering ? "Enviar link" : resetting ? "Salvar senha" : "Entrar"}</strong>
+            <small>${creating ? "Salvar nick online." : recovering ? "Enviar por e-mail." : resetting ? "Atualizar conta." : "Usar minha conta."}</small>
+          </button>
+          ${resetting ? "" : `<button class="draft-menu-action" type="button" data-action="${creating ? "draft-login" : "draft-register"}">
+            <strong>${creating ? "Já tenho conta" : "Criar conta"}</strong>
+            <small>${creating ? "Ir para login." : "Novo jogador."}</small>
+          </button>`}
+          ${creating || recovering || resetting ? "" : `
+            <button class="draft-menu-action" type="button" data-action="draft-recover">
+              <strong>Esqueci</strong>
+              <small>Recuperar senha.</small>
+            </button>
+          `}
+          <button class="draft-menu-action" type="button" data-action="draft-rules">
+            <strong>Voltar</strong>
+            <small>Retornar ao Draft.</small>
+          </button>
+          ${draftAuthUser() ? `
+            <button class="draft-menu-action subtle" type="button" data-action="draft-logout">
+              <strong>Sair</strong>
+              <small>Desconectar conta.</small>
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  async function submitDraftAuth(mode = "login") {
+    const email = $("draft-auth-email")?.value || "";
+    const nick = $("draft-auth-nick")?.value || email.split("@")[0] || "";
+    const password = $("draft-auth-password")?.value || "";
+    try {
+      const endpoint = mode === "register"
+        ? "/api/auth/register"
+        : mode === "recover"
+        ? "/api/auth/recover"
+        : mode === "reset"
+        ? "/api/auth/update-password"
+        : "/api/auth/login";
+      const payload = await draftApi(endpoint, {
+        method: "POST",
+        body: JSON.stringify({ email, login: email, nick, password, token: readSupabaseRecoveryToken() }),
+      });
+      if (mode === "recover") return showDraftAuth("login", payload.message || "Se o e-mail existir, o link de recuperação será enviado.");
+      if (mode === "reset") {
+        history.replaceState(null, "", location.pathname);
+        clearDraftAuth();
+        return showDraftAuth("login", payload.message || "Senha alterada. Entre com a nova senha.");
+      }
+      if (!payload.needsEmailConfirmation && payload.token) saveDraftAuth(payload);
+      showDraftBattleIntro("preview");
+      $("choice-copy").textContent = payload.needsEmailConfirmation
+        ? "Conta criada. Confirme seu e-mail antes de entrar."
+        : `Conta conectada como ${payload.user?.nick || "jogador"}.`;
+    } catch (error) {
+      showDraftAuth(mode, error.message || "Não foi possível entrar.");
+    }
+  }
+
+  function draftArenaDetailChips(arena) {
+    const chips = {
+      neutral: ["Sem bônus", "Sem penalidade"],
+      rain: ["Water +10%", "Fire -5%"],
+      sun: ["Fire +10%", "Water -5%"],
+      electric: ["Electric +10%"],
+      mist: ["Críticos reduzidos", "Menos explosão de dano"],
+      storm: ["Rock/Ground/Steel defendem melhor", "Dano contra eles -8%"],
+      garden: ["Grass cura 4% ao atacar", "Poison +10% contra Grass"],
+      toxic: ["Poison +10%", "Fairy/Grass recebem +5% dano"],
+      glacier: ["Ice +12%", "Dragon/Flying causam -6% dano"],
+      spirit: ["Ghost/Psychic +10%", "Normal -8% dano"],
+      drake: ["Dragon +12%", "Fairy recebe -8% dano"],
+      forge: ["Steel +10%", "Fire +6% contra Steel"],
+      gravity: ["Ground +8%", "Flying perde defesa"],
+      tide: ["Water cura ao vencer", "Electric +6% contra Water"],
+      gale: ["Flying/Bug aceleram", "Rock +8% contra eles"],
+      night: ["Dark/Ghost +10%", "Psychic -6% dano"],
+      psychic: ["Psychic +12%", "Velocidade pesa menos"],
+      forest: ["Grass/Bug defendem melhor", "Fire +8% contra eles"],
+      eruption: ["Fire +12%", "Ice/Grass recebem +6% dano"],
+      crystal: ["Rock/Ice defendem melhor", "Steel +6% contra eles"],
+    };
+    return (chips[arena?.id] || [arena?.text || "Efeito especial"]).map((chip) => `<span>${chip}</span>`).join("");
+  }
+
+  function draftDetailsMarkup() {
+    return `
+      <div class="draft-details-panel">
+        <section class="draft-detail-section">
+          <header>
+            <strong>Arenas</strong>
+            <small>Bônus e penalidades aplicados na batalha automática.</small>
+          </header>
+          <div class="draft-detail-grid arenas">
+            ${DRAFT_ARENA_EVENTS.map((arena) => `
+              <article class="draft-detail-card arena" data-arena="${arena.id}">
+                <b>${arena.icon}</b>
+                <span>
+                  <strong>${arena.name}</strong>
+                  <small>${arena.text}</small>
+                </span>
+                <div>${draftArenaDetailChips(arena)}</div>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+        <section class="draft-detail-section">
+          <header>
+            <strong>Relíquias</strong>
+            <small>Itens escolhidos na build. Cada Pokémon usa 1 relíquia.</small>
+          </header>
+          <div class="draft-detail-grid relics">
+            ${DRAFT_RELIC_DETAILS.map((relic) => `
+              <article class="draft-detail-card relic">
+                <img src="${itemSprite(relic)}" alt="" loading="lazy">
+                <span>
+                  <strong>${relic.name}</strong>
+                  <small>${draftRelicBonusSummary(relic)}</small>
+                </span>
+              </article>
+            `).join("")}
+          </div>
+        </section>
+        <div class="draft-rules-actions">
+          <button class="draft-menu-action" type="button" data-action="draft-rules-back">
+            <strong>Escolher modo</strong>
+            <small>Voltar para as opções.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="title">
+            <strong>Voltar</strong>
+            <small>Retornar aos modos.</small>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function showDraftBattleIntro(intent = "preview") {
+    draftState.status = intent === "queue" ? "queue" : draftState.status;
+    $("choice-kicker").textContent = intent === "queue" ? "Fila ranqueada" : intent === "details" ? "Detalhes" : "Modo online";
+    $("choice-title").textContent = intent === "details" ? "Arenas e relíquias" : "Draft Battle";
+    $("choice-copy").textContent = intent === "details"
+      ? "Veja melhor os efeitos que podem mudar o plano da build antes da batalha."
+      : intent === "queue"
+      ? "O ponto de entrada do PvP está pronto. A próxima etapa ? ligar o servidor Node.js com Socket.IO para buscar outro jogador em tempo real."
+      : "Dois jogadores montam times por draft alternado: cada turno mostra 3 Pokémon em forma final, o jogador escolhe 1, e a batalha automática começa depois das builds.";
+    $("choice-grid").innerHTML = intent === "preview" ? `
+      <div class="draft-rules-panel">
+        <section class="draft-rule-list">
+          <article><strong>Draft alternado</strong><small>Cada jogador escolhe 1 de 3 Pokémon por turno até fechar 6 no time.</small></article>
+          <article><strong>Formas finais</strong><small>A fila usa Pokémon em estágio final para reduzir desequilíbrio.</small></article>
+          <article><strong>Build antes da luta</strong><small>Escolha 2 moves e 1 relíquia para cada Pokémon do seu time.</small></article>
+          <article><strong>Ordem de entrada</strong><small>Depois da build, os jogadores definem a ordem da batalha alternadamente.</small></article>
+          <article><strong>Batalha automática</strong><small>O motor da Torre resolve a luta. Quem vence continua em campo.</small></article>
+          <article><strong>Resultado ranqueado</strong><small>A tela final mostra placar, dano causado, dano recebido e cura.</small></article>
+        </section>
+        <div class="draft-rules-actions">
+          <button class="draft-menu-action" type="button" data-action="draft-ai">
+            <strong>Contra IA</strong>
+            <small>Casual para jogar agora.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="draft-queue">
+            <strong>Contra Player</strong>
+            <small>Fila online ranqueada.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="draft-history">
+            <strong>Histórico</strong>
+            <small>Ver últimas partidas.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="draft-ranked">
+            <strong>Ranqueada</strong>
+            <small>Ver elo e tabela.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="draft-details">
+            <strong>Detalhes</strong>
+            <small>Arenas e relíquias.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="title">
+            <strong>Voltar</strong>
+            <small>Retornar aos modos.</small>
+          </button>
+        </div>
+      </div>
+    ` : intent === "rules" ? `
+      <div class="draft-rules-panel">
+        <section class="draft-rule-list">
+          <article><strong>Draft alternado</strong><small>Cada jogador escolhe 1 de 3 Pokémon por turno até fechar 6 no time.</small></article>
+          <article><strong>Formas finais</strong><small>A fila usa Pokémon em estágio final para reduzir desequilíbrio.</small></article>
+          <article><strong>Build antes da luta</strong><small>Escolha 2 moves e 1 relíquia para cada Pokémon do seu time.</small></article>
+          <article><strong>Ordem de entrada</strong><small>Depois da build, os jogadores definem a ordem da batalha alternadamente.</small></article>
+          <article><strong>Batalha automática</strong><small>O motor da Torre resolve a luta. Quem vence continua em campo.</small></article>
+          <article><strong>Resultado ranqueado</strong><small>A tela final mostra placar, dano causado, dano recebido e cura.</small></article>
+        </section>
+        <div class="draft-rules-actions">
+          <button class="draft-menu-action" type="button" data-action="draft-rules-back">
+            <strong>Escolher modo</strong>
+            <small>Voltar para as opções.</small>
+          </button>
+          <button class="draft-menu-action" type="button" data-action="title">
+            <strong>Voltar</strong>
+            <small>Retornar aos modos.</small>
+          </button>
+        </div>
+      </div>
+    ` : intent === "details" ? draftDetailsMarkup() : `
+      <div class="draft-menu">
+        <button class="draft-menu-action" type="button" data-action="draft-ai">
+          <strong>Contra IA</strong>
+          <small>Casual para jogar agora.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="draft-queue">
+          <strong>Contra Player</strong>
+          <small>Fila online ranqueada.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="draft-rules">
+          <strong>Regras</strong>
+          <small>Formas finais, 6 escolhas e batalha automática.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="draft-history">
+          <strong>Histórico</strong>
+          <small>Ver últimas partidas.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="draft-ranked">
+          <strong>Ranqueada</strong>
+          <small>Ver elo e posição.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="draft-details">
+          <strong>Detalhes</strong>
+          <small>Arenas e relíquias.</small>
+        </button>
+        <button class="draft-menu-action" type="button" data-action="title">
+          <strong>Voltar</strong>
+          <small>Retornar aos modos.</small>
+        </button>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function draftPlayerName() {
+    const user = draftAuthUser();
+    if (user?.nick) return user.nick;
+    try {
+      const saved = localStorage.getItem("oak_rogue_draft_name");
+      if (saved) return saved;
+    } catch {}
+    return `Player ${Math.floor(1000 + Math.random() * 9000)}`;
+  }
+
+  function draftTypeText(pokemon) {
+    const tags = [];
+    if (pokemon?.shiny) tags.push("Shiny");
+    if (pokemon?.mythical) tags.push("Mítico");
+    else if (pokemon?.legendary) tags.push("Lendário");
+    tags.push((pokemon.types || ["Normal"]).join(" / "));
+    return tags.join(" - ");
+  }
+
+  function draftRelicSprite(relic) {
+    return `${ITEM_BASE}${relic?.sprite || relic?.id || "poke-ball"}.png`;
+  }
+
+  function draftArenaById(id) {
+    return DRAFT_ARENA_EVENTS.find((arena) => arena.id === id) || DRAFT_ARENA_EVENTS[0];
+  }
+
+  function resolveDraftArenaId(...candidates) {
+    const valid = (id) => id && DRAFT_ARENA_EVENTS.some((arena) => arena.id === id);
+    const nonNeutral = (id) => valid(id) && id !== "neutral";
+    const candidateIds = candidates.map((entry) => entry?.id || entry).filter(Boolean);
+    const priorityIds = [
+      draftState.rouletteArenaId,
+      draftState.lockedArenaId,
+      ...candidateIds,
+      draftState.match?.arena?.id,
+      draftState.battleStartArenaId,
+      draftState.arena?.id,
+    ];
+    return priorityIds.find(nonNeutral) || priorityIds.find(valid) || "neutral";
+  }
+
+  function draftArenaEffectMarkup(arenaInput = null) {
+    const arena = draftArenaById(arenaInput?.id || arenaInput || "neutral");
+    const effects = {
+      neutral: { buff: "Sem bônus", nerf: "Sem penalidade" },
+      rain: { buff: "Water +10%", nerf: "Fire -5%" },
+      sun: { buff: "Fire +10%", nerf: "Water -5%" },
+      electric: { buff: "Electric +10%", nerf: "Sem penalidade" },
+      mist: { buff: "Críticos reduzidos", nerf: "Menos explosão de dano" },
+      storm: { buff: "Rock, Ground e Steel defendem melhor", nerf: "Dano contra esses tipos -8%" },
+      garden: { buff: "Grass cura 4% ao atacar", nerf: "Poison causa +8% em Grass" },
+      toxic: { buff: "Poison +10%", nerf: "Fairy e Grass recebem +5% dano" },
+      glacier: { buff: "Ice +12%", nerf: "Dragon e Flying -6% no dano" },
+      spirit: { buff: "Ghost e Psychic +10%", nerf: "Normal -8%" },
+      drake: { buff: "Dragon +12%", nerf: "Fairy recebe -8% dano" },
+      forge: { buff: "Steel +10%", nerf: "Fire +6% contra Steel" },
+      gravity: { buff: "Ground +8%", nerf: "Flying perde defesa" },
+      tide: { buff: "Water cura ao vencer", nerf: "Electric +6% contra Water" },
+      gale: { buff: "Flying e Bug aceleram", nerf: "Rock +8% contra eles" },
+      night: { buff: "Dark e Ghost +10%", nerf: "Psychic -6% no dano" },
+      psychic: { buff: "Psychic +12%", nerf: "Velocidade pesa menos" },
+      forest: { buff: "Grass e Bug defendem melhor", nerf: "Fire +8% contra eles" },
+      eruption: { buff: "Fire +12%", nerf: "Ice e Grass recebem +6% dano" },
+      crystal: { buff: "Rock e Ice defendem melhor", nerf: "Steel +6% contra eles" },
+    }[arena.id] || { buff: arena.text || "Evento ativo", nerf: "Sem penalidade" };
+    const chips = [effects.buff, effects.nerf].filter((text) => text && text !== "Sem penalidade");
+    return `
+      <div class="draft-arena-effect">
+        <span><b>${arena.name}</b></span>
+        <div>
+          ${chips.map((text, index) => `<em class="${index === 0 ? "buff" : "nerf"}">${text}</em>`).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function draftArenaBonusForPokemon(pokemon, arenaInput = null) {
+    const arena = draftArenaById(arenaInput?.id || arenaInput || "neutral");
+    const types = pokemon?.types || [];
+    if (arena.id === "rain") {
+      if (types.includes("Water")) return "Arena: Water +10% no dano";
+      if (types.includes("Fire")) return "Arena: Fire -5% no dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "sun") {
+      if (types.includes("Fire")) return "Arena: Fire +10% no dano";
+      if (types.includes("Water")) return "Arena: Water -5% no dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "electric") return types.includes("Electric") ? "Arena: Electric +10% no dano" : "Arena: sem bônus direto";
+    if (arena.id === "mist") return "Arena: chance de crítico reduzida";
+    if (arena.id === "storm") return types.some((type) => ["Rock", "Ground", "Steel"].includes(type))
+      ? "Arena: recebe 8% menos dano"
+      : "Arena: sem bônus direto";
+    if (arena.id === "garden") {
+      if (types.includes("Grass")) return "Arena: cura 4% ao atacar";
+      if (types.includes("Poison")) return "Arena: Poison pressiona Grass";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "toxic") {
+      if (types.includes("Poison")) return "Arena: Poison +10% no dano";
+      if (types.some((type) => ["Fairy", "Grass"].includes(type))) return "Arena: recebe +5% dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "glacier") {
+      if (types.includes("Ice")) return "Arena: Ice +12% no dano";
+      if (types.some((type) => ["Dragon", "Flying"].includes(type))) return "Arena: dano causado -6%";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "spirit") {
+      if (types.some((type) => ["Ghost", "Psychic"].includes(type))) return "Arena: Ghost/Psychic +10%";
+      if (types.includes("Normal")) return "Arena: Normal -8% no dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "drake") {
+      if (types.includes("Dragon")) return "Arena: Dragon +12% no dano";
+      if (types.includes("Fairy")) return "Arena: recebe 8% menos dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "forge") {
+      if (types.includes("Steel")) return "Arena: Steel +10% no dano";
+      if (types.includes("Fire")) return "Arena: Fire +6% contra Steel";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "gravity") {
+      if (types.includes("Ground")) return "Arena: Ground +8% no dano";
+      if (types.includes("Flying")) return "Arena: Flying perde defesa";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "tide") {
+      if (types.includes("Water")) return "Arena: Water cura ao vencer";
+      if (types.includes("Electric")) return "Arena: Electric +6% contra Water";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "gale") {
+      if (types.some((type) => ["Flying", "Bug"].includes(type))) return "Arena: velocidade melhor";
+      if (types.includes("Rock")) return "Arena: Rock pressiona Flying/Bug";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "night") {
+      if (types.some((type) => ["Dark", "Ghost"].includes(type))) return "Arena: Dark/Ghost +10% no dano";
+      if (types.includes("Psychic")) return "Arena: Psychic -6% no dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "psychic") return types.includes("Psychic") ? "Arena: Psychic +12% no dano" : "Arena: velocidade pesa menos";
+    if (arena.id === "forest") {
+      if (types.some((type) => ["Grass", "Bug"].includes(type))) return "Arena: recebe 8% menos dano";
+      if (types.includes("Fire")) return "Arena: Fire +8% contra Grass/Bug";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "eruption") {
+      if (types.includes("Fire")) return "Arena: Fire +12% no dano";
+      if (types.some((type) => ["Ice", "Grass"].includes(type))) return "Arena: recebe +6% dano";
+      return "Arena: sem bônus direto";
+    }
+    if (arena.id === "crystal") {
+      if (types.some((type) => ["Rock", "Ice"].includes(type))) return "Arena: recebe 8% menos dano";
+      if (types.includes("Steel")) return "Arena: Steel +6% contra Rock/Ice";
+      return "Arena: sem bônus direto";
+    }
+    return arena.id === "neutral" ? "Arena: sem bônus" : arena.text || "Arena ativa";
+  }
+
+  function draftSecondsLeft() {
+    if (!draftState.deadline) return 0;
+    return Math.max(0, Math.ceil((draftState.deadline - Date.now()) / 1000));
+  }
+
+  function formatDraftDuration(ms = 0) {
+    const totalSeconds = Math.max(0, Math.floor((ms || 0) / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function draftCurrentDurationMs() {
+    if (!draftState.matchStartedAt) return draftState.matchDurationMs || 0;
+    return Math.max(draftState.matchDurationMs || 0, Date.now() - draftState.matchStartedAt);
+  }
+
+  function setDraftMatchStarted(startedAt = Date.now()) {
+    draftState.matchStartedAt = startedAt || Date.now();
+    draftState.matchDurationMs = 0;
+  }
+
+  function stopDraftMatchClock(finalDuration = null) {
+    if (draftMatchClockTimer) {
+      window.clearInterval(draftMatchClockTimer);
+      draftMatchClockTimer = null;
+    }
+    draftState.matchDurationMs = finalDuration === null ? draftCurrentDurationMs() : Math.max(0, finalDuration || 0);
+    draftState.matchStartedAt = 0;
+  }
+
+  function updateDraftBattleClock() {
+    const node = document.querySelector("[data-draft-match-clock]");
+    if (node) node.textContent = formatDraftDuration(draftCurrentDurationMs());
+  }
+
+  function startDraftMatchClock() {
+    if (draftMatchClockTimer) window.clearInterval(draftMatchClockTimer);
+    updateDraftBattleClock();
+    draftMatchClockTimer = window.setInterval(updateDraftBattleClock, 1000);
+  }
+
+  function draftTimerMarkup(active = false) {
+    const seconds = draftSecondsLeft();
+    if (!seconds) return "";
+    return `
+      <div class="draft-turn-bar ${seconds <= 5 ? "is-low" : ""}">
+        <span>${active ? "Sua vez" : "Tempo do turno"}</span>
+        <strong>${seconds}s</strong>
+      </div>
+    `;
+  }
+
+  function startDraftCountdown(render) {
+    if (draftTurnCountdownTimer) window.clearInterval(draftTurnCountdownTimer);
+    if (!draftState.deadline) return;
+    draftTurnCountdownTimer = window.setInterval(() => {
+      if (!draftState.deadline || Date.now() > draftState.deadline + 1000) {
+        window.clearInterval(draftTurnCountdownTimer);
+        draftTurnCountdownTimer = null;
+        return;
+      }
+      render();
+    }, 1000);
+  }
+
+  function draftTeamMarkup(player) {
+    const team = player?.team || [];
+    const slots = Array.from({ length: 6 }, (_, index) => team[index]);
+    return `
+      <article class="draft-team-card ${player?.id === draftState.playerId ? "is-player" : ""}">
+        <strong>${player?.id === draftState.playerId ? "Você" : player?.name || "Rival"}</strong>
+        <div class="draft-team-slots">
+          ${slots.map((pokemon) => pokemon ? `<span><img src="${draftPreviewSprite(pokemon)}" alt="${pokemon.name}" loading="lazy">${pokemon.name}</span>` : "<span>...</span>").join("")}
+        </div>
+      </article>
+    `;
+  }
+
+  function draftBannedPokemon(match = draftState.match) {
+    const seen = new Set();
+    return Object.values(match?.bans || {})
+      .flatMap((entry) => Array.isArray(entry) ? entry : entry ? [entry] : [])
+      .filter((pokemon) => {
+        if (!pokemon || seen.has(pokemon.id)) return false;
+        seen.add(pokemon.id);
+        return true;
+      });
+  }
+
+  function draftBansMarkup(match = draftState.match, compact = false) {
+    const bans = draftBannedPokemon(match);
+    if (!bans.length) return "";
+    const players = match?.players || [];
+    const playerGroups = players.map((player) => ({
+      player,
+      label: player.id === draftState.playerId ? "Você" : player.name || "Rival",
+      bans: (match?.bans?.[player.id] || []).filter(Boolean),
+    }));
+    const groups = playerGroups.some((entry) => entry.bans.length)
+      ? playerGroups
+      : [{ label: "Bans", bans }];
+    const banPill = (pokemon) => `
+      <span class="${pokemon.shiny ? "is-shiny" : ""} ${pokemon.legendary ? "is-legendary" : ""}">
+        <img src="${draftPreviewSprite(pokemon)}" alt="" loading="lazy">
+        <b>${pokemon.name}</b>
+        <small>${pokemon.shiny ? "Shiny" : pokemon.mythical ? "Mítico" : pokemon.legendary ? "Lendário" : "Normal"}</small>
+      </span>
+    `;
+    return `
+      <div class="draft-bans-strip ${compact ? "compact" : ""}">
+        <strong>Bans da partida</strong>
+        <div class="draft-bans-groups">
+          ${groups.map((group) => `
+            <section class="draft-bans-side">
+              <em>${group.label}</em>
+              <div>${group.bans.map(banPill).join("") || "<i>...</i>"}</div>
+            </section>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDraftBanScreen(message = "") {
+    const match = draftState.match;
+    if (!match) return showDraftBattleIntro("queue");
+    if (draftSocket?.id) draftState.playerId = draftSocket.id;
+    const banRound = match.banRound || 1;
+    const banStep = match.banStep || Math.ceil(banRound / 2);
+    const stage = match.banStage || { id: "normal", title: "Ban normal", copy: "Remova um Pokémon final do draft comum." };
+    const hasLocalBanOptions = draftState.banOptions.length > 0;
+    const activeBanStep = hasLocalBanOptions ? (draftState.activeBanStep || banStep) : banStep;
+    const serverBan = match.bans?.[draftState.playerId]?.[activeBanStep - 1];
+    const myBan = serverBan || (hasLocalBanOptions && draftState.submittedBanStep === activeBanStep);
+    const isMyTurn = match.banTurn === draftState.playerId || hasLocalBanOptions;
+    $("choice-kicker").textContent = `Banimento ${banRound}/12`;
+    $("choice-title").textContent = "Draft Battle";
+    $("choice-copy").textContent = message || (!isMyTurn
+      ? "Aguarde o rival banir. O ban ? alternado, um jogador por vez."
+      : myBan
+      ? "Ban enviado. Preparando a próxima etapa."
+      : `${stage.copy || "Escolha 1 Pokémon para remover do draft desta partida."} Cada jogador bane 1 nesta etapa.`);
+    $("choice-grid").innerHTML = `
+      <div class="draft-ban">
+        <button class="draft-exit-button" type="button" data-action="draft-leave" aria-label="Sair do Draft Battle">Sair</button>
+        <div class="draft-top-status">${draftTimerMarkup(isMyTurn && !myBan)}</div>
+        ${draftBansMarkup(match, true)}
+        <div class="draft-ban-grid ${!isMyTurn || myBan ? "is-locked" : ""}">
+          ${draftState.banOptions.map((pokemon) => `
+            <button class="choice-button draft-ban-card ${pokemon.shiny ? "is-shiny" : ""} ${pokemon.legendary ? "is-legendary" : ""}" type="button" data-draft-ban="${pokemon.id}" ${!isMyTurn || myBan ? "disabled" : ""}>
+              <span class="draft-card-badge">${pokemon.shiny ? "Shiny" : pokemon.mythical ? "Mítico" : pokemon.legendary ? "Lendário" : "Normal"}</span>
+              <img src="${draftPreviewSprite(pokemon)}" alt="${pokemon.name}" loading="lazy">
+              <strong>${pokemon.name}</strong>
+              <small>${draftTypeText(pokemon)}</small>
+            </button>
+          `).join("") || `
+            <article class="draft-wait-card">
+              <strong>Turno do rival</strong>
+              <small>Quando ele escolher, a próxima etapa de banimento aparece aqui.</small>
+            </article>
+          `}
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    startDraftCountdown(() => renderDraftBanScreen(message));
+  }
+
+  function renderDraftBattleRoom(message = "") {
+    const match = draftState.match;
+    if (!match) return showDraftBattleIntro("queue");
+    const isMyTurn = match.turn === draftState.playerId;
+    const myPickNumber = ((match.teams?.[draftState.playerId] || []).length || 0) + 1;
+    const specialDraftLabel = isMyTurn && match.phase === "draft"
+      ? myPickNumber === 3 ? "Shiny garantido" : myPickNumber === 6 ? "Lendário final" : ""
+      : "";
+    $("choice-kicker").textContent = match.phase === "build" ? "Times completos" : isMyTurn ? "Sua escolha" : "Turno do rival";
+    $("choice-title").textContent = "Draft Battle";
+    $("choice-copy").textContent = message || (match.phase === "build"
+      ? "O draft terminou. A próxima etapa será escolher moves e relíquias antes da batalha automática."
+      : isMyTurn
+      ? "Escolha 1 dos 3 Pokémon para adicionar ao seu time."
+      : "Aguarde o rival escolher. O servidor mantém o turno e valida as opções.");
+    $("choice-grid").innerHTML = `
+      <div class="draft-room">
+        <button class="draft-exit-button" type="button" data-action="draft-leave" aria-label="Sair do Draft Battle">Sair</button>
+        ${match.phase === "draft" ? `<div class="draft-top-status">${draftTimerMarkup(isMyTurn)}</div>` : ""}
+        ${specialDraftLabel ? `<span class="draft-special-banner">${specialDraftLabel}</span>` : ""}
+        ${match.phase === "draft" ? draftBansMarkup(match, true) : ""}
+        <div class="draft-team-grid">
+          ${(match.players || []).map(draftTeamMarkup).join("")}
+        </div>
+        <div class="draft-option-grid ${isMyTurn && draftState.options.length ? "" : "is-waiting"}">
+          ${isMyTurn && draftState.options.length ? draftState.options.map((pokemon) => `
+            <button class="choice-button draft-pick-card ${pokemon.shiny ? "is-shiny" : ""} ${pokemon.legendary ? "is-legendary" : ""}" type="button" data-draft-pick="${pokemon.id}">
+              ${pokemon.shiny ? `<span class="draft-card-badge">Shiny</span>` : pokemon.mythical ? `<span class="draft-card-badge">Mítico</span>` : pokemon.legendary ? `<span class="draft-card-badge">Lendário</span>` : ""}
+              <img src="${draftPreviewSprite(pokemon)}" alt="${pokemon.name}" loading="lazy">
+              <strong>${pokemon.name}</strong>
+              <small>${draftTypeText(pokemon)}</small>
+            </button>
+          `).join("") : `
+            <div class="draft-waiting-status" aria-live="polite">
+              <strong>${match.phase === "build" ? "Build em breve" : "Aguardando"}</strong>
+              <small>${match.phase === "build" ? "Moves e relíquias entram na próxima etapa." : "O outro jogador está escolhendo."}</small>
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    if (match.phase === "draft") startDraftCountdown(() => renderDraftBattleRoom(message));
+  }
+
+  function ensureDraftBuildSelections() {
+    draftState.buildOptions.forEach((entry) => {
+      if (draftState.buildSelections[entry.pokemonId]) return;
+      draftState.buildSelections[entry.pokemonId] = {
+        moveIds: entry.moves.slice(0, 2).map((move) => move.id),
+        relicId: entry.relics[0]?.id || "",
+      };
+    });
+  }
+
+  function draftBuildComplete() {
+    return draftState.buildOptions.every((entry) => {
+      const selected = draftState.buildSelections[entry.pokemonId];
+      return selected?.moveIds?.length === 2 && !!selected.relicId;
+    });
+  }
+
+  function draftStorageRead(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  function draftStorageWrite(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (_) {}
+  }
+
+  const DRAFT_RANK_TIERS = [
+    { name: "Treinador", min: 0, next: 300 },
+    { name: "Lider de Ginasio", min: 300, next: 700 },
+    { name: "Elite Four", min: 700, next: 1200 },
+    { name: "Campeao", min: 1200, next: null },
+  ];
+
+  function draftRankInfo(points = 0) {
+    const safePoints = Math.max(0, Math.round(points || 0));
+    const tier = [...DRAFT_RANK_TIERS].reverse().find((entry) => safePoints >= entry.min) || DRAFT_RANK_TIERS[0];
+    const needed = tier.next === null ? 0 : Math.max(0, tier.next - safePoints);
+    const span = tier.next === null ? 1 : Math.max(1, tier.next - tier.min);
+    const progress = tier.next === null ? 100 : Math.max(0, Math.min(100, Math.round(((safePoints - tier.min) / span) * 100)));
+    const nextName = tier.next === null ? "Elo máximo" : DRAFT_RANK_TIERS.find((entry) => entry.min === tier.next)?.name || "próximo elo";
+    return { ...tier, points: safePoints, needed, progress, nextName };
+  }
+
+  function draftRankTier(points = 0) {
+    return draftRankInfo(points).name;
+  }
+
+  function draftRankState() {
+    return { points: 0, wins: 0, losses: 0, streak: 0, ...draftStorageRead(DRAFT_RANK_KEY, {}) };
+  }
+
+  function applyDraftRank(won) {
+    const rank = draftRankState();
+    const streakBonus = won ? Math.min(10, Math.max(0, rank.streak) * 2) : 0;
+    const delta = won ? 25 + streakBonus : -15;
+    rank.points = Math.max(0, Math.round((rank.points || 0) + delta));
+    rank.wins = Math.max(0, (rank.wins || 0) + (won ? 1 : 0));
+    rank.losses = Math.max(0, (rank.losses || 0) + (won ? 0 : 1));
+    rank.streak = won ? Math.max(0, rank.streak || 0) + 1 : 0;
+    rank.tier = draftRankTier(rank.points);
+    draftStorageWrite(DRAFT_RANK_KEY, rank);
+    return { ...rank, delta };
+  }
+
+  function draftAllStats(result) {
+    return Object.entries(result?.stats || {}).flatMap(([playerId, stats]) => (stats || []).map((entry) => ({ ...entry, playerId })));
+  }
+
+  function draftFindMvp(result) {
+    return draftAllStats(result)
+      .map((entry) => ({ ...entry, mvpScore: (entry.dealt || 0) + (entry.healed || 0) * 0.7 - (entry.taken || 0) * 0.12 }))
+      .sort((a, b) => b.mvpScore - a.mvpScore)[0] || null;
+  }
+
+  function draftSaveHistory(result, match, rank) {
+    if (!result || result.historySaved) return;
+    const me = match?.players?.find((player) => player.id === draftState.playerId);
+    const rival = match?.players?.find((player) => player.id !== draftState.playerId);
+    const mvp = result.mvp || draftFindMvp(result);
+    const cleanPlayer = (player) => player ? {
+      id: player.id,
+      name: player.name,
+      team: (player.team || []).map((pokemon) => ({
+        id: pokemon.id,
+        pokemonId: pokemon.pokemonId,
+        spriteSlug: pokemon.spriteSlug,
+        name: pokemon.name,
+        types: pokemon.types,
+        shiny: !!pokemon.shiny,
+        legendary: !!pokemon.legendary,
+        mythical: !!pokemon.mythical,
+      })),
+      bans: (player.bans || []).map((pokemon) => ({
+        id: pokemon.id,
+        pokemonId: pokemon.pokemonId,
+        spriteSlug: pokemon.spriteSlug,
+        name: pokemon.name,
+        types: pokemon.types,
+        shiny: !!pokemon.shiny,
+        legendary: !!pokemon.legendary,
+        mythical: !!pokemon.mythical,
+      })),
+    } : null;
+    const entry = {
+      id: `${match?.id || "draft"}-${Date.now()}`,
+      date: Date.now(),
+      casual: !!result.casual,
+      won: result.winnerId === draftState.playerId,
+      score: {
+        me: result.score?.[draftState.playerId] || 0,
+        rival: result.score?.[rival?.id] || 0,
+      },
+      rival: rival?.name || "Rival",
+      mvp: mvp ? { name: mvp.name, sprite: draftPreviewSprite(mvp), dealt: mvp.dealt, healed: mvp.healed, taken: mvp.taken } : null,
+      rankDelta: rank?.delta || 0,
+      points: rank?.points || 0,
+      durationMs: result.durationMs || draftState.matchDurationMs || 0,
+      team: (me?.team || []).map((pokemon) => pokemon.name),
+      playerId: draftState.playerId,
+      result: {
+        winnerId: result.winnerId,
+        score: result.score,
+        stats: result.stats,
+        mvp,
+        rank,
+        arena: result.arena,
+        arenaId: result.arenaId,
+        durationMs: result.durationMs || draftState.matchDurationMs || 0,
+      },
+      match: {
+        id: match?.id || "",
+        players: [cleanPlayer(me), cleanPlayer(rival)].filter(Boolean),
+        bans: match?.bans || {},
+      },
+    };
+    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    draftStorageWrite(DRAFT_HISTORY_KEY, [entry, ...history].slice(0, 10));
+    result.historySaved = true;
+  }
+
+  function draftBuildText() {
+    const me = draftState.match?.players?.find((player) => player.id === draftState.playerId);
+    if (!me) return "Draft Battle";
+    const lines = [`Draft Battle - ${me.name || "Você"}`];
+    (me.team || []).forEach((pokemon) => {
+      const selected = draftState.buildSelections[pokemon.id] || {};
+      const entry = draftState.buildOptions.find((option) => option.pokemonId === pokemon.id);
+      const moves = (entry?.moves || []).filter((move) => (selected.moveIds || []).includes(move.id)).map((move) => move.name).join(", ");
+      const relic = (entry?.relics || []).find((item) => item.id === selected.relicId);
+      lines.push(`${pokemon.name}: ${moves || "moves padrão"} | ${relic?.name || "relíquia padrão"}`);
+    });
+    return lines.join("\n");
+  }
+
+  function draftMoveTooltip(pokemon, move, selected) {
+    const typeHint = (pokemon.types || ["Normal"]).join(" / ");
+    return `${selected ? "Selecionado." : "Clique para escolher."} Golpe da build. Escolha 2 moves para este Pokémon. Tipo do Pokémon: ${typeHint}.`;
+  }
+
+  function draftRelicBonusSummary(relic) {
+    const summaries = {
+      "focus-band": "Sobrevive a 1 golpe fatal. Bônus de dano: 0%.",
+      "shell-bell": "Cura +9% do HP máximo ao agir. Dano final -6%.",
+      "quick-claw": "Velocidade +15%. Dano final -5%.",
+      "scope-lens": "Crítico +16%. Dano recebido +5%.",
+      leftovers: "Cura +8% do HP máximo ao agir. Dano final -6%.",
+      "type-charm": "STAB +14%. Golpes fora do tipo -5%.",
+      "life-orb": "Dano final +20%. Recuo de 6% do HP máximo.",
+      "muscle-band": "Ataque +14%. Defesa -6% e velocidade -6%.",
+      "wise-glasses": "Dano final +8%. Defesa -4%.",
+      "choice-scarf": "Velocidade +18%. Dano final -8%.",
+      "assault-vest": "Dano recebido -12%. Velocidade -8%.",
+      "rocky-helmet": "Dano recebido -6%. Atacante sofre 4% de recuo.",
+      "sitrus-berry": "Cura +7% do HP máximo ao agir. Sem penalidade.",
+      "lum-berry": "Dano recebido -6%. Dano final -4%.",
+      metronome: "Começa com dano -6%. Ganha +6% por duelo vencido, até +18%.",
+      "razor-claw": "Crítico +20%. Dano recebido +8%.",
+      "king-rock": "Dano final +8%. Defesa -4%.",
+      "bright-powder": "Dano recebido -8%. Dano final -6%.",
+      charcoal: "Fire +14%. Golpes fora do tipo -4%.",
+      "mystic-water": "Water +14%. Golpes fora do tipo -4%.",
+      magnet: "Electric +14%. Defesa -4%.",
+      "miracle-seed": "Grass +14%. Cura 4% do dano causado. Fora do tipo -4%.",
+      "black-belt": "Fighting +14%. Dano recebido +5%.",
+      "dragon-fang": "Dragon +18%. Velocidade -6%.",
+    };
+    return summaries[relic?.id] || relic?.text || "Bônus especial de relíquia.";
+  }
+
+  function renderDraftBuildScreen(message = "") {
+    const match = draftState.match;
+    const me = match?.players?.find((player) => player.id === draftState.playerId);
+    const rival = match?.players?.find((player) => player.id !== draftState.playerId);
+    if (!match || !me) return showDraftBattleIntro("queue");
+    const buildSent = !!me.buildReady;
+    ensureDraftBuildSelections();
+    $("choice-kicker").textContent = "Preparação";
+    $("choice-title").textContent = "Moves e relíquias";
+    $("choice-copy").textContent = message || (buildSent ? "Sua build foi enviada. Aguardando o rival confirmar." : "Você está editando apenas o seu time.");
+    $("choice-grid").innerHTML = `
+      <div class="draft-build">
+        <button class="draft-exit-button" type="button" data-action="draft-leave" aria-label="Sair do Draft Battle">Sair</button>
+        <div class="draft-build-toolbar">
+          <span><strong>Seu time</strong>
+          <small>${buildSent ? "Build bloqueada após confirmação." : "Escolha 2 moves e 1 relíquia por Pokémon."}</small>
+          </span>
+          ${draftTimerMarkup(false)}
+        </div>
+        <div class="draft-build-rival-preview">
+          <strong>Time rival</strong>
+          <div>
+            ${(rival?.team || []).map((pokemon) => `<span><img src="${draftPreviewSprite(pokemon)}" alt="" loading="lazy">${pokemon.name}</span>`).join("")}
+          </div>
+        </div>
+        <div class="draft-build-list">
+          ${me.team.map((pokemon) => {
+            const entry = draftState.buildOptions.find((option) => option.pokemonId === pokemon.id);
+            const selected = draftState.buildSelections[pokemon.id] || { moveIds: [], relicId: "" };
+            if (!entry) return "";
+            return `
+              <article class="draft-build-card">
+                <header>
+                  <img src="${draftPreviewSprite(pokemon)}" alt="${pokemon.name}" loading="lazy">
+                  <span><strong>${pokemon.name}</strong><small>${draftTypeText(pokemon)}</small></span>
+                </header>
+                <div class="draft-build-section moves">
+                  <b>Moves</b>
+                  <div class="draft-build-pills">
+                    ${entry.moves.map((move) => `
+                      <button class="${selected.moveIds.includes(move.id) ? "is-picked" : ""}" type="button" data-held-tooltip="${move.name}" data-held-tooltip-text="${draftMoveTooltip(pokemon, move, selected.moveIds.includes(move.id))}" data-draft-build-move="${pokemon.id}:${move.id}" ${buildSent ? "disabled" : ""}>
+                        ${move.name}
+                      </button>
+                    `).join("")}
+                  </div>
+                </div>
+                <div class="draft-build-section relics">
+                  <b>Relíquia</b>
+                  <div class="draft-build-pills relics">
+                    ${entry.relics.map((relic) => `
+                      <button class="${selected.relicId === relic.id ? "is-picked" : ""}" type="button" data-held-tooltip="${relic.name}" data-held-tooltip-text="${draftRelicBonusSummary(relic)}" title="${draftRelicBonusSummary(relic)}" data-draft-build-relic="${pokemon.id}:${relic.id}" ${buildSent ? "disabled" : ""}>
+                        <img src="${draftRelicSprite(relic)}" alt="" loading="lazy">
+                        <span><b>${relic.name}</b></span>
+                      </button>
+                    `).join("")}
+                  </div>
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </div>
+        <div class="draft-build-footer">
+          <span>${buildSent ? "Build enviada. Aguardando o rival." : draftBuildComplete() ? "Build pronta para envio." : "Escolha 2 moves e 1 relíquia por Pokémon."}</span>
+          <button class="draft-confirm-button" type="button" data-action="draft-submit-build" ${!buildSent && draftBuildComplete() ? "" : "disabled"}>${buildSent ? "Confirmada" : "Confirmar build"}</button>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function renderDraftBattleResult() {
+    clearTimeout(draftBattlePlaybackTimer);
+    const match = draftState.match;
+    const result = draftState.battleResult;
+    if (!match || !result) return renderDraftBuildScreen("Aguardando resultado da batalha.");
+    const won = result.winnerId === draftState.playerId;
+    const me = match.players.find((player) => player.id === draftState.playerId);
+    const rival = match.players.find((player) => player.id !== draftState.playerId);
+    const fallbackStats = (player) => (player?.team || []).map((pokemon) => ({
+      ...pokemon,
+      dealt: 0,
+      taken: 0,
+      healed: 0,
+      defeated: false,
+    }));
+    const myStats = result.stats?.[draftState.playerId]?.length ? result.stats[draftState.playerId] : fallbackStats(me);
+    const rivalStats = result.stats?.[rival?.id]?.length ? result.stats[rival.id] : fallbackStats(rival);
+    const mvp = result.mvp || draftFindMvp(result);
+    const rank = result.rank || draftRankState();
+    const arena = draftArenaById(result.arena?.id || draftState.arena?.id || "neutral");
+    const durationLabel = formatDraftDuration(result.durationMs || draftState.matchDurationMs || 0);
+    const statRows = (stats, winnerId) => stats.map((pokemon) => `
+      <article class="${pokemon.defeated ? "is-fainted" : ""}">
+        <img src="${draftPreviewSprite(pokemon)}" alt="">
+        <strong>${pokemon.name}</strong>
+        <span><b>${pokemon.dealt}</b><small>Dano causado</small></span>
+        <span><b>${pokemon.taken}</b><small>Dano recebido</small></span>
+        <span><b>${pokemon.healed}</b><small>Cura</small></span>
+      </article>
+    `).join("");
+    $("choice-kicker").textContent = result.casual ? "Casual" : (won ? "Vitória" : "Derrota");
+    $("choice-title").textContent = "Batalha automática";
+    $("choice-copy").textContent = won ? "Sua build venceu o duelo automático." : "A build rival levou a melhor no duelo automático.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-result">
+        <div class="draft-result-hero">
+          <div class="draft-result-duration"><span>Duração</span><strong>${durationLabel}</strong></div>
+          <span>${won ? "Vitória" : "Derrota"} - ${result.casual ? "Contra IA" : `${rank.tier || draftRankTier(rank.points)} ${rank.delta ? `${rank.delta > 0 ? "+" : ""}${rank.delta}` : ""}`}</span>
+          <p>${arena.name}: ${arena.text}</p>
+        </div>
+        ${draftBansMarkup(match, true)}
+        <div class="draft-result-score">
+          <article class="${won ? "is-winner" : ""}">
+            <strong>Você</strong>
+            <b>${result.score?.[draftState.playerId] || 0}</b>
+          </article>
+          <span>VS</span>
+          <article class="${!won ? "is-winner" : ""}">
+            <strong>${rival?.name || "Rival"}</strong>
+            <b>${result.score?.[rival?.id] || 0}</b>
+          </article>
+        </div>
+        ${mvp ? `
+          <div class="draft-mvp-card">
+            <span>MVP</span>
+            <img src="${draftPreviewSprite(mvp)}" alt="">
+            <strong>${mvp.name}</strong>
+            <small>${mvp.dealt || 0} causado / ${mvp.taken || 0} recebido / ${mvp.healed || 0} cura</small>
+          </div>
+        ` : ""}
+        <div class="draft-result-rounds draft-result-stat-board">
+          <section class="draft-result-stats">
+            <header><strong>Você</strong><span><b>Causado</b><b>Recebido</b><b>Cura</b></span></header>
+            ${statRows(myStats)}
+          </section>
+          <section class="draft-result-stats">
+            <header><strong>${rival?.name || "Rival"}</strong><span><b>Causado</b><b>Recebido</b><b>Cura</b></span></header>
+            ${statRows(rivalStats)}
+          </section>
+        </div>
+        <div class="draft-build-footer">
+          <span>${result.casual ? "Partida casual não altera seu elo." : won ? "Pontos ranqueados entram na próxima etapa." : "Ajuste draft e build na próxima fila."}</span>
+          <div class="draft-result-actions">
+            <button class="draft-secondary-button" type="button" data-action="draft-copy-build">Copiar build</button>
+            <button class="draft-secondary-button" type="button" data-action="draft-history">Histórico</button>
+            ${result.casual ? "" : `<button class="draft-secondary-button" type="button" data-action="draft-rematch">Revanche</button>`}
+            <button class="draft-confirm-button" type="button" data-action="${result.casual ? "draft-ai" : "draft-queue"}">${result.casual ? "Jogar de novo" : "Nova fila"}</button>
+          </div>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function showDraftHistory() {
+    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    const rank = draftRankState();
+    const formatDate = (date) => {
+      if (!date) return "sem data";
+      try {
+        return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(date));
+      } catch (_) {
+        return "sem data";
+      }
+    };
+    $("choice-kicker").textContent = "Histórico";
+    $("choice-title").textContent = "Draft Battle";
+    $("choice-copy").textContent = history.length ? "Clique em uma partida para abrir o resultado final salvo." : "Nenhuma partida salva ainda.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-history-panel">
+        <div class="draft-history-summary">
+          <article><span>Rank</span><strong>${rank.tier || draftRankTier(rank.points)}</strong><small>${rank.points || 0} pts</small></article>
+          <article><span>Vitórias</span><strong>${rank.wins || 0}</strong><small>Sequência ${rank.streak || 0}</small></article>
+          <article><span>Derrotas</span><strong>${rank.losses || 0}</strong><small>${history.length} salvas</small></article>
+        </div>
+        <div class="draft-history-list">
+          ${history.map((entry, index) => `
+            <button class="draft-history-row" type="button" data-draft-history-detail="${index}">
+              <span class="${entry.won ? "is-win" : "is-loss"}">${entry.won ? "Vitória" : "Derrota"}</span>
+              <strong>${entry.score?.me || 0} x ${entry.score?.rival || 0} vs ${entry.rival || "Rival"}</strong>
+              <small>${formatDate(entry.date)}</small>
+              <p>${formatDraftDuration(entry.durationMs || entry.result?.durationMs || 0)} ? ${entry.casual ? "Casual" : `MVP ${entry.mvp?.name || "-"} / ${entry.rankDelta > 0 ? "+" : ""}${entry.rankDelta || 0} pts`}</p>
+            </button>
+          `).join("") || "<p>Jogue uma partida para preencher o historico.</p>"}
+        </div>
+        <div class="draft-build-footer">
+          <span>${rank.tier || draftRankTier(rank.points)} - ${rank.points || 0} pts</span>
+          <button class="draft-confirm-button" type="button" data-action="draft-rules">Voltar</button>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function showDraftHistoryDetail(index) {
+    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    const entry = history[index];
+    if (!entry) return showDraftHistory();
+    const previous = {
+      playerId: draftState.playerId,
+      match: draftState.match,
+      battleResult: draftState.battleResult,
+      arena: draftState.arena,
+    };
+    if (entry.match && entry.result && entry.playerId) {
+      draftState.playerId = entry.playerId;
+      draftState.match = entry.match;
+      draftState.battleResult = entry.result;
+      draftState.arena = draftArenaById(entry.result.arena?.id || entry.result.arenaId || "neutral");
+      renderDraftBattleResult();
+      draftState.playerId = previous.playerId;
+      draftState.match = previous.match;
+      draftState.battleResult = previous.battleResult;
+      draftState.arena = previous.arena;
+      const footer = document.querySelector(".draft-result .draft-build-footer");
+      if (footer) {
+        footer.innerHTML = `
+          <span>Resultado salvo em ${new Date(entry.date || Date.now()).toLocaleString("pt-BR")} ? Duração ${formatDraftDuration(entry.durationMs || entry.result?.durationMs || 0)}.</span>
+          <div class="draft-result-actions">
+            <button class="draft-secondary-button" type="button" data-action="draft-history">Voltar ao historico</button>
+            <button class="draft-confirm-button" type="button" data-action="draft-queue">Nova fila</button>
+          </div>
+        `;
+      }
+      $("choice-kicker").textContent = "Histórico";
+      $("choice-copy").textContent = "Resultado final salvo desta partida.";
+      return;
+    }
+    $("choice-kicker").textContent = entry.won ? "Vitória salva" : "Derrota salva";
+    $("choice-title").textContent = `${entry.score?.me || 0} x ${entry.score?.rival || 0}`;
+    $("choice-copy").textContent = "Esta partida foi salva antes do historico detalhado existir.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-history-panel draft-history-detail">
+        <div class="draft-history-summary">
+          <article><span>Rival</span><strong>${entry.rival || "Rival"}</strong><small>${entry.won ? "Vitória" : "Derrota"}</small></article>
+          <article><span>MVP</span><strong>${entry.mvp?.name || "-"}</strong><small>${entry.mvp?.dealt || 0} dano</small></article>
+          <article><span>Duração</span><strong>${formatDraftDuration(entry.durationMs || 0)}</strong><small>${entry.points || 0} pts</small></article>
+        </div>
+        <div class="draft-history-old-team">
+          ${(entry.team || []).map((name) => `<span>${name}</span>`).join("") || "<p>Time não registrado.</p>"}
+        </div>
+        <div class="draft-build-footer">
+          <span>Resumo antigo do historico.</span>
+          <button class="draft-confirm-button" type="button" data-action="draft-history">Voltar</button>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function draftRankedLeaderboard() {
+    const rank = draftRankState();
+    const history = draftStorageRead(DRAFT_HISTORY_KEY, []);
+    const rivals = new Map();
+    history.filter((entry) => !entry.casual).forEach((entry) => {
+      const name = entry.rival || "Rival";
+      const current = rivals.get(name) || { name, points: 100, wins: 0, losses: 0, played: 0 };
+      current.played += 1;
+      if (entry.won) {
+        current.losses += 1;
+        current.points = Math.max(0, current.points - 12);
+      } else {
+        current.wins += 1;
+        current.points += 25;
+      }
+      rivals.set(name, current);
+    });
+    const me = {
+      name: "Você",
+      points: rank.points || 0,
+      wins: rank.wins || 0,
+      losses: rank.losses || 0,
+      played: (rank.wins || 0) + (rank.losses || 0),
+      me: true,
+    };
+    return [me, ...rivals.values()]
+      .map((entry) => ({ ...entry, tier: draftRankTier(entry.points || 0) }))
+      .sort((a, b) => (b.points || 0) - (a.points || 0) || (b.wins || 0) - (a.wins || 0));
+  }
+
+  function showDraftRanked() {
+    const rank = draftRankState();
+    const rankInfo = draftRankInfo(rank.points);
+    const rows = draftRankedLeaderboard();
+    const myIndex = Math.max(0, rows.findIndex((entry) => entry.me));
+    const next = rows[myIndex - 1];
+    const totalPages = Math.max(1, Math.ceil(rows.length / DRAFT_RANKED_PAGE_SIZE));
+    draftRankedPage = Math.min(Math.max(0, draftRankedPage || 0), totalPages - 1);
+    const pageStart = draftRankedPage * DRAFT_RANKED_PAGE_SIZE;
+    const visibleRows = rows.slice(pageStart, pageStart + DRAFT_RANKED_PAGE_SIZE);
+    const winRate = ((rank.wins || 0) + (rank.losses || 0)) ? Math.round(((rank.wins || 0) / ((rank.wins || 0) + (rank.losses || 0))) * 100) : 0;
+    $("choice-kicker").textContent = "Ranqueada";
+    $("choice-title").textContent = "Draft Battle";
+    $("choice-copy").textContent = "Tabela local baseada nas partidas salvas neste navegador.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-ranked-panel">
+        <div class="draft-ranked-hero">
+          <article>
+            <span>Elo atual</span>
+            <strong>${rankInfo.name}</strong>
+            <small>${rankInfo.points} pts</small>
+          </article>
+          <article>
+            <span>Posicao</span>
+            <strong>#${myIndex + 1}</strong>
+            <small>${next ? `${Math.max(0, (next.points || 0) - (rank.points || 0))} pts até #${myIndex}` : "Topo da tabela"}</small>
+          </article>
+          <article>
+            <span>Win rate</span>
+            <strong>${winRate}%</strong>
+            <small>${rank.wins || 0}V / ${rank.losses || 0}D</small>
+          </article>
+        </div>
+        <div class="draft-ranked-progress">
+          <div>
+            <span>${rankInfo.name}</span>
+            <b>${rankInfo.next === null ? "Elo máximo" : `${rankInfo.needed} pts para ${rankInfo.nextName}`}</b>
+          </div>
+          <i style="--rank-progress:${rankInfo.progress}%"><em></em></i>
+          <small>${rankInfo.next === null ? `${rankInfo.points}+ pts` : `${rankInfo.points} / ${rankInfo.next} pts`}</small>
+        </div>
+        <div class="draft-ranked-pager">
+          <span>Pagina ${draftRankedPage + 1} / ${totalPages}</span>
+          <div>
+            <button class="draft-secondary-button" type="button" data-action="draft-ranked-prev" ${draftRankedPage <= 0 ? "disabled" : ""}>Anterior</button>
+            <button class="draft-secondary-button" type="button" data-action="draft-ranked-next" ${draftRankedPage >= totalPages - 1 ? "disabled" : ""}>Próxima</button>
+          </div>
+        </div>
+        <div class="draft-ranked-table">
+          <header><span>#</span><strong>Jogador</strong><b>Elo</b><b>Pts</b><b>V/D</b></header>
+          ${visibleRows.map((entry, index) => `
+            <article class="${entry.me ? "is-you" : ""}">
+              <span>${pageStart + index + 1}</span>
+              <strong>${entry.name}</strong>
+              <b>${entry.tier}</b>
+              <b>${entry.points || 0}</b>
+              <small>${entry.wins || 0}/${entry.losses || 0}</small>
+            </article>
+          `).join("")}
+        </div>
+        <div class="draft-build-footer">
+          <span>${rows.length > 1 ? `${rows.length} jogadores na tabela local.` : "Jogue partidas para preencher a tabela."}</span>
+          <div class="draft-result-actions">
+            <button class="draft-secondary-button" type="button" data-action="draft-history">Histórico</button>
+            <button class="draft-confirm-button" type="button" data-action="draft-rules">Voltar</button>
+          </div>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
+  function renderDraftArenaRoulette(arena, serverResult) {
+    const authoritativeArenaId = resolveDraftArenaId(arena?.id || arena, serverResult?.arena?.id, serverResult?.arenaId);
+    const selected = draftArenaById(authoritativeArenaId);
+    const selectedArenaIndex = Math.max(0, DRAFT_ARENA_EVENTS.findIndex((entry) => entry.id === selected.id));
+    const spinEntries = [
+      ...DRAFT_ARENA_EVENTS,
+      ...DRAFT_ARENA_EVENTS,
+      ...DRAFT_ARENA_EVENTS,
+      ...DRAFT_ARENA_EVENTS.slice(0, selectedArenaIndex + 1),
+    ];
+    const selectedSpinIndex = spinEntries.length - 1;
+    const arenaSpinOffset = Math.max(0, selectedSpinIndex * 128 - 249);
+    $("choice-kicker").textContent = "Arena";
+    $("choice-title").textContent = "Roleta da arena";
+    $("choice-copy").textContent = "O evento da batalha foi sorteado para os dois jogadores.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-arena-roulette">
+        <div class="draft-arena-wheel" style="--arena-spin-offset:${arenaSpinOffset}px">
+          <div class="draft-arena-track">
+            ${spinEntries.map((entry, index) => `
+              <span class="${index === selectedSpinIndex ? "is-selected" : ""}">
+                <b>${entry.icon}</b>
+                <small>${entry.name}</small>
+              </span>
+            `).join("")}
+          </div>
+        </div>
+        <div class="draft-arena-result-slot" data-draft-arena-result>
+          <small>Sorteando arena...</small>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    clearTimeout(draftBattlePlaybackTimer);
+    clearTimeout(draftBattleStartFallbackTimer);
+    if (!serverResult) return;
+    const lockedResult = { ...serverResult, matchId: draftState.match?.id || serverResult.matchId || "", arenaId: selected.id, arena: selected };
+    draftState.arena = selected;
+    draftState.lockedArenaId = selected.id;
+    draftState.rouletteArenaId = selected.id;
+    draftState.battleResult = lockedResult;
+    window.setTimeout(() => {
+      const resultSlot = document.querySelector("[data-draft-arena-result]");
+      if (!resultSlot || draftState.rouletteArenaId !== selected.id) return;
+      resultSlot.innerHTML = `
+        <article class="draft-arena-card is-revealed">
+          <span>${selected.icon}</span>
+          <strong>${selected.name}</strong>
+          <small>${selected.text}</small>
+        </article>
+      `;
+    }, 5600);
+    draftBattlePlaybackTimer = window.setTimeout(() => {
+      if (state.battle?.draft || state.screen === "battle") return;
+      const sameMatch = !lockedResult.matchId || lockedResult.matchId === draftState.match?.id;
+      const sameArena = lockedResult.arenaId === draftState.rouletteArenaId;
+      if (!sameMatch || !sameArena) return;
+      startDraftAutoBattle(lockedResult);
+    }, 7600);
+  }
+
+  function scheduleDraftBattleStart(result, delay = 8200) {
+    clearTimeout(draftBattleStartFallbackTimer);
+    if (!result) return;
+    const lockedArena = draftArenaById(resolveDraftArenaId(result?.arena?.id, result?.arenaId));
+    const lockedResult = { ...result, matchId: result.matchId || draftState.match?.id || "", arenaId: lockedArena.id, arena: lockedArena };
+    draftBattleStartFallbackTimer = window.setTimeout(() => {
+      if (state.battle?.draft || state.screen === "battle") return;
+      const sameMatch = !lockedResult.matchId || lockedResult.matchId === draftState.match?.id;
+      const sameArena = !draftState.rouletteArenaId || lockedResult.arenaId === draftState.rouletteArenaId;
+      if (!sameMatch || !sameArena) return;
+      startDraftAutoBattle(lockedResult);
+    }, delay);
+  }
+
+  function draftBattleViewMon(pokemon, defeated = false, power = 0, build = null) {
+    const maxHp = Math.max(1, Math.round(power || 150));
+    return {
+      ...pokemon,
+      spriteSlug: pokemon?.spriteSlug || slug(pokemon?.name),
+      level: pokemon?.level || 50,
+      maxHp,
+      currentHp: defeated ? 0 : maxHp,
+      moves: build?.moves || [],
+      held: build?.relic ? [build.relic] : [],
+    };
+  }
+
+  function draftBattleDefeatedIds(rounds, uptoIndex, playerId) {
+    const defeated = new Set();
+    rounds.slice(0, uptoIndex + 1).forEach((entry) => {
+      const side = entry.left.playerId === playerId ? entry.left : entry.right.playerId === playerId ? entry.right : null;
+      if (side && entry.winnerId !== playerId && side.pokemon?.id) defeated.add(side.pokemon.id);
+    });
+    return defeated;
+  }
+
+  function draftBattleTeamForView(playerId, activePokemon, activePower, activeBuild, defeatedIds = new Set()) {
+    const player = draftState.match?.players?.find((entry) => entry.id === playerId);
+    const orderedIds = draftState.order?.[playerId] || player?.team?.map((pokemon) => pokemon.id) || [];
+    const orderedTeam = orderedIds
+      .map((pokemonId) => player?.team?.find((pokemon) => pokemon.id === pokemonId))
+      .filter(Boolean);
+    const team = orderedTeam.length ? orderedTeam : (player?.team || []);
+    return team.map((pokemon) => {
+      const active = pokemon.id === activePokemon?.id;
+      return draftBattleViewMon(pokemon, !active && defeatedIds.has(pokemon.id), active ? activePower : 150, active ? activeBuild : null);
+    });
+  }
+
+  function draftMoveType(name, fallback = "Normal") {
+    const text = String(name || "").toLowerCase();
+    if (/fogo|chamas/.test(text)) return "Fire";
+    if (/surf|agua/.test(text)) return "Water";
+    if (/folha|dreno|vinha/.test(text)) return "Grass";
+    if (/raio|trovao|onda/.test(text)) return "Electric";
+    if (/psiquico|confusao|barreira/.test(text)) return "Psychic";
+    if (/soco|chute|guarda/.test(text)) return "Fighting";
+    if (/veneno|acido|toxico/.test(text)) return "Poison";
+    if (/terremoto|lama|magnitude/.test(text)) return "Ground";
+    if (/pedra|arremesso|rochosa/.test(text)) return "Rock";
+    if (/sombra|lambida|assombrar/.test(text)) return "Ghost";
+    if (/brilho|voz|beijo/.test(text)) return "Fairy";
+    if (/vendaval|aereo|ar/.test(text)) return "Flying";
+    if (/gelo|nevasca|gelado/.test(text)) return "Ice";
+    if (/furia|zumbido|picada/.test(text)) return "Bug";
+    if (/dragao/.test(text)) return "Dragon";
+    return fallback;
+  }
+
+  function draftMoveForBattle(move, fallbackType) {
+    const type = draftMoveType(move?.name, fallbackType);
+    return {
+      id: slug(move?.name || "tackle"),
+      name: move?.name || "Investida",
+      type,
+      power: /barreira|defesa|onda/.test(String(move?.name || "").toLowerCase()) ? 0.82 : 1.05,
+      cost: 0,
+    };
+  }
+
+  function draftBattleMonForEngine(pokemon, build = null, side = "player") {
+    const level = 50;
+    const typeCount = Math.max(1, pokemon?.types?.length || 1);
+    const base = 95 + (pokemon?.id % 55) + typeCount * 8;
+    const mon = {
+      ...pokemon,
+      spriteSlug: pokemon?.spriteSlug || slug(pokemon?.name),
+      level,
+      hp: base,
+      atk: 72 + ((pokemon?.id * 7) % 46),
+      def: 68 + ((pokemon?.id * 5) % 44),
+      spd: 58 + ((pokemon?.id * 11) % 52),
+      energy: 2,
+      xp: 0,
+      currentHp: base,
+      maxHp: base,
+      leader: side === "enemy" ? "Rival" : "Você",
+      moves: (build?.moves || []).slice(0, 2).map((move) => draftMoveForBattle(move, pokemon?.types?.[0] || "Normal")),
+    };
+    if (!mon.moves.length) mon.moves = legalMovesFor(mon).slice(0, 2);
+    setHeldItems(mon, build?.relic ? [build.relic] : []);
+    return mon;
+  }
+
+  function draftBuildMapFromPayload(payload = null) {
+    const map = new Map();
+    Object.values(payload || {}).flat().forEach((build) => {
+      if (build?.pokemonId) map.set(build.pokemonId, build);
+    });
+    return map;
+  }
+
+  function draftBuildMapFromServerResult(result) {
+    const map = draftBuildMapFromPayload(draftState.builds);
+    (result?.rounds || []).forEach((round) => {
+      [round.left, round.right].forEach((side) => {
+        if (side?.pokemon?.id && side.build && !map.has(side.pokemon.id)) map.set(side.pokemon.id, side.build);
+      });
+    });
+    return map;
+  }
+
+  function startDraftAutoBattle(serverResult) {
+    const match = draftState.match;
+    const leftPlayer = match?.players?.[0];
+    const rightPlayer = match?.players?.[1];
+    if (!match || !leftPlayer || !rightPlayer) return renderDraftBattleResult();
+    const builds = draftBuildMapFromServerResult(serverResult);
+    const orderedTeam = (player) => {
+      const orderedIds = draftState.order?.[player.id] || [];
+      const ids = [
+        ...orderedIds,
+        ...player.team.map((pokemon) => pokemon.id).filter((id) => !orderedIds.includes(id)),
+      ];
+      return ids.map((id) => player.team.find((pokemon) => pokemon.id === id)).filter(Boolean).slice(0, player.team.length);
+    };
+    const playerTeam = orderedTeam(leftPlayer).map((pokemon) => draftBattleMonForEngine(pokemon, builds.get(pokemon.id), "player"));
+    const enemyTeam = orderedTeam(rightPlayer).map((pokemon) => draftBattleMonForEngine(pokemon, builds.get(pokemon.id), "enemy"));
+    resetBattleHpVisuals(playerTeam);
+    resetBattleHpVisuals(enemyTeam);
+    state.autoBattling = false;
+    state.battleSpeed = 2;
+    const lockedArenaId = resolveDraftArenaId(serverResult?.arena?.id, serverResult?.arenaId);
+    const lockedArena = draftArenaById(lockedArenaId);
+    serverResult = { ...(serverResult || {}), arenaId: lockedArena.id, arena: lockedArena };
+    draftState.lockedArenaId = lockedArena.id;
+    draftState.rouletteArenaId = lockedArena.id;
+    draftState.arena = lockedArena;
+    setDraftMatchStarted();
+    state.battle = {
+      draft: true,
+      playerTeam,
+      enemyTeam,
+      enemyIndex: 0,
+      playerIndex: 0,
+      enemy: enemyTeam[0],
+      boss: false,
+      legendary: false,
+      npc: true,
+      tower: true,
+      arenaId: null,
+      draftArena: lockedArena,
+      draftCasual: !!serverResult?.casual || match?.mode === "casual-ai",
+      draftStartedAt: draftState.matchStartedAt,
+      trainerName: "Rival",
+      trainerSpriteId: null,
+      draftLeftId: leftPlayer.id,
+      draftRightId: rightPlayer.id,
+      draftLeftLabel: leftPlayer.id === draftState.playerId ? "Você" : leftPlayer.name || "Player 1",
+      draftRightLabel: rightPlayer.id === draftState.playerId ? "Você" : rightPlayer.name || "Player 2",
+      speedBoostStartedAt: Date.now(),
+      rngSeed: hashDraftBattleSeed(match.id || "draft"),
+      draftRounds: [],
+      draftScore: { [leftPlayer.id]: 0, [rightPlayer.id]: 0 },
+      draftServerResult: serverResult || null,
+    };
+    $("battle-title").textContent = `Draft Battle - ${state.battle.draftArena.name}`;
+    $("battle-log").textContent = `${state.battle.draftArena.name}: ${state.battle.draftArena.text}`;
+    renderBattle();
+    playBattleSfx("start");
+    show("battle");
+    window.setTimeout(() => animateBattleSendOut(), sendoutDelay(80));
+    scheduleAutoBattle(980);
+  }
+
+  function recordDraftBattleRound(winnerSide, playerMon = null, enemyMon = null) {
+    const battle = state.battle;
+    if (!battle?.draft) return;
+    const player = playerMon || activePlayer() || battle.playerTeam[battle.playerIndex] || battle.playerTeam.find((mon) => mon.currentHp <= 0) || battle.playerTeam[0];
+    const enemy = enemyMon || battle.enemy;
+    const playerPower = Math.max(0, player?.currentHp || 0);
+    const enemyPower = Math.max(0, enemy?.currentHp || 0);
+    const winnerId = winnerSide === "player" ? battle.draftLeftId : battle.draftRightId;
+    if (winnerId) battle.draftScore[winnerId] = (battle.draftScore[winnerId] || 0) + 1;
+    battle.draftRounds.push({
+      index: battle.draftRounds.length + 1,
+      winnerId,
+      left: { playerId: battle.draftLeftId, pokemon: player, power: playerPower },
+      right: { playerId: battle.draftRightId, pokemon: enemy, power: enemyPower },
+    });
+  }
+
+  function finishDraftAutoBattle(leftWon) {
+    const battle = state.battle;
+    const draftStats = {
+      [battle?.draftLeftId]: (battle?.playerTeam || []).map(draftPokemonStatsSummary),
+      [battle?.draftRightId]: (battle?.enemyTeam || []).map(draftPokemonStatsSummary),
+    };
+    draftState.battleResult = {
+      matchId: draftState.match?.id || "",
+      winnerId: leftWon ? battle?.draftLeftId : battle?.draftRightId,
+      score: battle?.draftScore || { [battle?.draftLeftId]: 0, [battle?.draftRightId]: 0 },
+      rounds: battle?.draftRounds || [],
+      stats: draftStats,
+      arena: battle?.draftArena || draftState.arena || null,
+      arenaId: battle?.draftArena?.id || draftState.arena?.id || null,
+      casual: !!battle?.draftCasual,
+      rankByPlayer: battle?.draftServerResult?.rankByPlayer || null,
+      durationMs: draftCurrentDurationMs(),
+    };
+    stopDraftMatchClock(draftState.battleResult.durationMs);
+    draftState.battleResult.mvp = draftFindMvp(draftState.battleResult);
+    const serverRank = draftState.battleResult.rankByPlayer?.[draftState.playerId];
+    draftState.battleResult.rank = draftState.battleResult.casual
+      ? { ...draftRankState(), delta: 0, casual: true }
+      : serverRank || applyDraftRank(draftState.battleResult.winnerId === draftState.playerId);
+    draftSaveHistory(draftState.battleResult, draftState.match, draftState.battleResult.rank);
+    state.battle = null;
+    state.autoBattling = false;
+    stopBattleSpeedCountdown();
+    renderDraftBattleResult();
+  }
+
+  function draftPokemonStatsSummary(pokemon) {
+    return {
+      id: pokemon?.id,
+      name: pokemon?.name || "?",
+      sprite: pokemon?.sprite,
+      dealt: Math.max(0, Math.round(pokemon?.draftStats?.dealt || 0)),
+      taken: Math.max(0, Math.round(pokemon?.draftStats?.taken || 0)),
+      healed: Math.max(0, Math.round(pokemon?.draftStats?.healed || 0)),
+      defeated: pokemon?.currentHp <= 0,
+    };
+  }
+
+  function renderDraftBattlePlaybackLegacy(roundIndex = 0) {
+    const match = draftState.match;
+    const result = draftState.battleResult;
+    const rounds = result?.rounds || [];
+    const round = rounds[Math.min(roundIndex, rounds.length - 1)];
+    if (!match || !result || !round) return renderDraftBattleResult();
+    const leftIsMe = round.left.playerId === draftState.playerId;
+    const mine = leftIsMe ? round.left : round.right;
+    const theirs = leftIsMe ? round.right : round.left;
+    const roundWon = round.winnerId === draftState.playerId;
+    $("choice-kicker").textContent = "Batalha automática";
+    $("choice-title").textContent = `Round ${round.index}`;
+    $("choice-copy").textContent = roundWon ? `${mine.pokemon?.name} venceu e continua em campo.` : `${mine.pokemon?.name} caiu. Seu próximo Pokémon entra.`;
+    $("choice-grid").innerHTML = `
+      <div class="draft-battle-playback draft-tower-battle">
+        <div class="draft-tower-arena">
+          <article class="draft-tower-side player ${roundWon ? "is-winner" : "is-loser"}">
+            <header><span>Você</span><b>${roundWon ? "Continua" : "Caiu"}</b></header>
+            <div class="draft-tower-platform">
+              <img src="${mine.pokemon?.sprite || ""}" alt="">
+            </div>
+            <strong>${mine.pokemon?.name || "?"}</strong>
+            <small>Poder ${mine.power}</small>
+          </article>
+          <div class="draft-tower-vs">VS</div>
+          <article class="draft-tower-side enemy ${!roundWon ? "is-winner" : "is-loser"}">
+            <header><span>Rival</span><b>${!roundWon ? "Continua" : "Caiu"}</b></header>
+            <div class="draft-tower-platform">
+              <img src="${theirs.pokemon?.sprite || ""}" alt="">
+            </div>
+            <strong>${theirs.pokemon?.name || "?"}</strong>
+            <small>Poder ${theirs.power}</small>
+          </article>
+        </div>
+        <div class="draft-battle-progress">
+          ${rounds.map((entry, index) => `<span class="${index < roundIndex ? "is-done" : index === roundIndex ? "is-active" : ""}">${entry.index}</span>`).join("")}
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    clearTimeout(draftBattlePlaybackTimer);
+    draftBattlePlaybackTimer = setTimeout(() => {
+      if (roundIndex + 1 >= rounds.length) return renderDraftBattleResult();
+      renderDraftBattlePlayback(roundIndex + 1);
+    }, 1150);
+  }
+
+  function renderDraftBattlePlayback(roundIndex = 0) {
+    const match = draftState.match;
+    const result = draftState.battleResult;
+    const rounds = result?.rounds || [];
+    const round = rounds[Math.min(roundIndex, rounds.length - 1)];
+    if (!match || !result || !round) return renderDraftBattleResult();
+    const leftIsMe = round.left.playerId === draftState.playerId;
+    const mine = leftIsMe ? round.left : round.right;
+    const theirs = leftIsMe ? round.right : round.left;
+    const roundWon = round.winnerId === draftState.playerId;
+    const myDefeatedIds = draftBattleDefeatedIds(rounds, roundIndex, draftState.playerId);
+    const rivalDefeatedIds = draftBattleDefeatedIds(rounds, roundIndex, theirs.playerId);
+    const myTeam = draftBattleTeamForView(draftState.playerId, mine.pokemon, mine.power, mine.build, myDefeatedIds);
+    const rivalTeam = draftBattleTeamForView(theirs.playerId, theirs.pokemon, theirs.power, theirs.build, rivalDefeatedIds);
+    const myActive = myTeam.find((pokemon) => pokemon.id === mine.pokemon?.id) || draftBattleViewMon(mine.pokemon, !roundWon, mine.power, mine.build);
+    const rivalActive = rivalTeam.find((pokemon) => pokemon.id === theirs.pokemon?.id) || draftBattleViewMon(theirs.pokemon, roundWon, theirs.power, theirs.build);
+    $("battle-title").textContent = "Batalha automática";
+    $("battle-log").textContent = roundWon
+      ? `${mine.pokemon?.name || "Seu Pokémon"} venceu e continua em campo.`
+      : `${mine.pokemon?.name || "Seu Pokémon"} caiu. Seu próximo Pokémon entra.`;
+    renderBattleRoster("player-card", myTeam, myActive, "Você", playerTrainerSprite(), "player", true, true);
+    renderBattleRoster("enemy-card", rivalTeam, rivalActive, "Rival", null, "enemy", true, true);
+    $("move-grid").innerHTML = `
+      <div class="battle-auto-status draft-battle-status">
+        <span>Round ${round.index}</span>
+        <div class="draft-battle-progress">
+          ${rounds.map((entry, index) => `<span class="${index < roundIndex ? "is-done" : index === roundIndex ? "is-active" : ""}">${entry.index}</span>`).join("")}
+        </div>
+      </div>
+    `;
+    $("battle-title").textContent = `Draft Battle - Round ${round.index}`;
+    $("battle-log").textContent = roundWon
+      ? `${mine.pokemon?.name || "Seu Pokémon"} venceu e continua em campo.`
+      : `${mine.pokemon?.name || "Seu Pokémon"} caiu. Seu próximo Pokémon entra.`;
+    renderBattleRoster("player-card", myTeam, myActive, "Seu time", playerTrainerSprite(), "player", true, true);
+    renderBattleRoster("enemy-card", rivalTeam, rivalActive, "Inimigo", null, "enemy", true, true);
+    $("move-grid").innerHTML = `<button class="battle-speed-toggle is-active" type="button" disabled aria-label="Batalha automática">2x<small>${round.index}/${rounds.length}</small></button>`;
+    show("battle");
+    document.querySelector(".rogue-stage")?.classList.add("has-battle-modal");
+    document.querySelector(".battle-grid")?.classList.add("tower-battle-grid");
+    positionTowerVsBadge();
+    animateRenderedHpBars();
+    clearTimeout(draftBattlePlaybackTimer);
+    draftBattlePlaybackTimer = setTimeout(() => {
+      if (roundIndex + 1 >= rounds.length) return renderDraftBattleResult();
+      renderDraftBattlePlayback(roundIndex + 1);
+    }, 1150);
+  }
+
+  function renderDraftOrderScreen(message = "") {
+    const match = draftState.match;
+    const me = match?.players?.find((player) => player.id === draftState.playerId);
+    const rival = match?.players?.find((player) => player.id !== draftState.playerId);
+    if (!match || !me) return showDraftBattleIntro("queue");
+    const myOrder = draftState.order?.[draftState.playerId] || [];
+    const rivalOrder = draftState.order?.[rival?.id] || [];
+    const isMyTurn = draftState.orderTurn === draftState.playerId;
+    $("choice-kicker").textContent = isMyTurn ? "Sua ordem" : "Ordem do rival";
+    $("choice-title").textContent = "Ordem de batalha";
+    $("choice-copy").textContent = message || (isMyTurn ? "Escolha o próximo Pokémon que entra na batalha." : "Aguarde o rival definir o próximo slot da ordem.");
+    $("choice-grid").innerHTML = `
+      <div class="draft-order">
+        <button class="draft-exit-button" type="button" data-action="draft-leave" aria-label="Sair do Draft Battle">Sair</button>
+        <div class="draft-top-status">${draftTimerMarkup(isMyTurn)}</div>
+        <div class="draft-order-lanes">
+          <article>
+            <strong>Você</strong>
+            <div>${Array.from({ length: 6 }, (_, index) => {
+              const pokemon = me.team.find((entry) => entry.id === myOrder[index]);
+              return pokemon ? `<span><img src="${draftPreviewSprite(pokemon)}" alt="">${pokemon.name}</span>` : `<span>${index + 1}</span>`;
+            }).join("")}</div>
+          </article>
+          <article>
+            <strong>${rival?.name || "Rival"}</strong>
+            <div>${Array.from({ length: 6 }, (_, index) => {
+              const pokemon = rival?.team?.find((entry) => entry.id === rivalOrder[index]);
+              return pokemon ? `<span><img src="${draftPreviewSprite(pokemon)}" alt="">${pokemon.name}</span>` : `<span>${index + 1}</span>`;
+            }).join("")}</div>
+          </article>
+        </div>
+        <div class="draft-order-picks">
+          ${me.team.map((pokemon) => {
+            const picked = myOrder.includes(pokemon.id);
+            return `
+              <button class="${picked ? "is-picked" : ""}" type="button" data-draft-order-pick="${pokemon.id}" ${picked || !isMyTurn ? "disabled" : ""}>
+                <img src="${draftPreviewSprite(pokemon)}" alt="${pokemon.name}">
+                <strong>${pokemon.name}</strong>
+                <small>${picked ? `Slot ${myOrder.indexOf(pokemon.id) + 1}` : draftTypeText(pokemon)}</small>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    startDraftCountdown(() => renderDraftOrderScreen(message));
+  }
+
+  function connectDraftBattle() {
+    if (draftSocket) return draftSocket;
+    if (typeof window.io !== "function") return null;
+    draftSocket = window.io();
+    draftSocket.on("connect", () => {
+      draftState.playerId = draftSocket.id || draftState.playerId;
+      const token = draftAuthToken();
+      if (token) draftSocket.emit("auth:token", { token });
+    });
+    draftSocket.on("auth:status", ({ user }) => {
+      if (user) saveDraftAuth({ token: draftAuthToken(), user });
+    });
+    draftSocket.on("draft:ready", ({ playerId }) => {
+      draftState.playerId = draftSocket.id || playerId;
+      draftState.status = "ready";
+    });
+    draftSocket.on("queue:status", ({ position, message }) => {
+      $("choice-copy").textContent = message || (position ? `Aguardando outro treinador. Posi??o na fila: ${position}.` : "Fora da fila.");
+    });
+    draftSocket.on("match:found", ({ match }) => {
+      clearTimeout(draftBattlePlaybackTimer);
+      clearTimeout(draftBattleStartFallbackTimer);
+      draftState.match = match;
+      draftState.options = [];
+      draftState.banOptions = [];
+      draftState.activeBanStep = 0;
+      draftState.submittedBanStep = 0;
+      stopDraftMatchClock(0);
+      draftState.lockedArenaId = "";
+      draftState.rouletteArenaId = "";
+      draftState.battleStartArenaId = "";
+      if (match?.phase === "ban") return renderDraftBanScreen("Partida encontrada. Comece banindo uma ameaça.");
+      renderDraftBattleRoom("Partida encontrada. O draft alternado começou.");
+    });
+    draftSocket.on("ban:start", ({ match, options, deadline }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.banOptions = options || [];
+      draftState.activeBanStep = match?.banStep || 0;
+      draftState.submittedBanStep = 0;
+      draftState.deadline = deadline || 0;
+      renderDraftBanScreen();
+    });
+    draftSocket.on("ban:waiting", ({ match, deadline }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.banOptions = [];
+      draftState.activeBanStep = 0;
+      draftState.submittedBanStep = 0;
+      draftState.deadline = deadline || 0;
+      renderDraftBanScreen();
+    });
+    draftSocket.on("ban:update", ({ match, banned }) => {
+      draftState.match = match;
+      renderDraftBanScreen(`${banned?.name || "Um Pokémon"} foi banido.`);
+    });
+    draftSocket.on("ban:stage-complete", ({ match }) => {
+      draftState.match = match;
+      draftState.banOptions = [];
+      draftState.activeBanStep = 0;
+      draftState.submittedBanStep = 0;
+      renderDraftBanScreen("Próxima etapa de banimento preparada.");
+    });
+    draftSocket.on("ban:complete", ({ match }) => {
+      draftState.match = match;
+      draftState.banOptions = [];
+      draftState.activeBanStep = 0;
+      draftState.submittedBanStep = 0;
+      draftState.deadline = 0;
+      renderDraftBattleRoom("Bans concluídos. O draft alternado começou.");
+    });
+    draftSocket.on("draft:options", ({ match, options, deadline }) => {
+      draftState.match = match;
+      draftState.options = options || [];
+      draftState.banOptions = [];
+      draftState.deadline = deadline || 0;
+      renderDraftBattleRoom();
+    });
+    draftSocket.on("draft:waiting", ({ match, deadline }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.deadline = deadline || 0;
+      renderDraftBattleRoom();
+    });
+    draftSocket.on("draft:update", ({ match, picked }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.deadline = 0;
+      renderDraftBattleRoom(`${picked?.name || "Um Pokémon"} entrou no draft.`);
+    });
+    draftSocket.on("draft:complete", ({ match }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.deadline = 0;
+      renderDraftBattleRoom("Times completos. Moves, relíquias e batalha automática vêm a seguir.");
+    });
+    draftSocket.on("build:start", ({ match, options, deadline }) => {
+      draftState.match = match;
+      draftState.options = [];
+      draftState.buildOptions = options || [];
+      draftState.buildSelections = {};
+      draftState.builds = {};
+      draftState.deadline = deadline || 0;
+      startDraftCountdown(() => renderDraftBuildScreen());
+      renderDraftBuildScreen();
+    });
+    draftSocket.on("build:update", ({ match, readyBy }) => {
+      draftState.match = match;
+      const isMe = readyBy === draftState.playerId;
+      renderDraftBuildScreen(isMe ? "Build enviada. Aguardando o rival confirmar." : "O rival confirmou a build. Finalize suas escolhas.");
+    });
+    draftSocket.on("battle:start", ({ match, order, arena }) => {
+      draftState.match = match;
+      draftState.order = order || draftState.order || {};
+      const startArenaId = arena?.id || match?.arena?.id || "";
+      if (startArenaId) {
+        draftState.battleStartArenaId = startArenaId;
+        if (!draftState.rouletteArenaId) {
+          const startArena = draftArenaById(startArenaId);
+          draftState.arena = startArena;
+          draftState.lockedArenaId = startArena.id;
+        }
+      }
+      draftState.deadline = 0;
+      clearTimeout(draftBattlePlaybackTimer);
+      if (draftTurnCountdownTimer) {
+        window.clearInterval(draftTurnCountdownTimer);
+        draftTurnCountdownTimer = null;
+      }
+      renderDraftBuildScreen("Builds confirmadas. Sorteando arena...");
+    });
+    draftSocket.on("order:start", ({ match, order, orderTurn, deadline }) => {
+      draftState.match = match;
+      draftState.order = order || {};
+      draftState.orderTurn = orderTurn || "";
+      draftState.deadline = deadline || 0;
+      renderDraftOrderScreen();
+    });
+    draftSocket.on("order:update", ({ match, order, orderTurn, deadline }) => {
+      draftState.match = match;
+      draftState.order = order || {};
+      draftState.orderTurn = orderTurn || "";
+      draftState.deadline = deadline || 0;
+      renderDraftOrderScreen();
+    });
+    draftSocket.on("battle:end", ({ match, order, result, arena, builds }) => {
+      clearTimeout(draftBattlePlaybackTimer);
+      draftState.match = match;
+      draftState.order = order || draftState.order || {};
+      const authoritativeArenaId = resolveDraftArenaId(arena?.id, match?.arena?.id, result?.arena?.id, result?.arenaId);
+      const lockedArena = draftArenaById(authoritativeArenaId);
+      draftState.arena = lockedArena;
+      draftState.lockedArenaId = lockedArena.id;
+      draftState.rouletteArenaId = lockedArena.id;
+      draftState.builds = builds || draftState.builds || {};
+      draftState.deadline = 0;
+      if (draftTurnCountdownTimer) {
+        window.clearInterval(draftTurnCountdownTimer);
+        draftTurnCountdownTimer = null;
+      }
+      draftState.battleResult = { ...(result || {}), matchId: match?.id || "", arenaId: lockedArena.id, arena: lockedArena, durationMs: 0 };
+      renderDraftArenaRoulette(lockedArena, draftState.battleResult);
+      scheduleDraftBattleStart(draftState.battleResult);
+    });
+    draftSocket.on("match:abandoned", () => {
+      draftState.match = null;
+      draftState.options = [];
+      showDraftBattleIntro("queue");
+      $("choice-copy").textContent = "O outro jogador saiu da sala.";
+    });
+    draftSocket.on("rematch:update", ({ accepted = [], waitingFor = [] }) => {
+      const acceptedMe = accepted.includes(draftState.playerId);
+      const waitingForMe = waitingFor.includes(draftState.playerId);
+      if (waitingForMe) {
+        $("choice-copy").textContent = "O rival pediu revanche. Aceite para jogar outra contra ele.";
+      } else if (acceptedMe) {
+        $("choice-copy").textContent = "Revanche enviada. Aguardando o rival aceitar.";
+      }
+    });
+    draftSocket.on("rematch:unavailable", () => {
+      $("choice-copy").textContent = "Revanche indisponível: o rival saiu ou a partida expirou.";
+    });
+    draftSocket.on("connect_error", () => {
+      $("choice-copy").textContent = "Não foi possível conectar ao servidor do Draft Battle. Abra a página pelo servidor Node, não pelo Live Server: npm start e depois /oak-rogue.html na porta do servidor.";
+    });
+    return draftSocket;
+  }
+
+  function joinDraftBattleQueue(mode = "ranked") {
+    const socket = connectDraftBattle();
+    const casual = mode === "ai";
+    if (!casual && !draftAuthToken()) return showDraftAuth("login", "Entre ou crie uma conta para jogar Contra Player ranqueado.");
+    $("choice-kicker").textContent = casual ? "Modo casual" : "Fila ranqueada";
+    $("choice-title").textContent = "Draft Battle";
+    if (!socket) {
+      $("choice-copy").textContent = "Socket.IO não carregou porque esta página não veio do servidor Node. Rode npm start e abra http://127.0.0.1:5500/oak-rogue.html; se a porta 5500 estiver ocupada, use PORT=5600 e abra http://127.0.0.1:5600/oak-rogue.html.";
+      $("choice-grid").innerHTML = `<button class="choice-button" type="button" data-action="title"><strong>Voltar</strong><small>Retornar para os modos.</small></button>`;
+      show("choice");
+      document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+      return;
+    }
+    $("choice-copy").textContent = casual ? "Preparando uma partida casual contra a IA." : "Aguardando outro treinador para iniciar o draft alternado.";
+    $("choice-grid").innerHTML = `
+      <div class="draft-queue-panel">
+        <span class="draft-queue-pulse" aria-hidden="true"></span>
+        <strong>${casual ? "Chamando IA" : "Buscando rival"}</strong>
+        <small>${casual ? "A partida casual não altera seu elo." : `Jogando como ${draftPlayerName()}.`}</small>
+        <button class="draft-menu-action compact" type="button" data-action="draft-leave">Cancelar</button>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+    if (draftAuthToken()) socket.emit("auth:token", { token: draftAuthToken() });
+    socket.emit("queue:join", { playerName: draftPlayerName(), mode, token: draftAuthToken() });
   }
 
   function applyPendingMapFloor() {
@@ -2315,7 +4514,7 @@
         <img src="${animated(entry.from)}" alt="${entry.from.name}" onerror="this.src='${mini(entry.from)}'">
         <strong>${entry.from.name}</strong>
       </div>
-      <span>→</span>
+      <span>â†’</span>
       <div>
         <img src="${animated(entry.to)}" alt="${entry.to.name}" onerror="this.src='${mini(entry.to)}'">
         <strong>${entry.to.name}</strong>
@@ -2327,7 +4526,7 @@
     const boss = BOSSES.find((entry) => entry.badge === badge);
     const arena = ARENAS.find((entry) => entry.badge === badge && entry.id !== "league");
     return {
-      name: boss?.arena ? `Insígnia ${boss.arena}` : `Insígnia ${badge}`,
+      name: boss?.arena ? `Ins?gnia ${boss.arena}` : `Ins?gnia ${badge}`,
       leader: boss?.leader || arena?.npc || "Líder desconhecido"
     };
   }
@@ -2336,8 +4535,8 @@
     $("rogue-floor").textContent = `${state.floor}/${RUN_FLOORS}`;
     const arena = currentVisualArena();
     $("rogue-biome").textContent = arena.name;
-    const risk = state.threat <= 1 ? "Estável" : state.threat < 2.5 ? "Perigoso" : "Crítico";
-    $("rogue-threat").textContent = `${risk} · Cap ${currentLevelCap()}${state.nuzlockeMode ? " · Nuzlocke" : ""}`;
+    const risk = state.threat <= 1 ? "Est?vel" : state.threat < 2.5 ? "Perigoso" : "Cr?tico";
+    $("rogue-threat").textContent = `${risk} ? Cap ${currentLevelCap()}${state.nuzlockeMode ? " ? Nuzlocke" : ""}`;
     document.body.dataset.arena = arena.id;
     if ($("team-count")) $("team-count").textContent = `${state.team.length}/6`;
     if ($("item-count")) $("item-count").textContent = String(state.items.length);
@@ -2356,7 +4555,7 @@
         <img class="animated-item" src="${itemSprite(item)}" alt="${item.name}">
         <span><strong>${item.name}</strong><small>${itemShortText(item)}</small></span>
       </div>
-    `).join("") || `<div class="item-pill"><small>Relíquias aparecem em nós especiais.</small></div>`;
+    `).join("") || `<div class="item-pill"><small>Relíquias aparecem em n?s especiais.</small></div>`;
     if (!Array.isArray(state.badges)) state.badges = [];
     if ($("badge-count")) $("badge-count").textContent = `${state.badges.length}/8`;
     if ($("badge-list")) $("badge-list").innerHTML = [1, 2, 3, 4, 5, 6, 7, 8].map((badge) => {
@@ -2368,7 +4567,7 @@
     if ($("synergy-list")) $("synergy-list").innerHTML = active.map(([type, count]) => {
       const tier = count >= 4 ? "T2" : "T1";
       return `<div class="synergy-pill"><strong>${type} ${tier}</strong><small>${count} pontos: +dano e habilidades melhores.</small></div>`;
-    }).join("") || `<div class="synergy-pill"><small>Junte 2+ do mesmo tipo para ativar bonus.</small></div>`;
+    }).join("") || `<div class="synergy-pill"><small>Junte 2+ do mesmo tipo para ativar bônus.</small></div>`;
     renderRouteSidebars();
     renderDexBadge();
   }
@@ -2595,6 +4794,12 @@
 
   function currentVisualArena() {
     if (!state.battle) return getArena();
+    if (state.battle.draft && state.battle.draftArena) {
+      return {
+        id: state.battle.draftArena.id || "neutral",
+        name: state.battle.draftArena.name || "Arena Draft",
+      };
+    }
     if (state.battle.arenaId) {
       const battleArena = ARENAS.find((arena) => arena.id === state.battle.arenaId);
       if (battleArena) return battleArena;
@@ -2641,7 +4846,7 @@
         <strong>${p.name}</strong>
         ${renderTypeChips(p.types)}
         <p>${p.text}</p>
-        <small>HP ${p.hp} · ATK ${p.atk} · DEF ${p.def} · VEL ${p.spd}</small>
+        <small>HP ${p.hp} ? ATK ${p.atk} ? DEF ${p.def} ? VEL ${p.spd}</small>
       </button>
     `).join("");
   }
@@ -2659,7 +4864,7 @@
         <strong>${p.name}</strong>
         ${renderTypeChips(p.types)}
         <p>${p.trait || "Registro nacional"}</p>
-        <small>HP ${p.hp} · ATK ${p.atk} · DEF ${p.def} · VEL ${p.spd}</small>
+        <small>HP ${p.hp} ? ATK ${p.atk} ? DEF ${p.def} ? VEL ${p.spd}</small>
       </button>
     `).join("");
   }
@@ -2908,7 +5113,7 @@
     const value = itemBonusText(item);
     const lines = {
       heal: ["Sustento: cura após atacar", "HP efetivo maior em lutas longas"],
-      crit: ["Critico +18%", "Mais chance de dano explosivo"],
+      crit: ["Crítico +18%", "Mais chance de dano explosivo"],
       atk: ["ATK +14%", "Aumenta o dano base"],
       spd: ["VEL +15%", "Ataca antes com mais frequencia"],
       def: ["DEF +12%", "Reduz dano recebido"],
@@ -2919,7 +5124,7 @@
     };
     const dynamicLines = {
       heal: [`Cura ${value} apos atacar`, "HP efetivo maior em lutas longas"],
-      crit: [`Critico ${value}`, "Mais chance de dano explosivo"],
+      crit: [`Crítico ${value}`, "Mais chance de dano explosivo"],
       atk: [`ATK ${value}`, "Aumenta o dano base"],
       spd: [`VEL ${value}`, "Ataca antes com mais frequencia"],
       def: [`DEF ${value}`, "Reduz dano recebido"],
@@ -2928,11 +5133,11 @@
       synergy: [`Sinergia ${value}`, "Melhora consistencia do time"],
       sash: lines.sash
     };
-    return dynamicLines[item?.kind] || ["Bonus especial da run"];
+    return dynamicLines[item?.kind] || ["Bônus especial da run"];
   }
 
   function itemShortText(item) {
-    return itemBonusLines(item)[0] || item?.text || "Bonus especial da run";
+    return itemBonusLines(item)[0] || item?.text || "Bônus especial da run";
   }
 
   function itemBonusMarkup(item) {
@@ -2953,7 +5158,7 @@
         ["ATK", before.atk, after.atk],
         ["DEF", before.def, after.def],
         ["VEL", before.spd, after.spd]
-      ].map(([label, from, to]) => `<span class="${to > from ? "buffed" : ""}"><i>${label}</i><b>${from}</b><em>${to > from ? `→ ${to}` : "—"}</em></span>`).join("")}
+      ].map(([label, from, to]) => `<span class="${to > from ? "buffed" : ""}"><i>${label}</i><b>${from}</b><em>${to > from ? `â†’ ${to}` : "â€”"}</em></span>`).join("")}
     </div>`;
   }
 
@@ -3135,7 +5340,7 @@
     registerDexSeenMany(enemyTeam);
     state.battle = { playerTeam: state.team, enemyTeam, enemyIndex: 0, playerIndex: state.team.findIndex((p) => p.currentHp > 0), enemy: enemyTeam[0], boss: !towerBattle && bossBattle, legendary: towerBattle ? !!enemyTeam[0].legendary : legendaryBattle, npc: !towerBattle && npcBattle, tower: towerBattle, arenaId: getArenaForFloor(state.floor || 1).id, trainerName: towerBattle ? "Torre" : npcData?.trainerName || null, trainerSpriteId: towerBattle ? null : npcData?.trainerSpriteId || enemyTeam[0]?.trainer || null, speedBoostStartedAt: Date.now() };
     $("battle-title").textContent = towerBattle
-      ? `${state.tower.title} · Andar ${state.floor}`
+      ? `${state.tower.title} ? Andar ${state.floor}`
       : node.type === "boss"
       ? `${state.battle.enemy.leader} enviou ${state.battle.enemy.name}`
       : node.type === "legendary"
@@ -3176,13 +5381,115 @@
       ? currentPlayer
       : activePlayer() || currentPlayer || playerTeam.find((p) => p.currentHp <= 0) || playerTeam[0];
     if (!player) return;
-    renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, "Seu time", playerTrainerSprite(), "player", isTowerBattle);
-    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendario" : state.battle.npc ? state.battle.trainerName : "Inimigo", state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy", isTowerBattle);
+    const playerLabel = state.battle.draft ? state.battle.draftLeftLabel || "Player 1" : "Seu time";
+    const enemyLabel = state.battle.draft
+      ? state.battle.draftRightLabel || "Player 2"
+      : state.battle.boss ? state.battle.enemy.leader : state.battle.legendary ? "Lendário" : state.battle.npc ? state.battle.trainerName : "Inimigo";
+    renderBattleRoster("player-card", state.battle.playerTeam || state.team, player, playerLabel, playerTrainerSprite(), "player", isTowerBattle);
+    renderBattleRoster("enemy-card", state.battle.enemyTeam, state.battle.enemy, enemyLabel, state.battle.trainerSpriteId || state.battle.enemy.trainer, "enemy", isTowerBattle);
+    renderDraftActivePopups(player, state.battle.enemy);
+    const draftBansSlot = $("battle-draft-bans");
+    if (draftBansSlot) {
+      draftBansSlot.innerHTML = state.battle.draft ? `
+        <div class="draft-battle-info">
+          <div class="draft-match-clock">Tempo <b data-draft-match-clock>${formatDraftDuration(draftCurrentDurationMs())}</b></div>
+          ${draftArenaEffectMarkup(state.battle.draftArena)}
+        </div>
+      ` : "";
+    }
+    if (state.battle.draft) startDraftMatchClock();
     animateRenderedHpBars();
     applyTowerBattleInlineLayout(isTowerBattle);
     const countdown = battleSpeedCountdownSeconds();
     $("move-grid").innerHTML = `<button class="battle-speed-toggle ${state.battleSpeed >= 2 ? "is-active" : ""} ${state.battleSpeed === 3 ? "is-3x" : ""}" type="button" data-battle-speed="1" aria-pressed="${state.battleSpeed >= 2 ? "true" : "false"}" title="${state.battleSpeed === 3 ? "Velocidade maxima ativa" : "Alternar velocidade"}" ${state.battleSpeed === 3 ? "disabled" : ""}>${state.battleSpeed === 3 ? "3x" : "2x"}${state.battleSpeed === 2 && countdown > 0 ? `<small>${countdown}s</small>` : ""}</button>`;
     if (isTowerBattle) positionTowerVsBadge();
+  }
+
+  function renderDraftActivePopups(leftMon, rightMon) {
+    const leftSlot = $("draft-active-left");
+    const rightSlot = $("draft-active-right");
+    if (!leftSlot || !rightSlot) return;
+    if (!state.battle?.draft) {
+      leftSlot.innerHTML = "";
+      rightSlot.innerHTML = "";
+      return;
+    }
+    const leftLabel = state.battle.draftLeftLabel || "Player 1";
+    const rightLabel = state.battle.draftRightLabel || "Player 2";
+    leftSlot.innerHTML = draftActivePopupMarkup(leftMon, leftLabel, "left");
+    rightSlot.innerHTML = draftActivePopupMarkup(rightMon, rightLabel, "right");
+  }
+
+  function signedPercent(value) {
+    const pct = Math.round((value - 1) * 100);
+    return `${pct > 0 ? "+" : ""}${pct}%`;
+  }
+
+  function draftRelicEffectLines(relic, mon = null) {
+    if (!relic) return ["Nenhuma relíquia equipada"];
+    const lines = {
+      "focus-band": ["Sobrevive a 1 golpe fatal"],
+      "shell-bell": ["Cura +9% HP ao agir", "Dano final -6%"],
+      "quick-claw": ["Velocidade +15%", "Dano final -5%"],
+      "scope-lens": ["Crítico +16%", "Recebe +5% dano"],
+      leftovers: ["Cura +8% HP ao agir", "Dano final -6%"],
+      "type-charm": ["STAB +14%", "Fora do tipo -5%"],
+      "life-orb": ["Dano final +20%", "Recuo 6% HP"],
+      "muscle-band": ["Ataque +14%", "Defesa -6%", "Velocidade -6%"],
+      "wise-glasses": ["Dano final +8%", "Defesa -4%"],
+      "choice-scarf": ["Velocidade +18%", "Dano final -8%"],
+      "assault-vest": ["Recebe -12% dano", "Velocidade -8%"],
+      "rocky-helmet": ["Recebe -6% dano", "Atacante sofre 4%"],
+      "sitrus-berry": ["Cura +7% HP ao agir"],
+      "lum-berry": ["Recebe -6% dano", "Dano final -4%"],
+      metronome: [`Dano ${signedPercent(draftRelicOutgoingModifier(mon, mon?.types?.[0] || "Normal"))}`, "Escala por duelo vencido"],
+      "razor-claw": ["Crítico +20%", "Recebe +8% dano"],
+      "king-rock": ["Dano final +8%", "Defesa -4%"],
+      "bright-powder": ["Recebe -8% dano", "Dano final -6%"],
+      charcoal: ["Fire +14%", "Fora do tipo -4%"],
+      "mystic-water": ["Water +14%", "Fora do tipo -4%"],
+      magnet: ["Electric +14%", "Defesa -4%"],
+      "miracle-seed": ["Grass +14%", "Cura 4% do dano", "Fora do tipo -4%"],
+      "black-belt": ["Fighting +14%", "Recebe +5% dano"],
+      "dragon-fang": ["Dragon +18%", "Velocidade -6%"],
+    }[relic.id];
+    return lines || [draftRelicBonusSummary(relic)];
+  }
+
+  function draftActivePopupMarkup(mon, label, side) {
+    if (!mon) return "";
+    const hpPct = Math.max(0, Math.min(100, Math.round(((mon.currentHp || 0) / Math.max(1, mon.maxHp || 1)) * 100)));
+    const relic = heldItems(mon)[0] || null;
+    const arenaNote = draftArenaBonusForPokemon(mon, state.battle?.draftArena);
+    const statRows = [
+      ["HP", `${Math.max(0, mon.currentHp || 0)}/${mon.maxHp || 1}`],
+      ["ATK", atkVal(mon)],
+      ["DEF", defVal(mon)],
+      ["VEL", speedVal(mon)],
+      ["ENE", mon.energy ?? 0],
+    ];
+    const relicLines = draftRelicEffectLines(relic, mon);
+    return `
+      <div class="draft-active-popup-card side-${side}">
+        <header>
+          <span>${label}</span>
+          <strong>${mon.name}</strong>
+          <small>${(mon.types || ["Normal"]).join(" / ")}</small>
+        </header>
+        <div class="draft-active-hp"><span style="width:${hpPct}%"></span></div>
+        <div class="draft-active-stats">
+          ${statRows.map(([name, value]) => `<span><b>${name}</b><em>${value}</em></span>`).join("")}
+        </div>
+        <div class="draft-active-bonus">
+          ${relic ? `<img src="${itemSprite(relic)}" alt="">` : ""}
+          <div>
+            <span><b>Relíquia</b><em>${relic ? relic.name : "Nenhuma"}</em></span>
+            ${relicLines.map((line) => `<span><b>Efeito</b><em>${line}</em></span>`).join("")}
+            <span><b>Arena</b><em>${arenaNote}</em></span>
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function renderBattleRoster(id, mons, active, label, trainer, side = "", useTeamBalls = false, activeOnly = false) {
@@ -3260,12 +5567,12 @@
       });
     }
     Object.assign(grid.style, {
-      position: "fixed",
-      left: "50%",
-      top: "50%",
+      position: "relative",
+      left: "auto",
+      top: "auto",
       zIndex: "81",
       margin: "0",
-      transform: "translate(-50%, -50%)",
+      transform: "none",
       width: "min(1040px, calc(100vw - 32px))",
       height: "auto",
       minHeight: "0",
@@ -3359,19 +5666,20 @@
     p.renderedHpPct = pct;
     p.renderedHpValue = p.currentHp;
     p.renderedMaxHpValue = p.maxHp;
-    const hpState = pct <= 25 ? "danger" : pct <= 50 ? "warn" : "ok";
+    const hpState = pct <= 25 ? "danger" : pct <= 50 ? "watern" : "ok";
     const primaryType = p.types?.[0] || "Normal";
     const secondaryType = p.types?.[1] || primaryType;
     const primaryColor = TYPE_COLOR[primaryType] || "#6af0c1";
     const secondaryColor = TYPE_COLOR[secondaryType] || primaryColor;
     const sideClass = side ? `side-${side}` : "";
+    const heldTooltipText = (item) => state.battle?.draft ? draftRelicBonusSummary(item) : itemShortText(item);
     return `<div class="battle-slot ${sideClass} ${active ? "active" : ""} ${p.currentHp <= 0 && !pendingFaint ? "fainted" : ""} ${pendingFaint ? "pending-faint" : ""}" data-battle-mon="${p.name}" style="--mon-type-color:${primaryColor};--mon-type-color-2:${secondaryColor};">
       <strong>${p.name} <small>Lv.${p.level}</small></strong>
       ${renderBattleTypeBadges(p.types || [])}
-      ${heldItems(p).length ? `<div class="battle-held-items" aria-label="Relíquias equipadas">${heldItems(p).map((item) => `<span title="${item.name}: ${itemShortText(item)}"><img src="${itemSprite(item)}" alt="${item.name}"></span>`).join("")}</div>` : ""}
+      ${heldItems(p).length ? `<div class="battle-held-items" aria-label="Relíquias equipadas">${heldItems(p).map((item) => `<span data-held-tooltip="${item.name}" data-held-tooltip-text="${heldTooltipText(item)}" title="${item.name}: ${heldTooltipText(item)}"><img src="${itemSprite(item)}" alt="${item.name}"></span>`).join("")}</div>` : ""}
       <div class="hp-bar ${hpState}" aria-label="HP"><span data-hp-target="${pct}" style="width:${previousPct}%"></span></div>
       <small>${Math.max(0, p.currentHp)}/${p.maxHp}</small>
-      <img class="pokemon-anim" src="${animated(p)}" alt="${p.name}" onerror="this.src='${sprite(p)}'">
+      <img class="pokemon-anim" src="${animated(p)}" alt="${p.name}" onerror="this.onerror=null;this.src='${staticSprite(p)}'">
     </div>`;
   }
 
@@ -3440,18 +5748,135 @@
     `;
   }
 
+  function hashDraftBattleSeed(value) {
+    let hash = 2166136261;
+    String(value || "draft").split("").forEach((char) => {
+      hash ^= char.charCodeAt(0);
+      hash = Math.imul(hash, 16777619);
+    });
+    return hash >>> 0 || 1;
+  }
+
+  function battleRandom() {
+    if (!state.battle?.draft) return Math.random();
+    let seed = state.battle.rngSeed >>> 0;
+    seed = Math.imul(seed || 1, 1664525) + 1013904223;
+    state.battle.rngSeed = seed >>> 0;
+    return (state.battle.rngSeed >>> 0) / 4294967296;
+  }
+
+  function draftEnsureStats(pokemon) {
+    if (!pokemon) return null;
+    pokemon.draftStats ||= { dealt: 0, taken: 0, healed: 0 };
+    return pokemon.draftStats;
+  }
+
+  function draftTrackDamage(attacker, defender, amount) {
+    if (!state.battle?.draft) return;
+    const dealt = Math.max(0, Math.min(amount, Math.max(0, defender?.currentHp || 0)));
+    draftEnsureStats(attacker).dealt += dealt;
+    draftEnsureStats(defender).taken += dealt;
+  }
+
+  function draftTrackHealing(pokemon, beforeHp) {
+    if (!state.battle?.draft || !pokemon) return;
+    const healed = Math.max(0, (pokemon.currentHp || 0) - Math.max(0, beforeHp || 0));
+    if (healed > 0) draftEnsureStats(pokemon).healed += healed;
+  }
+
   function calcDamage(attacker, defender, power, type) {
-    const base = ((atkVal(attacker) * power) / Math.max(26, defVal(defender))) * (0.9 + Math.random() * 0.14) * 14;
+    const base = ((atkVal(attacker) * power) / Math.max(26, defVal(defender))) * (0.9 + battleRandom() * 0.14) * 14;
     const stab = attacker.types.includes(type) ? 1.12 : 1;
-    const eff = effectiveness(type, defender.types);
-    const critChance = Math.min(0.75, 0.08 + strongestBonus("crit", attacker));
-    const crit = Math.random() < critChance ? 1.35 : 1;
-    const orb = 1 + statBonus("damage", attacker);
-    const earlyTowerGuard = state.battle?.tower && state.floor <= 5 && state.battle.enemyTeam?.includes(attacker) ? 0.9 : 1;
+    const rawEff = effectiveness(type, defender.types);
+    const eff = state.battle?.draft && rawEff === 0 ? 0.35 : rawEff;
+    const draftArena = state.battle?.draft ? draftArenaById(state.battle.draftArena?.id) : null;
+    const critPenalty = draftArena?.id === "mist" ? 0.04 : 0;
+    const critChance = Math.min(0.75, Math.max(0.02, 0.08 + strongestBonus("crit", attacker) - critPenalty));
+    const crit = battleRandom() < critChance ? 1.35 : 1;
+    const orb = state.battle?.draft ? 1 : 1 + statBonus("damage", attacker);
+    const earlyTowerGuard = !state.battle?.draft && state.battle?.tower && state.floor <= 5 && state.battle.enemyTeam?.includes(attacker) ? 0.9 : 1;
     const playerSide = state.battle?.playerTeam?.includes(attacker);
     const enemySide = state.battle?.enemyTeam?.includes(attacker);
-    const runRelief = enemySide && (state.battle?.tower || state.nuzlockeMode) ? 0.9 : playerSide && (state.battle?.tower || state.nuzlockeMode) ? 1.06 : 1;
-    return { amount: eff === 0 ? 0 : Math.max(1, Math.round(base * stab * eff * crit * orb * earlyTowerGuard * runRelief)), eff, crit: crit > 1 };
+    const runRelief = state.battle?.draft ? 1 : enemySide && (state.battle?.tower || state.nuzlockeMode) ? 0.9 : playerSide && (state.battle?.tower || state.nuzlockeMode) ? 1.06 : 1;
+    let arenaBoost = 1;
+    if (draftArena?.id === "rain") arenaBoost *= type === "Water" ? 1.1 : type === "Fire" ? 0.95 : 1;
+    if (draftArena?.id === "sun") arenaBoost *= type === "Fire" ? 1.1 : type === "Water" ? 0.95 : 1;
+    if (draftArena?.id === "electric" && type === "Electric") arenaBoost *= 1.1;
+    if (draftArena?.id === "storm" && defender.types?.some((entry) => ["Rock", "Ground", "Steel"].includes(entry))) arenaBoost *= 0.92;
+    if (draftArena?.id === "garden") {
+      if (type === "Grass") arenaBoost *= 1.04;
+      if (type === "Poison" && defender.types?.includes("Grass")) arenaBoost *= 1.08;
+    }
+    if (draftArena?.id === "toxic") {
+      if (type === "Poison") arenaBoost *= 1.1;
+      if (defender.types?.some((entry) => ["Fairy", "Grass"].includes(entry))) arenaBoost *= 1.05;
+    }
+    if (draftArena?.id === "glacier") {
+      if (type === "Ice") arenaBoost *= 1.12;
+      if (attacker.types?.some((entry) => ["Dragon", "Flying"].includes(entry))) arenaBoost *= 0.94;
+    }
+    if (draftArena?.id === "spirit") {
+      if (["Ghost", "Psychic"].includes(type)) arenaBoost *= 1.1;
+      if (type === "Normal") arenaBoost *= 0.92;
+    }
+    if (draftArena?.id === "drake") {
+      if (type === "Dragon") arenaBoost *= 1.12;
+      if (defender.types?.includes("Fairy")) arenaBoost *= 0.92;
+    }
+    if (draftArena?.id === "forge") {
+      if (type === "Steel") arenaBoost *= 1.1;
+      if (type === "Fire" && defender.types?.includes("Steel")) arenaBoost *= 1.06;
+    }
+    if (draftArena?.id === "gravity") {
+      if (type === "Ground") arenaBoost *= 1.08;
+      if (defender.types?.includes("Flying")) arenaBoost *= 1.06;
+    }
+    if (draftArena?.id === "tide") {
+      if (type === "Water") arenaBoost *= 1.04;
+      if (type === "Electric" && defender.types?.includes("Water")) arenaBoost *= 1.06;
+    }
+    if (draftArena?.id === "gale") {
+      if (attacker.types?.some((entry) => ["Flying", "Bug"].includes(entry))) arenaBoost *= 1.06;
+      if (type === "Rock" && defender.types?.some((entry) => ["Flying", "Bug"].includes(entry))) arenaBoost *= 1.08;
+    }
+    if (draftArena?.id === "night") {
+      if (["Dark", "Ghost"].includes(type)) arenaBoost *= 1.1;
+      if (type === "Psychic") arenaBoost *= 0.94;
+    }
+    if (draftArena?.id === "psychic") {
+      if (type === "Psychic") arenaBoost *= 1.12;
+      if ((attacker.spd || 0) > (defender.spd || 0)) arenaBoost *= 0.97;
+    }
+    if (draftArena?.id === "forest") {
+      if (defender.types?.some((entry) => ["Grass", "Bug"].includes(entry))) arenaBoost *= 0.92;
+      if (type === "Fire" && defender.types?.some((entry) => ["Grass", "Bug"].includes(entry))) arenaBoost *= 1.08;
+    }
+    if (draftArena?.id === "eruption") {
+      if (type === "Fire") arenaBoost *= 1.12;
+      if (defender.types?.some((entry) => ["Ice", "Grass"].includes(entry))) arenaBoost *= 1.06;
+    }
+    if (draftArena?.id === "crystal") {
+      if (defender.types?.some((entry) => ["Rock", "Ice"].includes(entry))) arenaBoost *= 0.92;
+      if (type === "Steel" && defender.types?.some((entry) => ["Rock", "Ice"].includes(entry))) arenaBoost *= 1.06;
+    }
+    const draftRelicBoost = draftRelicOutgoingModifier(attacker, type) * draftRelicIncomingModifier(defender);
+    const amount = eff === 0 ? 0 : Math.max(1, Math.round(base * stab * eff * crit * orb * earlyTowerGuard * runRelief * arenaBoost * draftRelicBoost));
+    if (draftArena?.id === "garden" && attacker.types?.includes("Grass") && amount > 0) {
+      const beforeHeal = attacker.currentHp;
+      attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + Math.ceil(attacker.maxHp * 0.04));
+      draftTrackHealing(attacker, beforeHeal);
+    }
+    return { amount, eff, crit: crit > 1 };
+  }
+
+  function draftArenaAfterHit(attacker, defender, amount) {
+    const draftArena = state.battle?.draft ? draftArenaById(state.battle.draftArena?.id) : null;
+    if (draftArena?.id !== "tide" || !attacker?.types?.includes("Water") || amount <= 0 || defender?.currentHp > 0) return "";
+    const beforeHeal = attacker.currentHp;
+    attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + Math.ceil(attacker.maxHp * 0.06));
+    draftTrackHealing(attacker, beforeHeal);
+    const healed = attacker.currentHp - beforeHeal;
+    return healed > 0 ? ` ${attacker.name} recuperou ${healed} HP pela Maré Alta.` : "";
   }
 
   function effectivenessText(eff) {
@@ -3481,6 +5906,7 @@
     const faintDelay = 1650;
     const hpDrainDelay = 1100;
     let guard = 0;
+    try {
     while (state.battle && activePlayer() && state.battle.enemy?.currentHp > 0 && guard < 80) {
       guard += 1;
       const playerAtRoundStart = activePlayer();
@@ -3500,18 +5926,22 @@
           const pType = pMove.type || p.types[0];
           p.energy = Math.max(0, p.energy - (pMove.cost || 0));
           const hit = calcDamage(p, e, pMove.power || 1, pType);
+          draftTrackDamage(p, e, hit.amount);
           e.currentHp -= hit.amount;
+          const pArenaNote = draftArenaAfterHit(p, e, hit.amount);
           applyMoveEffect(pMove, p, e, hit.amount);
+          const pRelicNote = draftRelicAfterHit(p, e, hit.amount);
           p.energy = Math.min(4, p.energy + 1);
           const healBonus = strongestBonus("heal", p);
           if (healBonus > 0) {
             const beforeHeal = p.currentHp;
             p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * healBonus));
+            draftTrackHealing(p, beforeHeal);
             const healed = p.currentHp - beforeHeal;
           if (healed > 0) window.setTimeout(() => animateBattlePopup("player-card", p.name, `+${healed}`, "heal"), battleDelay(280));
           }
           const enemyStatus = tickStatus(e);
-          $("battle-log").textContent = `${p.name} usou ${pMove.name}: ${hit.amount} dano${hit.crit ? " crítico" : ""}${effectivenessText(hit.eff)}.${enemyStatus}`;
+          $("battle-log").textContent = `${p.name} usou ${pMove.name}: ${hit.amount} dano${hit.crit ? " crítico" : ""}${effectivenessText(hit.eff)}.${pRelicNote}${pArenaNote}${enemyStatus}`;
           renderBattle();
           animateBattleAction("player-card", p.name, "enemy-card", e.name, hit.amount, hit.crit, hit.eff, pType, pMove);
           await wait(battleDelay(actionDelay));
@@ -3527,10 +5957,13 @@
           const eMove = chooseAutoMove(e, p);
           const eType = eMove.type || e.types[0];
           const eHit = calcDamage(e, p, state.battle.boss ? (eMove.power || 1) * 1.06 : eMove.power || 1, eType);
+          draftTrackDamage(e, p, eHit.amount);
           p.currentHp -= eHit.amount;
+          const eArenaNote = draftArenaAfterHit(e, p, eHit.amount);
           applyMoveEffect(eMove, e, p, eHit.amount);
+          const eRelicNote = draftRelicAfterHit(e, p, eHit.amount);
           const playerStatus = tickStatus(p);
-          $("battle-log").textContent = `${e.name} usou ${eMove.name || e.trait}: ${eHit.amount} dano${eHit.crit ? " crítico" : ""}${effectivenessText(eHit.eff)}.${playerStatus}`;
+          $("battle-log").textContent = `${e.name} usou ${eMove.name || e.trait}: ${eHit.amount} dano${eHit.crit ? " crítico" : ""}${effectivenessText(eHit.eff)}.${eRelicNote}${eArenaNote}${playerStatus}`;
           if (p.currentHp <= 0 && statBonus("sash", p) > 0 && !state.sashUsed) {
             p.currentHp = 1;
             state.sashUsed = true;
@@ -3539,6 +5972,7 @@
           renderBattle();
           animateBattleAction("enemy-card", e.name, "player-card", p.name, eHit.amount, eHit.crit, eHit.eff, eType, eMove);
           await wait(battleDelay(actionDelay));
+          if (state.battle?.draft && p.currentHp <= 0) recordDraftBattleRound("enemy", p, e);
           const faintDelayLeft = pendingBattleFaintDelay();
           if (faintDelayLeft > 0) await wait(faintDelayLeft);
           const playerBeforeLosses = p;
@@ -3553,6 +5987,7 @@
           if (!playerAfterLosses) {
             state.autoBattling = false;
             await wait(battleDelay(hpDrainDelay));
+            if (state.battle?.draft) return finishDraftAutoBattle(false);
             endRun(false);
             return;
           }
@@ -3567,6 +6002,13 @@
     renderBattle();
     state.autoBattling = false;
     save();
+    } catch (error) {
+      console.error("Auto battle failed", error);
+      state.autoBattling = false;
+      if (button) button.disabled = false;
+      $("battle-log").textContent = "A batalha encontrou um erro de animação. Tentando manter a partida ativa.";
+      renderBattle();
+    }
   }
 
   function wait(ms) {
@@ -4194,8 +6636,8 @@
     };
     const drawCrystal = (x, y, size, angle, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.fillStyle = `rgba(223,250,255,${alpha})`;
       ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.9})`;
       ctx.lineWidth = Math.max(1, size * 0.12);
@@ -4342,8 +6784,8 @@
     };
     const drawRing = (x, y, radius, angle, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.scale(1.25, 0.62);
       const grad = ctx.createRadialGradient(0, 0, radius * 0.48, 0, 0, radius);
       grad.addColorStop(0, "rgba(0,0,0,0)");
@@ -4532,8 +6974,8 @@
     };
     const drawPulse = (x, y, radius, angle, alpha, twist) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle + twist);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle + twist);
       ctx.scale(1.55, 0.62);
       const grad = ctx.createRadialGradient(0, 0, radius * 0.25, 0, 0, radius);
       grad.addColorStop(0, "rgba(255,255,255,0)");
@@ -4559,8 +7001,8 @@
     };
     const drawScale = (x, y, size, angle, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.fillStyle = `rgba(116,255,220,${alpha})`;
       ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
       ctx.lineWidth = Math.max(1, size * 0.12);
@@ -4716,8 +7158,8 @@
     };
     const drawStar = (x, y, size, alpha, angle) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.fillStyle = `rgba(255, 246, 181, ${alpha})`;
       ctx.strokeStyle = `rgba(106, 240, 193, ${alpha * 0.8})`;
       ctx.lineWidth = Math.max(1, size * 0.12);
@@ -4737,7 +7179,7 @@
     };
     const drawBolt = (x, y, size, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translateeé(x, y);
       ctx.fillStyle = `rgba(255, 219, 84, ${alpha})`;
       ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.8})`;
       ctx.lineWidth = 1.5;
@@ -4900,8 +7342,8 @@
     };
     const drawWave = (x, y, radius, angle, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.scale(1.5, 0.58);
       ctx.strokeStyle = `rgba(185,160,255,${alpha})`;
       ctx.lineWidth = Math.max(5, radius * 0.14);
@@ -4927,8 +7369,8 @@
     };
     const drawShard = (x, y, size, angle, alpha) => {
       ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      ctx.translateeé(x, y);
+      ctx.rotaté(angle);
       ctx.fillStyle = `rgba(185,160,255,${alpha})`;
       ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.65})`;
       ctx.lineWidth = Math.max(1, size * 0.1);
@@ -5431,13 +7873,25 @@
   }
 
   function applyMoveEffect(move, attacker, defender, damage) {
-    if (move.drain) attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + Math.ceil(damage * move.drain));
+    if (move.drain) {
+      const beforeHeal = attacker.currentHp;
+      attacker.currentHp = Math.min(attacker.maxHp, attacker.currentHp + Math.ceil(damage * move.drain));
+      draftTrackHealing(attacker, beforeHeal);
+    }
     if (move.teamHeal) {
-      state.team.forEach((p) => {
-        if (p.currentHp > 0) p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * move.teamHeal));
+      (state.battle?.playerTeam || state.team).forEach((p) => {
+        if (p.currentHp > 0) {
+          const beforeHeal = p.currentHp;
+          p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * move.teamHeal));
+          draftTrackHealing(p, beforeHeal);
+        }
       });
     }
-    if (move.extra && Math.random() < move.extra) defender.currentHp -= Math.ceil(damage * 0.45);
+    if (move.extra && battleRandom() < move.extra) {
+      const extraDamage = Math.ceil(damage * 0.45);
+      draftTrackDamage(attacker, defender, extraDamage);
+      defender.currentHp -= extraDamage;
+    }
     if (move.execute && defender.currentHp > 0 && defender.currentHp / defender.maxHp <= move.execute) defender.currentHp = 0;
     if (move.burn) defender.burn = 2;
   }
@@ -5445,6 +7899,7 @@
   function tickStatus(p) {
     if (!p?.burn) return "";
     const burnDamage = Math.ceil(p.maxHp * 0.06);
+    if (state.battle?.draft) draftEnsureStats(p).taken += Math.max(0, Math.min(burnDamage, Math.max(0, p.currentHp || 0)));
     p.currentHp -= burnDamage;
     p.burn -= 1;
     return ` ${p.name} sofreu ${burnDamage} de queimadura.`;
@@ -5492,6 +7947,19 @@
 
   function handleEnemyFaint(prefix) {
     const battle = state.battle;
+    if (battle?.draft) {
+      recordDraftBattleRound("player", activePlayer(), battle.enemy);
+      battle.enemy.currentHp = 0;
+      const nextIndex = battle.enemyTeam.findIndex((p, index) => index > battle.enemyIndex && p.currentHp > 0);
+      if (nextIndex === -1) return finishDraftAutoBattle(true);
+      battle.enemyIndex = nextIndex;
+      battle.enemy = battle.enemyTeam[nextIndex];
+      $("battle-title").textContent = `Draft Battle - ${battle.draftArena?.name || "Arena"}`;
+      $("battle-log").textContent = `${prefix} O rival enviou ${battle.enemy.name}.`;
+      renderBattle();
+      window.setTimeout(() => animateBattleSendOut({ sides: ["enemy"] }), sendoutDelay(80));
+      return;
+    }
     const reward = awardBattleXp(battle.enemy, battle.boss);
     const xpLog = ` +${reward.xp} XP${reward.levels ? `, ${reward.levels} nível(is) ganho(s)` : ""}.`;
     if (!battle?.boss && !battle?.npc) return winBattle(`${prefix}${xpLog}`, reward);
@@ -5542,10 +8010,11 @@
       window.setTimeout(() => {
         const finishFaint = () => {
           const playerBeforeLosses = p;
+          if (state.battle?.draft && !state.battle.playerTeam.some((mon) => mon.currentHp > 0)) return finishDraftAutoBattle(false);
           if (state.tower?.active && !state.team.some((mon) => mon.currentHp > 0)) return endRun(false);
           applyBattleLosses();
           const playerAfterLosses = activePlayer();
-          if (!playerAfterLosses) return endRun(false);
+          if (!playerAfterLosses) return state.battle?.draft ? finishDraftAutoBattle(false) : endRun(false);
           renderBattle();
           if (playerAfterLosses !== playerBeforeLosses) {
             window.setTimeout(() => animateBattleSendOut({ sides: ["player"] }), sendoutDelay(80));
@@ -5566,8 +8035,8 @@
     const battleType = state.battle?.tower
       ? "Torre"
       : boss
-      ? defeated?.badge ? "Lider de ginasio" : "Liga"
-      : state.battle?.legendary ? "Lendario" : state.battle?.npc ? "Treinador" : "Rota";
+      ? defeated?.badge ? "Líder de ginásio" : "Liga"
+      : state.battle?.legendary ? "Lendário" : state.battle?.npc ? "Treinador" : "Rota";
     return `
       <div class="victory-summary">
         <span><b>Batalha</b><strong>${battleType}</strong><small>${defeatedName || "Oponente"} derrotado</small></span>
@@ -5664,7 +8133,7 @@
     const teamIsFull = !hasRecruitSlot();
     const continueAction = state.tower?.active ? "tower-order" : "map";
     const continueLabel = state.tower?.active ? "Continuar subida" : "Continuar rota";
-    const continueCopy = state.tower?.active ? "Ir para o prÃ³ximo andar." : teamIsFull ? "Manter seu time atual." : "Pular este recrutamento.";
+    const continueCopy = state.tower?.active ? "Ir para o próximo andar." : teamIsFull ? "Manter seu time atual." : "Pular este recrutamento.";
     $("choice-kicker").textContent = "Recrutamento";
     $("choice-title").textContent = teamIsFull ? "Time completo" : "Um aliado pode entrar";
     $("choice-copy").textContent = teamIsFull
@@ -5674,7 +8143,7 @@
       <button class="choice-button pokemon-choice" type="button" data-catch="${i}">
         <img src="${animated(p)}" alt="" onerror="this.src='${mini(p)}'">
         <strong>${p.name}</strong>
-        <small>${teamIsFull ? "Trocar por alguém do time" : `Lv.${p.level} · ${p.trait}`}</small>
+        <small>${teamIsFull ? "Trocar por alguém do time" : `Lv.${p.level} ? ${p.trait}`}</small>
         ${renderTypeChips(p.types)}
         <span class="choice-hover-detail">
           <span>${p.trait}</span>
@@ -5725,7 +8194,7 @@
       </button>
       <button class="choice-button" type="button" data-action="${continueAction}">
         <strong>${continueLabel}</strong>
-        <small>${state.tower?.active ? "Ir para o prÃ³ximo andar." : "Cancelar recrutamento."}</small>
+        <small>${state.tower?.active ? "Ir para o próximo andar." : "Cancelar recrutamento."}</small>
       </button>
     `;
     show("choice");
@@ -5738,7 +8207,7 @@
     state.pendingRecruit = mon;
     $("choice-kicker").textContent = "Troca de time";
     $("choice-title").textContent = `Recrutar ${mon.name}`;
-    $("choice-copy").textContent = "Escolha qual Pokemon sai do time. Se ele segurar uma reliquia, ela volta para a bag.";
+    $("choice-copy").textContent = "Escolha qual Pokémon sai do time. Se ele segurar uma relíquia, ela volta para a bag.";
     const recruitPreview = `
       <div class="recruit-replace-preview">
         <img src="${animated(mon)}" alt="${mon.name}" onerror="this.src='${mini(mon)}'">
@@ -5760,7 +8229,7 @@
         <span class="choice-hover-detail">
           <span>${p.trait || "Atual no time"}</span>
           ${statBars(p)}
-          <small>${heldItems(p).length ? `${heldItemsDetailText(p)} voltam para a bag` : "Sem reliquia equipada"}</small>
+          <small>${heldItems(p).length ? `${heldItemsDetailText(p)} voltam para a bag` : "Sem relíquia equipada"}</small>
           <small>Moves: ${(p.moves || []).map((move) => move.name).join(", ") || "Ataque basico"}</small>
         </span>
         <span class="tower-card-action" data-replace-recruit="${i}">Substituir</span>
@@ -5776,7 +8245,7 @@
         </button>
         <button class="choice-button tower-order-action" type="button" data-action="${continueAction}">
           <strong>${continueLabel}</strong>
-          <small>${state.tower?.active ? "Ir para o proximo andar." : "Cancelar recrutamento."}</small>
+          <small>${state.tower?.active ? "Ir para o próximo andar." : "Cancelar recrutamento."}</small>
         </button>
       </div>
     `;
@@ -6117,7 +8586,7 @@
   function showTrain() {
     $("choice-kicker").textContent = "Treino";
     $("choice-title").textContent = "Fortalecer um parceiro";
-    $("choice-copy").textContent = "Treino dá nível e energia, mas aumenta o risco das próximas batalhas.";
+    $("choice-copy").textContent = "Treino d? n?vel e energia, mas aumenta o risco das próximas batalhas.";
     $("choice-grid").innerHTML = state.team.map((p, i) => `
       <button class="choice-button pokemon-choice" type="button" data-train="${i}">
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
@@ -6187,7 +8656,7 @@
         state.team.forEach((p) => { syncMoves(p); p.energy = Math.min(4, p.energy + 1); });
         return "O time revisou seus golpes e ganhou energia.";
       } },
-      { name: "Acampamento seguro", text: "Você encontra uma clareira protegida. Dá para respirar fundo sem perder totalmente o embalo da run.", effect: "Cura 20% do time e reduz o risco em 0.25.", run: () => {
+      { name: "Acampamento seguro", text: "Você encontra uma clareira protegida. D? para respirar fundo sem perder totalmente o embalo da run.", effect: "Cura 20% do time e reduz o risco em 0.25.", run: () => {
         state.threat = Math.max(1, state.threat - 0.25);
         state.team.forEach((p) => p.currentHp = Math.min(p.maxHp, p.currentHp + Math.ceil(p.maxHp * 0.2)));
         return "O time descansou e a rota ficou menos perigosa.";
@@ -6201,7 +8670,7 @@
       { name: "Santuario antigo", text: "Um altar gasto responde ao time. A run fica mais pesada, mas seus parceiros saem revigorados.", effect: "Todos ganham +1 energia e o risco sobe +0.2.", run: () => {
         state.threat = Math.min(3, state.threat + 0.2);
         state.team.forEach((p) => p.energy = Math.min(4, p.energy + 1));
-        return "O time ganhou energia, mas chamou atenção na rota.";
+        return "O time ganhou energia, mas chamou aten??o na rota.";
       } },
       { name: "Oficina de relíquias", text: "Uma mecânica viajante ajusta a primeira relíquia solta da bag para encaixar melhor no time.", effect: "Se houver item na bag, troca o primeiro por uma nova relíquia aleatória.", run: () => {
         if (!state.items.length) {
@@ -6255,11 +8724,11 @@
 
   function towerUpcomingHint() {
     const nextFloor = (state.floor || 0) + 1;
-    if (nextFloor <= 5) return "inimigo protegido, nÃ­vel parecido e dano reduzido";
-    if (nextFloor % 10 === 0) return "andar raro, maior chance de tipo incomum ou lendÃ¡rio";
+    if (nextFloor <= 5) return "inimigo protegido, nível parecido e dano reduzido";
+    if (nextFloor % 10 === 0) return "andar raro, maior chance de tipo incomum ou lendário";
     const teamTypes = state.team.flatMap((p) => p.types || []);
     const leadType = teamTypes[nextFloor % Math.max(1, teamTypes.length)] || "Normal";
-    return `tipo provÃ¡vel variado, prepare cobertura contra ${leadType}`;
+    return `tipo prov?vel variado, prepare cobertura contra ${leadType}`;
   }
 
   function showTowerTeamOrder(options = {}) {
@@ -6286,7 +8755,7 @@
     $("choice-kicker").textContent = "Preparar equipe";
     $("choice-title").textContent = "Escolha a ordem";
     $("choice-copy").textContent = complete
-      ? "Ordem definida. Confirme para subir com essa formação."
+      ? "Ordem definida. Confirme para subir com essa forma??o."
       : `Clique na sequência desejada. Próxima posição: ${state.pendingTowerOrder.length + 1}.`;
     $("choice-copy").textContent += ` Próximo andar: ${towerUpcomingHint()}.`;
     $("choice-grid").innerHTML = `
@@ -6295,7 +8764,7 @@
     ${aliveTeam.map(({ p, i }) => `
       <button class="choice-button pokemon-choice tower-order-choice ${selected.has(i) ? "is-picked" : ""}" type="button" data-tower-order-pick="${i}" ${selected.has(i) ? "disabled" : ""}>
         <img src="${animated(p)}" alt="${p.name}" onerror="this.src='${mini(p)}'">
-        <span class="tower-order-rank">${selected.has(i) ? `${state.pendingTowerOrder.indexOf(i) + 1}º` : "..."}</span>
+        <span class="tower-order-rank">${selected.has(i) ? `${state.pendingTowerOrder.indexOf(i) + 1}?` : "..."}</span>
         <strong>${p.name}</strong>
         <span class="held-slot-grid tower-card-slots">${towerHeldSlotsMarkup(p, i)}</span>
         <small>Lv.${p.level} · HP ${Math.max(0, p.currentHp)}/${p.maxHp}</small>
@@ -6313,7 +8782,7 @@
       <div class="tower-order-actions">
         <button class="choice-button tower-order-action" type="button" data-action="${complete ? "tower-confirm-order" : "tower-reset-order"}">
           <strong>${complete ? "Confirmar ordem" : "Recomeçar"}</strong>
-          <small>${complete ? "Subir com essa formação." : "Limpar escolhas."}</small>
+          <small>${complete ? "Subir com essa forma??o." : "Limpar escolhas."}</small>
         </button>
       </div>
     `;
@@ -6803,7 +9272,7 @@
     `).join("") : "") + `
       <button class="choice-button tower-order-action" type="button" data-action="tower-order">
         <strong>Voltar</strong>
-        <small>Retornar para a preparação.</small>
+        <small>Retornar para a prepara??o.</small>
       </button>
     `;
     show("choice");
@@ -7473,6 +9942,9 @@
       selectRunMode(button.dataset.startMode);
       return newRun();
     }
+    if (button.dataset.draftBattle) {
+      return showDraftBattleIntro(button.dataset.draftBattle);
+    }
     if (button.dataset.towerMode) return handleTowerMode(button.dataset.towerMode);
     if (button.id === "start-run") newRun();
     if (button.id === "restart-run") {
@@ -7510,6 +9982,7 @@
     if (button.dataset.floor) await enterNode(Number(button.dataset.floor), Number(button.dataset.branch));
     if (button.dataset.autoBattle) runAutoBattle();
     if (button.dataset.battleSpeed) {
+      if (state.battle?.draft && state.battleSpeed === 2) return;
       if (state.battleSpeed === 3) return;
       state.battleSpeed = state.battleSpeed >= 2 ? 1 : 2;
       if (state.battleSpeed === 2 && state.battle) state.battle.speedBoostStartedAt = Date.now();
@@ -7526,6 +9999,114 @@
       if (showPendingEvolutionChoice()) return;
       if (state.tower?.active) return towerPrepareNextStep();
       renderMap();
+    }
+    if (button.dataset.action === "title") {
+      show("title");
+      updateRunModeCarouselFocus();
+    }
+    if (button.dataset.action === "draft-ai") return joinDraftBattleQueue("ai");
+    if (button.dataset.action === "draft-queue") return joinDraftBattleQueue("ranked");
+    if (button.dataset.action === "draft-login") return showDraftAuth("login");
+    if (button.dataset.action === "draft-register") return showDraftAuth("register");
+    if (button.dataset.action === "draft-recover") return showDraftAuth("recover");
+    if (button.dataset.action === "draft-logout") {
+      clearDraftAuth();
+      return showDraftAuth("login", "Conta desconectada.");
+    }
+    if (button.dataset.action === "draft-login-submit") return await submitDraftAuth("login");
+    if (button.dataset.action === "draft-register-submit") return await submitDraftAuth("register");
+    if (button.dataset.action === "draft-recover-submit") return await submitDraftAuth("recover");
+    if (button.dataset.action === "draft-reset-submit") return await submitDraftAuth("reset");
+    if (button.dataset.action === "draft-rules") return showDraftBattleIntro("rules");
+    if (button.dataset.action === "draft-details") return showDraftBattleIntro("details");
+    if (button.dataset.action === "draft-rules-back") return showDraftBattleIntro("preview");
+    if (button.dataset.action === "draft-history") return showDraftHistory();
+    if (button.dataset.action === "draft-ranked") return showDraftRanked();
+    if (button.dataset.action === "draft-ranked-prev") {
+      draftRankedPage = Math.max(0, draftRankedPage - 1);
+      return showDraftRanked();
+    }
+    if (button.dataset.action === "draft-ranked-next") {
+      draftRankedPage += 1;
+      return showDraftRanked();
+    }
+    if (button.dataset.draftHistoryDetail) return showDraftHistoryDetail(Number(button.dataset.draftHistoryDetail));
+    if (button.dataset.action === "draft-copy-build") {
+      const text = draftBuildText();
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+      return renderDraftBattleResult();
+    }
+    if (button.dataset.action === "draft-rematch") {
+      draftSocket?.emit("rematch:request");
+      $("choice-copy").textContent = "Revanche enviada. Aguardando o rival aceitar.";
+      button.disabled = true;
+      return;
+    }
+    if (button.dataset.action === "draft-leave") {
+      draftSocket?.emit("queue:leave");
+      draftState.match = null;
+      draftState.options = [];
+      draftState.banOptions = [];
+      draftState.lockedArenaId = "";
+      draftState.rouletteArenaId = "";
+      draftState.battleStartArenaId = "";
+      draftState.matchStartedAt = 0;
+      draftState.matchDurationMs = 0;
+      clearTimeout(draftBattlePlaybackTimer);
+      clearTimeout(draftBattleStartFallbackTimer);
+      stopDraftMatchClock(0);
+      return showDraftBattleIntro("preview");
+    }
+    if (button.dataset.draftPick) {
+      draftSocket?.emit("draft:pick", { pokemonId: Number(button.dataset.draftPick) });
+      draftState.options = [];
+      return renderDraftBattleRoom("Escolha enviada. Aguardando o servidor.");
+    }
+    if (button.dataset.draftBan) {
+      draftSocket?.emit("ban:pick", { pokemonId: Number(button.dataset.draftBan) });
+      draftState.submittedBanStep = draftState.activeBanStep || draftState.match?.banStep || 0;
+      return renderDraftBanScreen("Ban enviado. Aguardando o servidor.");
+    }
+    if (button.dataset.draftBuildMove) {
+      const me = draftState.match?.players?.find((player) => player.id === draftState.playerId);
+      if (me?.buildReady) return renderDraftBuildScreen();
+      const [pokemonIdRaw, moveId] = button.dataset.draftBuildMove.split(":");
+      const pokemonId = Number(pokemonIdRaw);
+      const selected = draftState.buildSelections[pokemonId] || { moveIds: [], relicId: "" };
+      if (selected.moveIds.includes(moveId)) {
+        selected.moveIds = selected.moveIds.filter((id) => id !== moveId);
+      } else {
+        selected.moveIds = [...selected.moveIds, moveId].slice(-2);
+      }
+      draftState.buildSelections[pokemonId] = selected;
+      return renderDraftBuildScreen();
+    }
+    if (button.dataset.draftBuildRelic) {
+      const me = draftState.match?.players?.find((player) => player.id === draftState.playerId);
+      if (me?.buildReady) return renderDraftBuildScreen();
+      const [pokemonIdRaw, relicId] = button.dataset.draftBuildRelic.split(":");
+      const pokemonId = Number(pokemonIdRaw);
+      const selected = draftState.buildSelections[pokemonId] || { moveIds: [], relicId: "" };
+      selected.relicId = relicId;
+      draftState.buildSelections[pokemonId] = selected;
+      return renderDraftBuildScreen();
+    }
+    if (button.dataset.action === "draft-submit-build") {
+      const me = draftState.match?.players?.find((player) => player.id === draftState.playerId);
+      if (me?.buildReady) return renderDraftBuildScreen();
+      const selections = draftState.buildOptions.map((entry) => ({
+        pokemonId: entry.pokemonId,
+        moveIds: draftState.buildSelections[entry.pokemonId]?.moveIds || [],
+        relicId: draftState.buildSelections[entry.pokemonId]?.relicId || "",
+      }));
+      draftSocket?.emit("build:submit", { selections });
+      return renderDraftBuildScreen("Build enviada. Aguardando confirmação do servidor.");
+    }
+    if (button.dataset.draftOrderPick) {
+      draftSocket?.emit("order:pick", { pokemonId: Number(button.dataset.draftOrderPick) });
+      return renderDraftOrderScreen("Ordem enviada. Aguardando o servidor.");
     }
     if (button.dataset.action === "tower-order") return towerPrepareNextStep();
     if (button.dataset.action === "tower-bag") return showTowerBag();
@@ -7751,8 +10332,10 @@
 
   setupStarters();
   updateContinueRunButton();
+  updateDraftAccountButton();
   renderTowerModes();
   void loadNationalDexIndex();
   renderDexBadge();
   renderHud();
+  if (readSupabaseRecoveryToken()) showDraftAuth("reset");
 })();
