@@ -3467,10 +3467,45 @@
       .sort((a, b) => (b.points || 0) - (a.points || 0) || (b.wins || 0) - (a.wins || 0));
   }
 
-  function showDraftRanked() {
-    const rank = draftRankState();
+  async function showDraftRanked() {
+    let rank = draftRankState();
+    let rows = draftRankedLeaderboard();
+    let sourceLabel = "Tabela local baseada nas partidas salvas neste navegador.";
+    let countLabel = rows.length > 1 ? `${rows.length} jogadores na tabela local.` : "Jogue partidas para preencher a tabela.";
+    const authUser = draftAuthUser();
+    if (draftAuthToken()) {
+      try {
+        const payload = await draftApi("/api/ranked");
+        const serverRows = Array.isArray(payload.rows) ? payload.rows : [];
+        rows = serverRows.map((entry) => ({
+          id: entry.id,
+          name: entry.nick || entry.login || "Jogador",
+          points: entry.points || 0,
+          wins: entry.wins || 0,
+          losses: entry.losses || 0,
+          streak: entry.streak || 0,
+          played: (entry.wins || 0) + (entry.losses || 0),
+          me: authUser?.id && Number(entry.id) === Number(authUser.id),
+          tier: draftRankTier(entry.points || 0),
+        }));
+        const serverMe = rows.find((entry) => entry.me);
+        if (serverMe) {
+          rank = {
+            points: serverMe.points || 0,
+            wins: serverMe.wins || 0,
+            losses: serverMe.losses || 0,
+            streak: serverMe.streak || 0,
+            tier: serverMe.tier,
+          };
+          saveDraftAuth({ token: draftAuthToken(), user: { ...authUser, ...serverMe, nick: serverMe.name } });
+        }
+        sourceLabel = "Tabela online baseada nas partidas ranqueadas salvas no servidor.";
+        countLabel = rows.length ? `${rows.length} jogadores na tabela online.` : "Nenhum jogador ranqueado ainda.";
+      } catch (error) {
+        sourceLabel = `${error.message || "Ranking online indisponivel."} Mostrando dados locais deste navegador.`;
+      }
+    }
     const rankInfo = draftRankInfo(rank.points);
-    const rows = draftRankedLeaderboard();
     const myIndex = Math.max(0, rows.findIndex((entry) => entry.me));
     const next = rows[myIndex - 1];
     const totalPages = Math.max(1, Math.ceil(rows.length / DRAFT_RANKED_PAGE_SIZE));
@@ -3480,7 +3515,7 @@
     const winRate = ((rank.wins || 0) + (rank.losses || 0)) ? Math.round(((rank.wins || 0) / ((rank.wins || 0) + (rank.losses || 0))) * 100) : 0;
     $("choice-kicker").textContent = "Ranqueada";
     $("choice-title").textContent = "Draft Battle";
-    $("choice-copy").textContent = "Tabela local baseada nas partidas salvas neste navegador.";
+    $("choice-copy").textContent = sourceLabel;
     $("choice-grid").innerHTML = `
       <div class="draft-ranked-panel">
         <div class="draft-ranked-hero">
@@ -3528,7 +3563,7 @@
           `).join("")}
         </div>
         <div class="draft-build-footer">
-          <span>${rows.length > 1 ? `${rows.length} jogadores na tabela local.` : "Jogue partidas para preencher a tabela."}</span>
+          <span>${countLabel}</span>
           <div class="draft-result-actions">
             <button class="draft-secondary-button" type="button" data-action="draft-history">Histórico</button>
             <button class="draft-confirm-button" type="button" data-action="draft-rules">Voltar</button>
