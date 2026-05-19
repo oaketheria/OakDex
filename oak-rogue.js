@@ -2396,6 +2396,69 @@
     document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
   }
 
+  async function showDraftAccount(message = "") {
+    const token = draftAuthToken();
+    let user = draftAuthUser();
+    if (!token || !user) return showDraftAuth("login", message);
+    let status = message || "Conta conectada para jogar Contra Player ranqueado.";
+    try {
+      const payload = await draftApi("/api/me");
+      if (payload.user) {
+        user = payload.user;
+        saveDraftAuth({ token, user });
+        status = "Perfil sincronizado com o servidor.";
+      }
+    } catch (error) {
+      status = error.message || "Nao foi possivel sincronizar o perfil agora.";
+    }
+    const rankInfo = draftRankInfo(user.points || 0);
+    const totalGames = (user.wins || 0) + (user.losses || 0);
+    const winRate = totalGames ? Math.round(((user.wins || 0) / totalGames) * 100) : 0;
+    $("choice-kicker").textContent = "Conta online";
+    $("choice-title").textContent = user.nick || "Treinador";
+    $("choice-copy").textContent = status;
+    $("choice-grid").innerHTML = `
+      <div class="draft-ranked-panel">
+        <div class="draft-ranked-hero">
+          <article>
+            <span>Elo atual</span>
+            <strong>${rankInfo.name}</strong>
+            <small>${rankInfo.points} pts</small>
+          </article>
+          <article>
+            <span>Partidas</span>
+            <strong>${totalGames}</strong>
+            <small>${user.wins || 0}V / ${user.losses || 0}D</small>
+          </article>
+          <article>
+            <span>Win rate</span>
+            <strong>${winRate}%</strong>
+            <small>Sequencia ${user.streak || 0}</small>
+          </article>
+        </div>
+        <div class="draft-ranked-progress">
+          <div>
+            <span>${rankInfo.name}</span>
+            <b>${rankInfo.next === null ? "Elo maximo" : `${rankInfo.needed} pts para ${rankInfo.nextName}`}</b>
+          </div>
+          <i style="--rank-progress:${rankInfo.progress}%"><em></em></i>
+          <small>${rankInfo.next === null ? `${rankInfo.points}+ pts` : `${rankInfo.points} / ${rankInfo.next} pts`}</small>
+        </div>
+        <div class="draft-build-footer">
+          <span>${user.email || user.login || "Conta do treinador"}</span>
+          <div class="draft-result-actions">
+            <button class="draft-secondary-button" type="button" data-action="draft-history">Historico</button>
+            <button class="draft-secondary-button" type="button" data-action="draft-ranked">Ranqueada</button>
+            <button class="draft-secondary-button" type="button" data-action="draft-logout">Sair</button>
+            <button class="draft-confirm-button" type="button" data-action="draft-rules">Voltar</button>
+          </div>
+        </div>
+      </div>
+    `;
+    show("choice");
+    document.querySelector(".rogue-stage")?.classList.add("has-draft-modal");
+  }
+
   async function submitDraftAuth(mode = "login") {
     const email = $("draft-auth-email")?.value || "";
     const nick = $("draft-auth-nick")?.value || email.split("@")[0] || "";
@@ -10101,7 +10164,7 @@
     }
     if (button.dataset.action === "draft-ai") return joinDraftBattleQueue("ai");
     if (button.dataset.action === "draft-queue") return joinDraftBattleQueue("ranked");
-    if (button.dataset.action === "draft-login") return showDraftAuth("login");
+    if (button.dataset.action === "draft-login") return draftAuthUser() ? await showDraftAccount() : showDraftAuth("login");
     if (button.dataset.action === "draft-register") return showDraftAuth("register");
     if (button.dataset.action === "draft-recover") return showDraftAuth("recover");
     if (button.dataset.action === "draft-logout") {
